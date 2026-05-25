@@ -918,8 +918,25 @@
         const auth = firebase.auth();
         const googleProvider = new firebase.auth.GoogleAuthProvider();
 
-        // Abilita persistenza locale per mantenere il login
-        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(console.error);
+        // Try persistence levels from most persistent to least
+        // LOCAL requires localStorage, SESSION requires sessionStorage, NONE is in-memory only
+        const persistences = [
+            firebase.auth.Auth.Persistence.LOCAL,
+            firebase.auth.Auth.Persistence.SESSION,
+            firebase.auth.Auth.Persistence.NONE
+        ];
+        
+        (async function() {
+            for (const p of persistences) {
+                try {
+                    await auth.setPersistence(p);
+                    console.log('Firebase persistence set to:', p);
+                    break;
+                } catch (err) {
+                    console.warn('Persistence not available (' + p + '):', err.message);
+                }
+            }
+        })();
 
         // Google Login button
         const btnGoogleLogin = document.getElementById('btnGoogleLogin');
@@ -950,12 +967,13 @@
             let msg = 'Errore durante il login.';
 
             if (error.code === 'auth/popup-closed-by-user') {
-                msg = 'Login annullato: hai chiuso la finestra di Google.';
+                // User closed popup - no need to show error
+                return;
             } else if (error.code === 'auth/popup-blocked') {
-                msg = 'Popup bloccato dal browser. Verrà usato il metodo redirect...';
-                alert(msg);
                 // Fallback: usa redirect invece di popup
-                auth.signInWithRedirect(googleProvider);
+                auth.signInWithRedirect(googleProvider).catch(function() {
+                    alert('Impossibile effettuare il login. Controlla le impostazioni del browser.');
+                });
                 return;
             } else if (error.code === 'auth/unauthorized-domain') {
                 const currentDomain = window.location.hostname || window.location.origin;
@@ -963,11 +981,9 @@
                     'Il dominio attuale è: ' + currentDomain + '\n\n' +
                     'Per risolvere:\n' +
                     '1. Vai su Firebase Console > Authentication > Settings\n' +
-                    '2. Aggiungi "' + currentDomain + '" ai domini autorizzati\n' +
-                    '3. Se apri il file localmente (file://), usa un server locale';
-                alert(msg);
+                    '2. Aggiungi "' + currentDomain + '" ai domini autorizzati';
             } else if (error.code === 'auth/cancelled-popup-request') {
-                msg = 'Richiesta di login annullata.';
+                return; // Silently ignore
             } else if (error.code === 'auth/network-request-failed') {
                 msg = 'Errore di rete. Controlla la connessione internet.';
             } else if (error.code === 'auth/too-many-requests') {
@@ -976,6 +992,8 @@
                 msg = 'Il login Google non è abilitato.\n\n' +
                     'Vai su Firebase Console > Authentication > Sign-in method\n' +
                     'e abilita il provider Google.';
+            } else if (error.code === 'auth/operation-not-supported-in-this-environment') {
+                msg = 'Ambiente non supportato. Prova ad aprire il sito direttamente nel browser (non in un\'iframe).\n\nCopia e apri questo link: ' + window.location.href;
             } else {
                 msg = 'Errore: ' + error.message;
             }
@@ -1010,7 +1028,8 @@
                 console.log('Login via redirect effettuato:', result.user.displayName);
             }
         }).catch((error) => {
-            handleLoginError(error);
+            // Silently handle - user will see auth state via onAuthStateChanged
+            console.warn('getRedirectResult error (safe to ignore):', error.code || error.message);
         });
 
         // Auth state observer
