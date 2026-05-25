@@ -918,6 +918,9 @@
         const auth = firebase.auth();
         const googleProvider = new firebase.auth.GoogleAuthProvider();
 
+        // Abilita persistenza locale per mantenere il login
+        auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(console.error);
+
         // Google Login button
         const btnGoogleLogin = document.getElementById('btnGoogleLogin');
         const btnGoogleText = document.getElementById('btnGoogleText');
@@ -927,54 +930,110 @@
         const authStatusEl = document.getElementById('authStatus');
         const authStatusTextEl = document.getElementById('authStatusText');
 
+        function setLoginLoading(loading) {
+            if (loading) {
+                btnGoogleLogin.classList.add('btn-loading');
+                btnGoogleText.innerHTML = '<span class="spinner"></span>';
+            } else {
+                btnGoogleLogin.classList.remove('btn-loading');
+                // Ripristina il testo corretto in base allo stato
+                if (auth.currentUser) {
+                    btnGoogleText.textContent = 'Logout';
+                } else {
+                    btnGoogleText.textContent = 'Login';
+                }
+            }
+        }
+
+        function handleLoginError(error) {
+            console.error('Errore login:', error.code, error.message);
+            let msg = 'Errore durante il login.';
+
+            if (error.code === 'auth/popup-closed-by-user') {
+                msg = 'Login annullato: hai chiuso la finestra di Google.';
+            } else if (error.code === 'auth/popup-blocked') {
+                msg = 'Popup bloccato dal browser. Verrà usato il metodo redirect...';
+                alert(msg);
+                // Fallback: usa redirect invece di popup
+                auth.signInWithRedirect(googleProvider);
+                return;
+            } else if (error.code === 'auth/unauthorized-domain') {
+                const currentDomain = window.location.hostname || window.location.origin;
+                msg = 'Dominio non autorizzato in Firebase.\n\n' +
+                    'Il dominio attuale è: ' + currentDomain + '\n\n' +
+                    'Per risolvere:\n' +
+                    '1. Vai su Firebase Console > Authentication > Settings\n' +
+                    '2. Aggiungi "' + currentDomain + '" ai domini autorizzati\n' +
+                    '3. Se apri il file localmente (file://), usa un server locale';
+                alert(msg);
+            } else if (error.code === 'auth/cancelled-popup-request') {
+                msg = 'Richiesta di login annullata.';
+            } else if (error.code === 'auth/network-request-failed') {
+                msg = 'Errore di rete. Controlla la connessione internet.';
+            } else if (error.code === 'auth/too-many-requests') {
+                msg = 'Troppi tentativi. Riprova tra qualche minuto.';
+            } else if (error.code === 'auth/operation-not-allowed') {
+                msg = 'Il login Google non è abilitato.\n\n' +
+                    'Vai su Firebase Console > Authentication > Sign-in method\n' +
+                    'e abilita il provider Google.';
+            } else {
+                msg = 'Errore: ' + error.message;
+            }
+            alert(msg);
+        }
+
         btnGoogleLogin.addEventListener('click', function() {
             const user = auth.currentUser;
             if (user) {
                 // Logout
-                if (confirm('Vuoi disconnettere l\'account "' + user.displayName + '"?')) {
-                    auth.signOut();
+                if (confirm('Vuoi disconnettere l\'account "' + (user.displayName || user.email) + '"?')) {
+                    auth.signOut().catch(console.error);
                 }
             } else {
-                // Login con Google
-                btnGoogleLogin.classList.add('btn-loading');
-                btnGoogleText.innerHTML = '<span class="spinner"></span>';
+                // Login con Google - prova con popup, fallback a redirect
+                setLoginLoading(true);
 
                 auth.signInWithPopup(googleProvider)
                     .then((result) => {
                         console.log('Login effettuato:', result.user.displayName);
                     })
                     .catch((error) => {
-                        console.error('Errore login:', error.code, error.message);
-                        let msg = 'Errore durante il login.';
-                        if (error.code === 'auth/popup-closed-by-user') {
-                            msg = 'Login annullato.';
-                        } else if (error.code === 'auth/popup-blocked') {
-                            msg = 'Popup bloccato dal browser. Abilita i popup.';
-                        } else if (error.code === 'auth/unauthorized-domain') {
-                            msg = 'Dominio non autorizzato. Aggiungi questo dominio in Firebase Console > Authentication > Settings.';
-                        }
-                        alert(msg);
-                    })
-                    .finally(() => {
-                        btnGoogleLogin.classList.remove('btn-loading');
+                        setLoginLoading(false);
+                        handleLoginError(error);
                     });
             }
         });
 
+        // Gestisci il risultato del redirect (fallback quando popup è bloccato)
+        auth.getRedirectResult().then((result) => {
+            if (result.user) {
+                console.log('Login via redirect effettuato:', result.user.displayName);
+            }
+        }).catch((error) => {
+            handleLoginError(error);
+        });
+
         // Auth state observer
         auth.onAuthStateChanged((user) => {
+            setLoginLoading(false); // Reset loading state
             if (user) {
                 // Utente loggato
                 btnGoogleLogin.classList.add('logged-in');
                 btnGoogleText.textContent = 'Logout';
 
                 userInfoEl.classList.add('visible');
-                userPhotoEl.src = user.photoURL || '';
-                userPhotoEl.style.display = user.photoURL ? '' : 'none';
+                if (user.photoURL) {
+                    userPhotoEl.src = user.photoURL;
+                    userPhotoEl.style.display = '';
+                } else {
+                    userPhotoEl.style.display = 'none';
+                }
                 userDisplayNameEl.textContent = user.displayName || user.email;
 
                 authStatusEl.className = 'auth-status logged-in';
                 authStatusTextEl.textContent = 'Connesso come ' + (user.displayName || user.email);
+
+                console.log('Utente connesso:', user.email, '| UID:', user.uid);
             } else {
                 // Utente non loggato
                 btnGoogleLogin.classList.remove('logged-in');
@@ -982,6 +1041,7 @@
 
                 userInfoEl.classList.remove('visible');
                 userPhotoEl.src = '';
+                userPhotoEl.style.display = '';
                 userDisplayNameEl.textContent = '';
 
                 authStatusEl.className = 'auth-status logged-out';
