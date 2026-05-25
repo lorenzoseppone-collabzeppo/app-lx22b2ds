@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "This is a mobile app interface screenshot with a clean, modern design. The background is a very light gray (almost white) with a subtle off-white card-based layout.\n\n**Top Section:**\n- A rounded rectangular white card with a subtle shadow, containing the main content\n- At the top of this card, there's a header area with text and checkboxes\n- Left side: Gray text \"BAMBINO (CLICCA PER MODIFICARE)\" in all caps, using a medium-weight sans-serif font, approximately 16px\n- Right side: Three labels in gray text - \"Presenza\", \"Pre\", \"Post\" - each with a corresponding empty square checkbox below it\n- The checkboxes are light gray outlines with white backgrounds, positioned directly under their respective labels\n- Spacing between the header text and checkboxes is balanced, with good vertical and horizontal margins\n\n**Bottom Section:**\n- Below the header is a user profile area with a dark navy blue circular avatar containing white \"SR\" initials\n- Next to the avatar: Black text \"Sofia Rossi\" in a bold sans-serif font, approximately 18px\n- To the right of the name: Three interactive buttons in a row\n- First button: Green square with rounded corners, white checkmark icon in the center\n- Second button: Orange/amber rounded rectangle with white \"PRE\" text\n- Third button: Blue rounded rectangle with white \"POST\" text\n- All buttons have similar height and padding, with the green button being square while the others are slightly wider rectangles\n- The buttons have a subtle shadow effect and appear to be tappable elements\n\n**Overall Layout:**\n- The card has generous padding (approximately 20px) on all sides\n- Elements are well-spaced with consistent margins\n- The color scheme uses grays, navy, green, orange, and blue for visual hierarchy\n- The design is minimalistic with plenty of white space\n- Text is left-aligned in the header and profile sections\n- Buttons are right-aligned in the profile section\n\nThe interface appears to be part of a child management or attendance tracking application, with options to mark presence and pre/post status for a child named Sofia Rossi.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1779731697,
+  "id": "20260526015446fee02604ab014a8f",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "20260526015446fee02604ab014a8f",
+  "usage": {
+    "completion_tokens": 452,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 954,
+    "prompt_tokens_details": {
+      "cached_tokens": 7
+    },
+    "total_tokens": 1406
+  }
+}
