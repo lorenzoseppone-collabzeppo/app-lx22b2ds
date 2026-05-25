@@ -53,30 +53,71 @@ export default function RegistroPresenze() {
 
   useEffect(() => {
     const loadFirebase = async () => {
-      const script1 = document.createElement('script')
-      script1.src = 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js'
-      script1.async = true
-      document.head.appendChild(script1)
-      await new Promise(r => { script1.onload = r })
+      try {
+        const script1 = document.createElement('script')
+        script1.src = 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js'
+        script1.async = true
+        document.head.appendChild(script1)
+        await new Promise<void>((resolve, reject) => {
+          script1.onload = () => resolve()
+          script1.onerror = () => reject(new Error('Failed to load firebase-app'))
+        })
 
-      const script2 = document.createElement('script')
-      script2.src = 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js'
-      script2.async = true
-      document.head.appendChild(script2)
-      await new Promise(r => { script2.onload = r })
+        const script2 = document.createElement('script')
+        script2.src = 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js'
+        script2.async = true
+        document.head.appendChild(script2)
+        await new Promise<void>((resolve, reject) => {
+          script2.onload = () => resolve()
+          script2.onerror = () => reject(new Error('Failed to load firebase-auth'))
+        })
 
-      const fb = (window as any).firebase
-      fb.initializeApp(FIREBASE_CONFIG)
-      const auth = fb.auth()
-      auth.setPersistence(fb.auth.Auth.Persistence.LOCAL).catch(console.error)
+        const fb = (window as any).firebase
+        fb.initializeApp(FIREBASE_CONFIG)
+        const auth = fb.auth()
 
-      auth.onAuthStateChanged((u: any) => {
-        setUser(u)
-        setLoginLoading(false)
-      })
+        // Try persistence levels from most persistent to least
+        // LOCAL requires localStorage, SESSION requires sessionStorage, NONE is in-memory only
+        const persistences = [
+          { type: fb.auth.Auth.Persistence.LOCAL, name: 'LOCAL' },
+          { type: fb.auth.Auth.Persistence.SESSION, name: 'SESSION' },
+          { type: fb.auth.Auth.Persistence.NONE, name: 'NONE' },
+        ]
 
-      auth.getRedirectResult().catch(console.error)
-      setFirebaseReady(true)
+        let persistenceSet = false
+        for (const p of persistences) {
+          try {
+            await auth.setPersistence(p.type)
+            console.log(`Firebase persistence set to ${p.name}`)
+            persistenceSet = true
+            break
+          } catch (err: any) {
+            console.warn(`Persistence ${p.name} not available:`, err.message)
+          }
+        }
+
+        if (!persistenceSet) {
+          console.warn('No Firebase persistence method available, using default')
+        }
+
+        auth.onAuthStateChanged((u: any) => {
+          setUser(u)
+          setLoginLoading(false)
+        })
+
+        // Handle redirect result silently
+        try {
+          await auth.getRedirectResult()
+        } catch (err: any) {
+          // Silently handle redirect errors - user will see auth state via onAuthStateChanged
+          console.warn('getRedirectResult error (safe to ignore):', err.code || err.message)
+        }
+
+        setFirebaseReady(true)
+      } catch (err: any) {
+        console.error('Firebase initialization failed:', err)
+        setFirebaseReady(true) // Still mark as ready so UI doesn't hang
+      }
     }
     loadFirebase()
   }, [])
@@ -95,16 +136,22 @@ export default function RegistroPresenze() {
       auth.signInWithPopup(provider).catch((error: any) => {
         setLoginLoading(false)
         let msg = 'Errore durante il login.'
-        if (error.code === 'auth/popup-closed-by-user') msg = 'Login annullato.'
-        else if (error.code === 'auth/popup-blocked') {
-          alert('Popup bloccato. Uso redirect...')
-          auth.signInWithRedirect(provider)
+        if (error.code === 'auth/popup-closed-by-user') {
+          // User closed popup - no need to show error
+          return
+        } else if (error.code === 'auth/popup-blocked') {
+          // Try redirect as fallback
+          auth.signInWithRedirect(provider).catch(() => {
+            alert('Impossibile effettuare il login. Controlla le impostazioni del browser.')
+          })
           return
         } else if (error.code === 'auth/unauthorized-domain') {
           const domain = window.location.hostname
           msg = `Dominio "${domain}" non autorizzato.\n\nVai su Firebase Console > Authentication > Settings > Authorized domains e aggiungi: ${domain}`
         } else if (error.code === 'auth/operation-not-allowed') {
           msg = 'Login Google non abilitato. Abilitalo in Firebase Console > Authentication > Sign-in method.'
+        } else if (error.code === 'auth/operation-not-supported-in-this-environment') {
+          msg = 'Ambiente non supportato. Prova ad aprire il sito direttamente nel browser (non in un\'iframe).\n\nCopia e apri questo link: ' + window.location.href
         } else {
           msg = 'Errore: ' + error.message
         }
