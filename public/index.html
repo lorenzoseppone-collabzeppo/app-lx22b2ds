@@ -100,6 +100,27 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .diet-modal-close:active{transform:scale(0.97)}
 .diet-custom-input{width:100%;padding:8px 12px;border:2px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;outline:none;margin-bottom:8px}
 .diet-custom-input:focus{border-color:#007bff}
+.child-detail-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px}
+.child-detail{background:white;border-radius:16px;padding:20px;max-width:400px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,0.2);max-height:85vh;overflow-y:auto}
+.child-detail-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.child-detail-avatar{width:48px;height:48px;border-radius:50%;background:#1a1a2e;color:white;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0}
+.child-detail-name{font-size:20px;font-weight:700;color:#1a1a2e}
+.child-detail-diet{font-size:12px;color:#888;margin-top:2px}
+.child-detail-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px}
+.child-detail-stat{border-radius:12px;padding:14px 8px;text-align:center}
+.child-detail-stat.val{font-size:32px;font-weight:700;line-height:1}
+.child-detail-stat.lbl{font-size:11px;font-weight:600;margin-top:4px;text-transform:uppercase;letter-spacing:0.3px}
+.child-detail-sub{font-size:12px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px}
+.child-detail-day{display:flex;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0f0;gap:8px}
+.child-detail-day:last-child{border-bottom:none}
+.child-detail-day-date{font-size:12px;font-weight:600;color:#1a1a2e;width:52px;flex-shrink:0}
+.child-detail-day-name{font-size:11px;color:#888;width:32px;flex-shrink:0}
+.child-detail-day-badges{display:flex;gap:4px;flex-wrap:wrap}
+.child-detail-day-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px}
+.child-detail-close{width:100%;padding:10px;border:none;border-radius:8px;background:#1a1a2e;color:white;font-size:14px;font-weight:600;cursor:pointer;margin-top:12px;font-family:inherit}
+.child-detail-close:active{transform:scale(0.97)}
+.child-name-link{cursor:pointer;color:#1a1a2e;transition:color 0.15s}
+.child-name-link:hover{color:#007bff}
 .stat-card{background:white;border-radius:12px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.08);display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .stat-label{font-size:12px;color:#888;font-weight:500}
 .stat-sub{font-size:11px;color:#aaa}
@@ -170,6 +191,7 @@ var db = null;
 var syncStatus = 'idle';
 var firestoreLoaded = false;
 var showDietModal = -1;
+var selectedChild = -1;
 
 var dateData = {};
 
@@ -408,7 +430,11 @@ function render(){
   html+='</div></div>';
 
   html+='<div class="card"><div class="card-label">RICERCA BAMBINO</div>';
-  html+='<div class="search-box"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Cerca per nome o cognome..." value="'+esc(search)+'" oninput="App.setSearch(this.value)"/></div></div>';
+  html+='<div class="search-box"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Cerca per nome o cognome..." value="'+esc(search)+'" oninput="App.setSearch(this.value)"/>';
+  if(search){html+='<button style="background:none;border:none;cursor:pointer;padding:2px;margin-left:4px" onclick="App.clearSearch()" title="Cancella ricerca"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';}
+  html+='</div>';
+  if(search){var sr=getFilteredChildren();if(sr.length===0){html+='<div style="padding:8px 12px;font-size:13px;color:#888">Nessun bambino trovato</div>';}}
+  html+='</div>';
 
   html+='<div class="roster"><div class="roster-header">';
   html+='<span>BAMBINO</span>';
@@ -428,7 +454,7 @@ function render(){
     html+='<div class="child-avatar">'+getInitials(name)+'</div>';
     if(editingChild===idx){html+='<input class="child-name-input" id="childInput" value="'+esc(editValue)+'" onblur="App.finishEditChild()" onkeydown="if(event.key===\'Enter\')App.finishEditChild();if(event.key===\'Escape\')App.cancelEditChild()"/>';}
     else{
-      html+='<span class="child-name" onclick="App.startEditChild('+idx+')" title="Clicca per modificare">'+esc(name)+'</span>';
+      html+='<span class="child-name child-name-link" onclick="App.showChildDetail('+idx+')" title="Clicca per vedere il riepilogo">'+esc(name)+'</span>';
       if(hasDiet){html+='<span class="diet-tag '+dietTagClass+'" title="'+esc(dietLabel)+(childDiets[idx].note?' - '+esc(childDiets[idx].note):'')+'">'+esc(dietLabel)+'</span>';}
     }
     html+='</div>';
@@ -444,6 +470,7 @@ function render(){
   html+='<div class="stat-card"><div><div class="stat-label">Totale pre</div><div class="stat-sub">Ingressi Anticipati</div></div><div class="stat-value" style="color:#e67e00">'+totalPre+'</div></div>';
   html+='<div class="stat-card"><div><div class="stat-label">Totale post</div><div class="stat-sub">Uscite Posticipate</div></div><div class="stat-value" style="color:#007bff">'+totalPost+'</div></div>';
 
+  if(selectedChild>=0){html+=renderChildDetail(selectedChild);}
   if(showDietModal>=0){html+=renderDietModal(showDietModal);}
 
   app.innerHTML=html;
@@ -457,6 +484,85 @@ function getFilteredChildren(){
   var result=[];for(var i=0;i<children.length;i++){if(!search||children[i].toLowerCase().indexOf(search.toLowerCase())>=0){result.push({name:children[i],i:i});}}return result;
 }
 
+function getChildMonthlyStats(idx){
+  saveCurrentDateData();
+  var cm=currentDate.getMonth();
+  var cy=currentDate.getFullYear();
+  var daysInMonth=new Date(cy,cm+1,0).getDate();
+  var currentDay=currentDate.getDate();
+  var mP=0,mPre=0,mPost=0;
+  var dayList=[];
+  for(var d=1;d<=Math.min(daysInMonth,currentDay);d++){
+    var dKey=cy+'-'+String(cm+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    var dd=dateData[dKey];
+    var pFlag=false,preFlag=false,postFlag=false;
+    if(dd){
+      if(dd.presenze&&dd.presenze[idx]) pFlag=true;
+      if(dd.pre&&dd.pre[idx]) preFlag=true;
+      if(dd.post&&dd.post[idx]) postFlag=true;
+    }
+    if(pFlag) mP++;
+    if(preFlag) mPre++;
+    if(postFlag) mPost++;
+    if(pFlag||preFlag||postFlag){
+      dayList.push({day:d,key:dKey,p:pFlag,pre:preFlag,post:postFlag});
+    }
+  }
+  return {presenze:mP,pre:mPre,post:mPost,days:dayList,totalDays:Math.min(daysInMonth,currentDay)};
+}
+
+function renderChildDetail(idx){
+  if(idx<0||idx>=children.length) return '';
+  var childName=children[idx];
+  var stats=getChildMonthlyStats(idx);
+  var cm=currentDate.getMonth();
+  var cy=currentDate.getFullYear();
+  var monthLabel=MONTHS[cm]+' '+cy;
+  var dietInfo=getDietLabel(idx);
+  var hasDiet=childDiets[idx]&&childDiets[idx].type&&childDiets[idx].type!=='nessuna';
+  var daysShort=['dom','lun','mar','mer','gio','ven','sab'];
+
+  var html='<div class="child-detail-overlay" onclick="if(event.target===this)App.closeChildDetail()">';
+  html+='<div class="child-detail">';
+  html+='<div class="child-detail-header">';
+  html+='<div class="child-detail-avatar">'+getInitials(childName)+'</div>';
+  html+='<div><div class="child-detail-name">'+esc(childName)+'</div>';
+  if(hasDiet){html+='<div class="child-detail-diet">🍽 '+esc(dietInfo)+(childDiets[idx].note?' - '+esc(childDiets[idx].note):'')+'</div>';}
+  html+='</div></div>';
+
+  html+='<div class="child-detail-stats">';
+  html+='<div class="child-detail-stat" style="background:#d4edda"><div class="val" style="color:#28a745">'+stats.presenze+'</div><div class="lbl" style="color:#155724">Presenze</div></div>';
+  html+='<div class="child-detail-stat" style="background:#fff3cd"><div class="val" style="color:#e67e00">'+stats.pre+'</div><div class="lbl" style="color:#856404">Pre</div></div>';
+  html+='<div class="child-detail-stat" style="background:#cce5ff"><div class="val" style="color:#007bff">'+stats.post+'</div><div class="lbl" style="color:#004085">Post</div></div>';
+  html+='</div>';
+
+  html+='<div style="text-align:center;font-size:11px;color:#888;margin-bottom:14px">'+esc(monthLabel)+' · su '+stats.totalDays+' giorni</div>';
+
+  if(stats.days.length>0){
+    html+='<div class="child-detail-sub">Giorni con registrazione</div>';
+    for(var di=0;di<stats.days.length;di++){
+      var day=stats.days[di];
+      var dayDate=new Date(cy,cm,day.day);
+      var dayName=daysShort[dayDate.getDay()];
+      html+='<div class="child-detail-day">';
+      html+='<span class="child-detail-day-date">'+day.day+' '+MONTHS_SHORT[cm]+'</span>';
+      html+='<span class="child-detail-day-name">'+dayName+'</span>';
+      html+='<div class="child-detail-day-badges">';
+      if(day.p){html+='<span class="child-detail-day-badge" style="background:#d4edda;color:#155724">Presente</span>';}
+      else{html+='<span class="child-detail-day-badge" style="background:#f8d7da;color:#721c24">Assente</span>';}
+      if(day.pre){html+='<span class="child-detail-day-badge" style="background:#fff3cd;color:#856404">Pre</span>';}
+      if(day.post){html+='<span class="child-detail-day-badge" style="background:#cce5ff;color:#004085">Post</span>';}
+      html+='</div></div>';
+    }
+  }else{
+    html+='<div style="text-align:center;padding:20px;color:#aaa;font-size:13px">Nessuna registrazione per questo mese</div>';
+  }
+
+  html+='<button class="child-detail-close" onclick="App.closeChildDetail()">Chiudi</button>';
+  html+='</div></div>';
+  return html;
+}
+
 window.App={
   login:handleLogin,
   startEditClass:function(){editingClass=true;render();},
@@ -464,6 +570,10 @@ window.App={
   startEditChild:function(i){editingChild=i;editValue=children[i];render();},
   finishEditChild:function(){var ci=document.getElementById('childInput');if(ci&&ci.value.trim()&&editingChild>=0){children[editingChild]=ci.value.trim();}editingChild=-1;editValue='';saveState();render();},
   cancelEditChild:function(){editingChild=-1;editValue='';render();},
+  showChildDetail:function(i){selectedChild=i;render();},
+  closeChildDetail:function(){selectedChild=-1;render();},
+  setSearch:function(v){search=v;render();},
+  clearSearch:function(){search='';render();},
   togglePresenza:function(i){if(hasKey(presenze,i))delete presenze[i];else presenze[i]=true;saveState();render();},
   togglePre:function(i){if(hasKey(pre,i))delete pre[i];else pre[i]=true;saveState();render();},
   togglePost:function(i){if(hasKey(post,i))delete post[i];else post[i]=true;saveState();render();},
