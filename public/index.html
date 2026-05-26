@@ -115,6 +115,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script>
 (function(){
 "use strict";
@@ -398,7 +400,7 @@ function render(){
   html+='<span class="date-text" onclick="App.pickDate()" style="cursor:pointer" title="Clicca per scegliere la data">'+esc(dateToShort(currentDate))+'</span>';
   html+='<button class="arrow-btn" onclick="App.nextDate()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>';
   html+='</div><div class="date-full">'+esc(dateToFull(currentDate))+'</div>';
-  html+='<input type="date" id="datePicker" value="'+dateToInput(currentDate)+'" onchange="App.setDate(this.value)" style="opacity:0;position:absolute;pointer-events:none"/>';
+  html+='<input type="date" id="datePicker" value="'+dateToInput(currentDate)+'" min="2020-01-01" max="2099-12-31" onchange="App.setDate(this.value)" style="opacity:0;position:absolute;pointer-events:none"/>';
   html+='<div class="badge-row">';
   html+='<span class="badge badge-green"><span class="dot"></span>'+totalPresenze+' presenze</span>';
   html+='<span class="badge badge-orange"><span class="dot"></span>'+totalPre+' pre</span>';
@@ -475,7 +477,111 @@ window.App={
   selectAllPost:function(checked){post={};if(checked)for(var i=0;i<children.length;i++)post[i]=true;saveState();render();},
   resetDay:function(){if(confirm('Azzerare le presenze del giorno?')){presenze={};pre={};post={};saveState();render();}},
   resetMonth:function(){if(confirm('Azzerare TUTTO il mese? Questa azione non pu\u00f2 essere annullata.')){dateData={};presenze={};pre={};post={};saveState();render();}},
-  exportPDF:function(){window.print();},
+  exportPDF:function(){
+    saveCurrentDateData();
+    var jsPDF=window.jspdf.jsPDF;
+    var doc=new jsPDF('p','mm','a4');
+    var pageW=doc.internal.pageSize.getWidth();
+    var pageH=doc.internal.pageSize.getHeight();
+    var dateStr=dateToFull(currentDate);
+    var dateKey=getCurrentDateKey();
+
+    // Header
+    doc.setFillColor(26,26,46);
+    doc.rect(0,0,pageW,32,'F');
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(18);
+    doc.setFont('helvetica','bold');
+    doc.text('Registro Presenze - '+className,pageW/2,14,{align:'center'});
+    doc.setFontSize(11);
+    doc.setFont('helvetica','normal');
+    doc.text(dateStr,pageW/2,24,{align:'center'});
+
+    doc.setTextColor(0,0,0);
+    var y=40;
+
+    // Summary badges
+    doc.setFillColor(212,237,218);
+    doc.roundedRect(14,y,50,14,2,2,'F');
+    doc.setFontSize(10);
+    doc.setFont('helvetica','bold');
+    doc.setTextColor(21,87,36);
+    doc.text(countKeys(presenze)+' Presenze',39,y+9,{align:'center'});
+
+    doc.setFillColor(255,243,205);
+    doc.roundedRect(70,y,40,14,2,2,'F');
+    doc.setTextColor(133,100,4);
+    doc.text(countKeys(pre)+' Pre',90,y+9,{align:'center'});
+
+    doc.setFillColor(204,229,255);
+    doc.roundedRect(116,y,42,14,2,2,'F');
+    doc.setTextColor(0,64,133);
+    doc.text(countKeys(post)+' Post',137,y+9,{align:'center'});
+
+    y+=22;
+
+    // Table data
+    var tableBody=[];
+    for(var pi=0;pi<children.length;pi++){
+      var pCheck=hasKey(presenze,pi)?'Si':'No';
+      var preCheck=hasKey(pre,pi)?'Si':'No';
+      var postCheck=hasKey(post,pi)?'Si':'No';
+      var dietInfo=getDietLabel(pi);
+      if(childDiets[pi]&&childDiets[pi].note) dietInfo+=(dietInfo?' - ':'')+childDiets[pi].note;
+      tableBody.push([pi+1,children[pi],pCheck,preCheck,postCheck,dietInfo||'-']);
+    }
+
+    doc.autoTable({
+      startY:y,
+      head:[['#','Bambino','Presenza','Pre','Post','Dieta']],
+      body:tableBody,
+      theme:'grid',
+      headStyles:{fillColor:[26,26,46],textColor:[255,255,255],fontStyle:'bold',fontSize:9,halign:'center'},
+      columnStyles:{
+        0:{cellWidth:10,halign:'center',fontStyle:'bold'},
+        1:{cellWidth:55},
+        2:{cellWidth:22,halign:'center'},
+        3:{cellWidth:16,halign:'center'},
+        4:{cellWidth:18,halign:'center'},
+        5:{cellWidth:55}
+      },
+      bodyStyles:{fontSize:8.5},
+      alternateRowStyles:{fillColor:[245,245,250]},
+      didParseCell:function(data){
+        if(data.section==='body'){
+          if(data.column.index===2){
+            var val=data.cell.raw;
+            if(val==='Si'){data.cell.styles.textColor=[40,167,69];data.cell.styles.fontStyle='bold';}
+            else{data.cell.styles.textColor=[180,180,180];}
+          }
+          if(data.column.index===3){
+            var val2=data.cell.raw;
+            if(val2==='Si'){data.cell.styles.textColor=[230,126,0];data.cell.styles.fontStyle='bold';}
+            else{data.cell.styles.textColor=[180,180,180];}
+          }
+          if(data.column.index===4){
+            var val3=data.cell.raw;
+            if(val3==='Si'){data.cell.styles.textColor=[0,123,255];data.cell.styles.fontStyle='bold';}
+            else{data.cell.styles.textColor=[180,180,180];}
+          }
+        }
+      }
+    });
+
+    // Footer
+    var finalY=doc.lastAutoTable.finalY+10;
+    if(finalY>pageH-25) finalY=pageH-25;
+    doc.setDrawColor(200,200,200);
+    doc.line(14,finalY,pageW-14,finalY);
+    doc.setFontSize(8);
+    doc.setTextColor(150,150,150);
+    doc.setFont('helvetica','normal');
+    doc.text('Generato il '+(new Date().toLocaleDateString('it-IT'))+' - Registro Presenze',pageW/2,finalY+6,{align:'center'});
+
+    // Save
+    var fileName='Registro_'+className.replace(/\s+/g,'_')+'_'+dateKey+'.pdf';
+    doc.save(fileName);
+  },
   openDietModal:function(idx){showDietModal=idx;render();},
   closeDietModal:function(){showDietModal=-1;render();},
   selectDiet:function(idx,typeId){
