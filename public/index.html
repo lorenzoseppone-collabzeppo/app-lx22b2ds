@@ -544,7 +544,7 @@ function render(){
     var dietTagClass=hasDiet?getDietTagClass(childDiets[idx].type):'';
     var gClass=getGenderClass(idx);
     html+='<div class="child-row '+gClass+'-row" data-name="'+esc(name.toLowerCase())+'"><div class="child-info">';
-    html+='<div class="child-avatar '+gClass+'" onclick="App.toggleGender('+idx+')" title="Clicca per cambiare genere">'+getInitials(name)+'</div>';
+    html+='<div class="child-avatar '+gClass+'" onclick="App.showChildDetail('+idx+')" title="Clicca per vedere il riepilogo">'+getInitials(name)+'</div>';
     if(editingChild===idx){html+='<input class="child-name-input" id="childInput" value="'+esc(editValue)+'" onblur="App.finishEditChild()" onkeydown="if(event.key===\'Enter\')App.finishEditChild();if(event.key===\'Escape\')App.cancelEditChild()"/>';}
     else{
       html+='<span class="child-name child-name-link" onclick="App.showChildDetail('+idx+')" title="Clicca per vedere il riepilogo">'+esc(name)+'</span>';
