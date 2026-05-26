@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 <title>Registro Presenze - Coccinelle</title>
-<meta name="version" content="2025-05-26-v2"/>
+<meta name="version" content="2025-05-26-v3"/>
 <meta name="description" content="Registro Presenze per la gestione della classe"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a1a2e'><path d='M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5zm2 4h10v2H7v-2zm0 4h7v2H7v-2z'/></svg>"/>
 <style>
@@ -53,16 +53,20 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .search-box input{border:none;outline:none;background:transparent;font-size:14px;color:#333;width:100%;font-family:inherit}
 .search-box svg{flex-shrink:0}
 .roster{background:white;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08);margin-bottom:12px}
-.roster-header{display:grid;grid-template-columns:1fr 52px 52px 52px 52px;align-items:center;padding:10px 16px;background:#fafafa;border-bottom:1px solid #eee;gap:4px}
+.roster-header{display:grid;grid-template-columns:1fr 36px 52px 52px 52px 52px;align-items:center;padding:10px 16px;background:#fafafa;border-bottom:1px solid #eee;gap:4px}
 .roster-header span{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.3px}
 .roster-col{display:flex;flex-direction:column;align-items:center;gap:4px}
 .roster-col label{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;cursor:pointer}
-.child-row{display:grid;grid-template-columns:1fr 52px 52px 52px 52px;align-items:center;padding:8px 16px;border-bottom:1px solid #f0f0f0;gap:4px;transition:background 0.1s}
+.child-row{display:grid;grid-template-columns:1fr 36px 52px 52px 52px 52px;align-items:center;padding:8px 16px;border-bottom:1px solid #f0f0f0;gap:4px;transition:background 0.1s}
 .child-row:last-child{border-bottom:none}
 .child-info{display:flex;align-items:center;gap:6px;min-width:0}
 .child-avatar{width:30px;height:30px;border-radius:50%;background:#1a1a2e;color:white;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;cursor:pointer;transition:background 0.2s}
 .child-avatar.male{background:#5b9bd5}
 .child-avatar.female{background:#e87da0}
+.age-circle{width:30px;height:30px;border-radius:50%;background:#f0eef5;border:1.5px solid #d5d0e0;color:#555;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;cursor:pointer;transition:all 0.15s}
+.age-circle:hover{border-color:#1a1a2e;background:#e8e4f0}
+.age-circle.has-age{background:#fff3cd;border-color:#e67e00;color:#856404}
+.age-cell{display:flex;align-items:center;justify-content:center}
 .child-row.male-row{background:#eaf3fb}
 .child-row.female-row{background:#fdeef3}
 .child-name{font-size:13px;font-weight:500;color:#1a1a2e;cursor:pointer;padding:2px 4px;border-radius:4px;border:1.5px solid transparent;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -170,7 +174,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .stat-value{font-size:36px;font-weight:700;line-height:1}
 .google-icon{display:inline-flex;vertical-align:middle}
 @media print{body{background:white!important;background-image:none!important}.btn,.btn-row,.auth-bar,.sync-bar,.search-box,.arrow-btn,.diet-btn{display:none!important}.header-icon,.user-badge{display:none!important}.card,.roster,.stat-card{box-shadow:none!important;border:1px solid #eee}}
-@media(max-width:400px){.roster-header{grid-template-columns:1fr 42px 42px 42px 42px}.child-row{grid-template-columns:1fr 42px 42px 42px 42px}.child-name{font-size:12px}.child-avatar{width:26px;height:26px;font-size:9px}.pre-btn,.post-btn{width:38px;font-size:9px;padding:3px 5px}.diet-btn{width:24px;height:24px;font-size:12px}}
+@media(max-width:400px){.roster-header{grid-template-columns:1fr 30px 42px 42px 42px 42px}.child-row{grid-template-columns:1fr 30px 42px 42px 42px 42px}.child-name{font-size:12px}.child-avatar{width:26px;height:26px;font-size:9px}.age-circle{width:24px;height:24px;font-size:8px}.pre-btn,.post-btn{width:38px;font-size:9px;padding:3px 5px}.diet-btn{width:24px;height:24px;font-size:12px}}
 </style>
 </head>
 <body>
@@ -226,6 +230,7 @@ var childGender = {};
 var childDeleghe = {};
 var childContatti = {};
 var childLastModified = {};
+var childAge = {};
 var currentDate = new Date();
 var search = '';
 var sortMode = 'default';
@@ -323,7 +328,7 @@ function getStorageKey(){
 
 function resetAllData(){
   children=['Sofia Rossi','Leonardo Bianchi','Aurora Romano','Tommaso Ferrari','Giulia Esposito','Mattia Ricci','Alice Marino','Nicola Parisi','Elisa Benedetti','Simone Rinaldi','Beatrice Costa','Davide Moretti','Martina Barbieri','Federico Rizzo','Chiara Lombardi','Gabriele Gallo','Ginevra Conti','Alessandro De Luca','Lorenzo Greco','Emma Bruno','Pietro Colombo','Viola Fontana','Marco Villa','Camilla Russo','Edoardo Messina','Anna Serra','Filippo Mazza','Bianca Pellegrini','Luca Marchetti','Giorgia Ferretti'];
-  dateData={};presenze={};pre={};post={};childDiets={};childGender={};childDeleghe={};childContatti={};
+  dateData={};presenze={};pre={};post={};childDiets={};childGender={};childDeleghe={};childContatti={};childAge={};
   className='Coccinelle';
   currentDate=new Date();
   search='';selectedChild=-1;showDietModal=-1;
@@ -331,7 +336,7 @@ function resetAllData(){
 
 function saveState(){
   saveCurrentDateData();
-  try{localStorage.setItem(getStorageKey(),JSON.stringify({children:children,dateData:dateData,childDiets:childDiets,childGender:childGender,childDeleghe:childDeleghe,childContatti:childContatti,childLastModified:childLastModified,sortMode:sortMode,currentDate:dateToInput(currentDate),className:className}));}catch(e){}
+  try{localStorage.setItem(getStorageKey(),JSON.stringify({children:children,dateData:dateData,childDiets:childDiets,childGender:childGender,childDeleghe:childDeleghe,childContatti:childContatti,childLastModified:childLastModified,childAge:childAge,sortMode:sortMode,currentDate:dateToInput(currentDate),className:className}));}catch(e){}
   saveToFirestore();
 }
 
@@ -346,6 +351,7 @@ function loadState(){
       if(d.childDeleghe) childDeleghe=d.childDeleghe;
       if(d.childContatti) childContatti=d.childContatti;
       if(d.childLastModified) childLastModified=d.childLastModified;
+      if(d.childAge) childAge=d.childAge;
       if(d.sortMode) sortMode=d.sortMode;
       if(!d.dateData&&(d.presenze||d.pre||d.post)){
         var key=d.currentDate||dateToKey(new Date());
@@ -370,7 +376,7 @@ function saveToFirestore(){
 }
 function doSaveToFirestore(){
   if(!currentUser||!db) return;
-  var data={children:children,className:className,dateData:dateData,childDiets:childDiets,childGender:childGender,childDeleghe:childDeleghe,childContatti:childContatti,childLastModified:childLastModified,sortMode:sortMode,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+  var data={children:children,className:className,dateData:dateData,childDiets:childDiets,childGender:childGender,childDeleghe:childDeleghe,childContatti:childContatti,childLastModified:childLastModified,childAge:childAge,sortMode:sortMode,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
   db.collection('users').doc(currentUser.uid).set(data,{merge:true})
     .then(function(){syncStatus='synced';renderSyncBar();setTimeout(function(){if(syncStatus==='synced'){syncStatus='idle';renderSyncBar();}},3000);})
     .catch(function(err){console.error('Firestore save error:',err);syncStatus='error';renderSyncBar();});
@@ -391,11 +397,12 @@ function loadFromFirestore(uid){
         if(d.childDeleghe) childDeleghe=d.childDeleghe;
         if(d.childContatti) childContatti=d.childContatti;
         if(d.childLastModified) childLastModified=d.childLastModified;
+        if(d.childAge) childAge=d.childAge;
         if(d.sortMode) sortMode=d.sortMode;
         var key=getCurrentDateKey();var dd=dateData[key];
         if(dd){presenze=dd.presenze||{};pre=dd.pre||{};post=dd.post||{};}
         else{presenze={};pre={};post={};}
-        try{localStorage.setItem(getStorageKey(),JSON.stringify({children:children,dateData:dateData,childDiets:childDiets,childGender:childGender,childDeleghe:childDeleghe,childContatti:childContatti,childLastModified:childLastModified,sortMode:sortMode,currentDate:dateToInput(currentDate),className:className}));}catch(e){}
+        try{localStorage.setItem(getStorageKey(),JSON.stringify({children:children,dateData:dateData,childDiets:childDiets,childGender:childGender,childDeleghe:childDeleghe,childContatti:childContatti,childLastModified:childLastModified,childAge:childAge,sortMode:sortMode,currentDate:dateToInput(currentDate),className:className}));}catch(e){}
       }else{
         try{localStorage.removeItem(getStorageKey());}catch(e){}
       }
@@ -548,10 +555,13 @@ function render(){
   html+='<button class="sort-btn '+(sortMode==='alpha'?'active':'')+'" onclick="App.setSort(\'alpha\')" title="Ordine alfabetico">A-Z</button>';
   html+='<button class="sort-btn '+(sortMode==='gender'?'active':'')+'" onclick="App.setSort(\'gender\')" title="Femmine poi Maschi">👧👦</button>';
   html+='<button class="sort-btn '+(sortMode==='recent'?'active':'')+'" onclick="App.setSort(\'recent\')" title="Modificati di recente">Recenti</button>';
+  html+='<button class="sort-btn '+(sortMode==='age-asc'?'active':'')+'" onclick="App.setSort(\'age-asc\')" title="Età bassa→alta">🎂↑</button>';
+  html+='<button class="sort-btn '+(sortMode==='age-desc'?'active':'')+'" onclick="App.setSort(\'age-desc\')" title="Età alta→bassa">🎂↓</button>';
   html+='</div>';
 
   html+='<div class="roster"><div class="roster-header">';
   html+='<span>BAMBINO</span>';
+  html+='<div class="roster-col"><label>Età</label></div>';
   html+='<div class="roster-col"><label>Dieta</label></div>';
   html+='<div class="roster-col"><label>Presenza</label><input type="checkbox" class="select-all-check" '+(totalPresenze===children.length&&children.length>0?'checked':'')+' onchange="App.selectAllPresenza(this.checked)"/></div>';
   html+='<div class="roster-col"><label>Pre</label><input type="checkbox" class="select-all-check" '+(totalPre===children.length&&children.length>0?'checked':'')+' onchange="App.selectAllPre(this.checked)"/></div>';
@@ -573,6 +583,8 @@ function render(){
       if(hasDiet){html+='<span class="diet-tag '+dietTagClass+'" title="'+esc(dietLabel)+(childDiets[idx].note?' - '+esc(childDiets[idx].note):'')+'">'+esc(dietLabel)+'</span>';}
     }
     html+='</div>';
+    var age=childAge[idx]||'';
+    html+='<div class="age-cell"><div class="age-circle '+(age?'has-age':'')+'" onclick="App.editAge('+idx+')" title="Clicca per inserire età">'+(age?esc(String(age)):'-')+'</div></div>';
     html+='<div class="diet-cell"><button class="diet-btn '+(hasDiet?'has-diet':'')+'" onclick="App.openDietModal('+idx+')" title="Dieta">\ud83c\udf7d</button></div>';
     html+='<div class="check-cell"><input type="checkbox" '+(hasKey(presenze,idx)?'checked':'')+' onchange="App.togglePresenza('+idx+')"/></div>';
     html+='<div class="check-cell"><button class="pre-btn '+(hasKey(pre,idx)?'active':'')+'" onclick="App.togglePre('+idx+')">PRE</button></div>';
@@ -603,6 +615,10 @@ function getFilteredChildren(){
     result.sort(function(a,b){var ga=getGender(a.i),gb=getGender(b.i);if(ga!==gb) return ga==='f'?-1:1;return a.name.toLowerCase().localeCompare(b.name.toLowerCase());});
   }else if(sortMode==='recent'){
     result.sort(function(a,b){var ta=childLastModified[a.i]||0,tb=childLastModified[b.i]||0;return tb-ta;});
+  }else if(sortMode==='age-asc'){
+    result.sort(function(a,b){var aa=parseFloat(childAge[a.i])||0,bb=parseFloat(childAge[b.i])||0;return aa-bb;});
+  }else if(sortMode==='age-desc'){
+    result.sort(function(a,b){var aa=parseFloat(childAge[a.i])||0,bb=parseFloat(childAge[b.i])||0;return bb-aa;});
   }
   return result;
 }
@@ -656,6 +672,8 @@ function renderChildDetail(idx){
   html+='<button class="edit-name-btn" onclick="App.editChildFromDetail('+idx+')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Modifica</button>';
   html+='</div>';
   if(hasDiet){html+='<div class="child-detail-diet">🍽 '+esc(dietInfo)+(childDiets[idx].note?' - '+esc(childDiets[idx].note):'')+'</div>';}
+  var badgeAge=childAge[idx]||'';
+  html+='<div class="child-detail-diet" style="cursor:pointer" onclick="App.editAge('+idx+')" title="Clicca per modificare età">🎂 '+(badgeAge?esc(badgeAge)+' anni':'Aggiungi età')+'</div>';
   html+='</div></div>';
 
   html+='<div class="child-detail-stats">';
@@ -775,6 +793,7 @@ window.App={
     for(var i=0;i<rows.length;i++){rows[i].style.display='';}
   },
   setSort:function(mode){sortMode=mode;saveState();render();},
+  editAge:function(i){var val=prompt('Inserisci età di '+children[i]+':',childAge[i]||'');if(val!==null){if(val.trim()===''){delete childAge[i];}else{childAge[i]=val.trim();}saveState();render();}},
   togglePresenza:function(i){if(hasKey(presenze,i))delete presenze[i];else presenze[i]=true;saveState();render();},
   togglePre:function(i){if(hasKey(pre,i))delete pre[i];else pre[i]=true;saveState();render();},
   togglePost:function(i){if(hasKey(post,i))delete post[i];else post[i]=true;saveState();render();},
@@ -873,48 +892,55 @@ window.App={
       var delegheStr=delegheList.length>0?delegheList.join(', '):'-';
       var contattiList=childContatti[pi]||[];
       var contattiStr=contattiList.length>0?contattiList.map(function(c){return c.nome+': '+c.telefono;}).join(', '):'-';
-      tableBody.push([pi+1,children[pi],String(mPresenze[pi]),String(mPre[pi]),String(mPost[pi]),dietInfo||'-',delegheStr,contattiStr]);
+      var ageStr=childAge[pi]||'-';
+      tableBody.push([pi+1,children[pi],ageStr,String(mPresenze[pi]),String(mPre[pi]),String(mPost[pi]),dietInfo||'-',delegheStr,contattiStr]);
     }
 
     doc.autoTable({
       startY:y,
-      head:[['#','Bambino','Presenze','Pre','Post','Dieta','Deleghe','Contatti']],
+      head:[['#','Bambino','Età','Presenze','Pre','Post','Dieta','Deleghe','Contatti']],
       body:tableBody,
       theme:'grid',
-      headStyles:{fillColor:[26,26,46],textColor:[255,255,255],fontStyle:'bold',fontSize:7,halign:'center'},
+      headStyles:{fillColor:[26,26,46],textColor:[255,255,255],fontStyle:'bold',fontSize:6,halign:'center'},
       columnStyles:{
-        0:{cellWidth:7,halign:'center',fontStyle:'bold'},
-        1:{cellWidth:38},
-        2:{cellWidth:17,halign:'center'},
-        3:{cellWidth:14,halign:'center'},
-        4:{cellWidth:14,halign:'center'},
-        5:{cellWidth:32},
-        6:{cellWidth:30},
-        7:{cellWidth:34}
+        0:{cellWidth:6,halign:'center',fontStyle:'bold'},
+        1:{cellWidth:34},
+        2:{cellWidth:10,halign:'center'},
+        3:{cellWidth:15,halign:'center'},
+        4:{cellWidth:12,halign:'center'},
+        5:{cellWidth:12,halign:'center'},
+        6:{cellWidth:28},
+        7:{cellWidth:28},
+        8:{cellWidth:30}
       },
-      bodyStyles:{fontSize:6.5},
+      bodyStyles:{fontSize:6},
       alternateRowStyles:{fillColor:[245,245,250]},
       didParseCell:function(data){
         if(data.section==='body'){
           var numVal=parseInt(data.cell.raw);
-          if(data.column.index===2){
+          if(data.column.index===3){
             if(numVal>0){data.cell.styles.textColor=[40,167,69];data.cell.styles.fontStyle='bold';}
             else{data.cell.styles.textColor=[180,180,180];}
           }
-          if(data.column.index===3){
+          if(data.column.index===4){
             if(numVal>0){data.cell.styles.textColor=[230,126,0];data.cell.styles.fontStyle='bold';}
             else{data.cell.styles.textColor=[180,180,180];}
           }
-          if(data.column.index===4){
+          if(data.column.index===5){
             if(numVal>0){data.cell.styles.textColor=[0,123,255];data.cell.styles.fontStyle='bold';}
             else{data.cell.styles.textColor=[180,180,180];}
           }
-          if(data.column.index===6){
+          if(data.column.index===2){
+            var ageRaw=data.cell.raw;
+            if(ageRaw&&ageRaw!=='-'){data.cell.styles.textColor=[133,100,4];data.cell.styles.fontStyle='bold';}
+            else{data.cell.styles.textColor=[180,180,180];}
+          }
+          if(data.column.index===7){
             var raw=data.cell.raw;
             if(raw&&raw!=='-'){data.cell.styles.textColor=[120,60,150];data.cell.styles.fontStyle='bold';}
             else{data.cell.styles.textColor=[180,180,180];}
           }
-          if(data.column.index===7){
+          if(data.column.index===8){
             var raw2=data.cell.raw;
             if(raw2&&raw2!=='-'){data.cell.styles.textColor=[0,64,133];data.cell.styles.fontStyle='bold';}
             else{data.cell.styles.textColor=[180,180,180];}
@@ -951,7 +977,7 @@ window.App={
     childDiets[idx].note=note;
     if(firestoreSaveTimer) clearTimeout(firestoreSaveTimer);
     syncStatus='saving';renderSyncBar();
-    firestoreSaveTimer=setTimeout(function(){doSaveToFirestore();try{localStorage.setItem(getStorageKey(),JSON.stringify({children:children,dateData:dateData,childDiets:childDiets,childGender:childGender,childDeleghe:childDeleghe,childContatti:childContatti,childLastModified:childLastModified,sortMode:sortMode,currentDate:dateToInput(currentDate),className:className}));}catch(e){}},1500);
+    firestoreSaveTimer=setTimeout(function(){doSaveToFirestore();try{localStorage.setItem(getStorageKey(),JSON.stringify({children:children,dateData:dateData,childDiets:childDiets,childGender:childGender,childDeleghe:childDeleghe,childContatti:childContatti,childLastModified:childLastModified,childAge:childAge,sortMode:sortMode,currentDate:dateToInput(currentDate),className:className}));}catch(e){}},1500);
   },
   importData:function(){
     var input=document.createElement('input');input.type='file';input.accept='.json';
