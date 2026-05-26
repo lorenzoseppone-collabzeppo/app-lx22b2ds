@@ -52,11 +52,11 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .search-box input{border:none;outline:none;background:transparent;font-size:14px;color:#333;width:100%;font-family:inherit}
 .search-box svg{flex-shrink:0}
 .roster{background:white;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08);margin-bottom:12px}
-.roster-header{display:grid;grid-template-columns:1fr auto auto auto auto;align-items:center;padding:10px 16px;background:#fafafa;border-bottom:1px solid #eee;gap:8px}
+.roster-header{display:grid;grid-template-columns:1fr 52px 52px 52px 52px;align-items:center;padding:10px 16px;background:#fafafa;border-bottom:1px solid #eee;gap:4px}
 .roster-header span{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.3px}
-.roster-col{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:46px}
+.roster-col{display:flex;flex-direction:column;align-items:center;gap:4px}
 .roster-col label{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;cursor:pointer}
-.child-row{display:grid;grid-template-columns:1fr auto auto auto auto;align-items:center;padding:8px 16px;border-bottom:1px solid #f0f0f0;gap:6px;transition:background 0.1s}
+.child-row{display:grid;grid-template-columns:1fr 52px 52px 52px 52px;align-items:center;padding:8px 16px;border-bottom:1px solid #f0f0f0;gap:4px;transition:background 0.1s}
 .child-row:last-child{border-bottom:none}
 .child-info{display:flex;align-items:center;gap:6px;min-width:0}
 .child-avatar{width:30px;height:30px;border-radius:50%;background:#1a1a2e;color:white;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;cursor:pointer;transition:background 0.2s}
@@ -67,16 +67,16 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .child-name{font-size:13px;font-weight:500;color:#1a1a2e;cursor:pointer;padding:2px 4px;border-radius:4px;border:1.5px solid transparent;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .child-name:hover{border-color:#ccc}
 .child-name-input{font-size:13px;font-weight:500;border:1.5px solid #007bff;border-radius:4px;padding:2px 4px;outline:none;background:white;font-family:inherit;min-width:0;width:100%}
-.check-cell{display:flex;align-items:center;justify-content:center;min-width:46px}
+.check-cell{display:flex;align-items:center;justify-content:center}
 .check-cell input[type=checkbox]{width:18px;height:18px;accent-color:#28a745;cursor:pointer}
 .select-all-check{width:16px!important;height:16px!important;accent-color:#28a745;cursor:pointer}
-.pre-btn,.post-btn{padding:4px 6px;border-radius:6px;font-size:10px;font-weight:600;cursor:pointer;min-width:42px;text-align:center;font-family:inherit;transition:all 0.1s}
+.pre-btn,.post-btn{padding:4px 6px;border-radius:6px;font-size:10px;font-weight:600;cursor:pointer;width:46px;text-align:center;font-family:inherit;transition:all 0.1s}
 .pre-btn{border:1.5px solid #ccc;background:white;color:#888}
 .pre-btn.active{border-color:#e67e00;background:#e67e00;color:white}
 .post-btn{border:1.5px solid #ccc;background:white;color:#888}
 .post-btn.active{border-color:#007bff;background:#007bff;color:white}
 .diet-btn{width:28px;height:28px;border-radius:50%;border:1.5px solid #ccc;background:white;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all 0.1s;padding:0;flex-shrink:0}
-.diet-cell{display:flex;align-items:center;justify-content:center;min-width:46px}
+.diet-cell{display:flex;align-items:center;justify-content:center}
 .diet-btn:hover{border-color:#e67e00;background:#fff8f0}
 .diet-btn.has-diet{border-color:#e67e00;background:#fff3cd}
 .diet-tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 7px;border-radius:8px;margin-left:2px;white-space:nowrap;max-width:80px;overflow:hidden;text-overflow:ellipsis}
@@ -154,7 +154,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .stat-value{font-size:36px;font-weight:700;line-height:1}
 .google-icon{display:inline-flex;vertical-align:middle}
 @media print{body{background:white!important;background-image:none!important}.btn,.btn-row,.auth-bar,.sync-bar,.search-box,.arrow-btn,.diet-btn{display:none!important}.header-icon,.user-badge{display:none!important}.card,.roster,.stat-card{box-shadow:none!important;border:1px solid #eee}}
-@media(max-width:400px){.child-name{font-size:12px}.child-avatar{width:26px;height:26px;font-size:9px}.pre-btn,.post-btn{min-width:38px;font-size:9px;padding:3px 5px}.check-cell{min-width:38px}.diet-cell{min-width:38px}.roster-col{min-width:38px}.diet-btn{width:24px;height:24px;font-size:12px}}
+@media(max-width:400px){.roster-header{grid-template-columns:1fr 42px 42px 42px 42px}.child-row{grid-template-columns:1fr 42px 42px 42px 42px}.child-name{font-size:12px}.child-avatar{width:26px;height:26px;font-size:9px}.pre-btn,.post-btn{width:38px;font-size:9px;padding:3px 5px}.diet-btn{width:24px;height:24px;font-size:12px}}
 </style>
 </head>
 <body>
@@ -510,8 +510,8 @@ function render(){
     html+='</div>';
     html+='<div class="diet-cell"><button class="diet-btn '+(hasDiet?'has-diet':'')+'" onclick="App.openDietModal('+idx+')" title="Dieta">\ud83c\udf7d</button></div>';
     html+='<div class="check-cell"><input type="checkbox" '+(hasKey(presenze,idx)?'checked':'')+' onchange="App.togglePresenza('+idx+')"/></div>';
-    html+='<button class="pre-btn '+(hasKey(pre,idx)?'active':'')+'" onclick="App.togglePre('+idx+')">PRE</button>';
-    html+='<button class="post-btn '+(hasKey(post,idx)?'active':'')+'" onclick="App.togglePost('+idx+')">POST</button>';
+    html+='<div class="check-cell"><button class="pre-btn '+(hasKey(pre,idx)?'active':'')+'" onclick="App.togglePre('+idx+')">PRE</button></div>';
+    html+='<div class="check-cell"><button class="post-btn '+(hasKey(post,idx)?'active':'')+'" onclick="App.togglePost('+idx+')">POST</button></div>';
     html+='</div>';
   }
   html+='</div>';
