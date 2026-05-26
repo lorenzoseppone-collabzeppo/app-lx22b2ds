@@ -121,6 +121,10 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .child-detail-close:active{transform:scale(0.97)}
 .child-name-link{cursor:pointer;color:#1a1a2e;transition:color 0.15s}
 .child-name-link:hover{color:#007bff}
+.edit-name-btn{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border:1.5px solid #ccc;border-radius:8px;background:white;font-size:11px;font-weight:600;color:#555;cursor:pointer;font-family:inherit;transition:all 0.15s;white-space:nowrap}
+.edit-name-btn:hover{border-color:#007bff;color:#007bff;background:#f0f6ff}
+.edit-name-btn:active{transform:scale(0.97)}
+.child-detail-name-row{display:flex;align-items:center;gap:8px}
 .stat-card{background:white;border-radius:12px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.08);display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .stat-label{font-size:12px;color:#888;font-weight:500}
 .stat-sub{font-size:11px;color:#aaa}
@@ -526,7 +530,9 @@ function renderChildDetail(idx){
   html+='<div class="child-detail">';
   html+='<div class="child-detail-header">';
   html+='<div class="child-detail-avatar">'+getInitials(childName)+'</div>';
-  html+='<div><div class="child-detail-name">'+esc(childName)+'</div>';
+  html+='<div style="flex:1;min-width:0"><div class="child-detail-name-row"><span class="child-detail-name">'+esc(childName)+'</span>';
+  html+='<button class="edit-name-btn" onclick="App.editChildFromDetail('+idx+')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Modifica</button>';
+  html+='</div>';
   if(hasDiet){html+='<div class="child-detail-diet">🍽 '+esc(dietInfo)+(childDiets[idx].note?' - '+esc(childDiets[idx].note):'')+'</div>';}
   html+='</div></div>';
 
@@ -572,6 +578,7 @@ window.App={
   cancelEditChild:function(){editingChild=-1;editValue='';render();},
   showChildDetail:function(i){selectedChild=i;render();},
   closeChildDetail:function(){selectedChild=-1;render();},
+  editChildFromDetail:function(i){selectedChild=-1;editingChild=i;editValue=children[i];render();},
   setSearch:function(v){search=v;render();},
   clearSearch:function(){search='';render();},
   togglePresenza:function(i){if(hasKey(presenze,i))delete presenze[i];else presenze[i]=true;saveState();render();},
