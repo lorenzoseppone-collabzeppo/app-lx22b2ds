@@ -24,6 +24,9 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .auth-bar{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:500;margin-bottom:12px}
 .auth-bar.info{background:#fff3cd;color:#856404;border:1px solid #ffeeba}
 .auth-bar.success{background:#d4edda;color:#155724;border:1px solid #c3e6cb}
+.sync-bar{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:500;margin-bottom:12px;background:#e8f4fd;color:#0c5460;border:1px solid #bee5eb}
+.sync-bar.saving{background:#fff3cd;color:#856404;border-color:#ffeeba}
+.sync-bar.error{background:#f8d7da;color:#721c24;border-color:#f5c6cb}
 .btn-row{display:flex;flex-wrap:wrap;gap:8px;width:100%;margin-bottom:8px}
 .btn-row:last-child{margin-bottom:16px}
 .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;border:1px solid #ddd;background:white;font-size:13px;font-weight:500;color:#333;cursor:pointer;white-space:nowrap;font-family:inherit;transition:all 0.15s}
@@ -53,7 +56,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .roster-header span{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.3px}
 .roster-col{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:54px}
 .roster-col label{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;cursor:pointer}
-.child-row{display:grid;grid-templateColumns:1fr auto auto auto;align-items:center;padding:8px 16px;border-bottom:1px solid #f0f0f0;gap:8px;transition:background 0.1s}
+.child-row{display:grid;grid-template-columns:1fr auto auto auto;align-items:center;padding:8px 16px;border-bottom:1px solid #f0f0f0;gap:8px;transition:background 0.1s}
 .child-row:last-child{border-bottom:none}
 .child-info{display:flex;align-items:center;gap:10px;min-width:0}
 .child-avatar{width:34px;height:34px;border-radius:50%;background:#1a1a2e;color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
@@ -72,9 +75,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .stat-label{font-size:12px;color:#888;font-weight:500}
 .stat-sub{font-size:11px;color:#aaa}
 .stat-value{font-size:36px;font-weight:700;line-height:1}
-.notice{background:#fdf6e3;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:10px;margin-bottom:20px}
-.notice span{font-size:13px;color:#7a5c00;font-weight:500}
 .google-icon{display:inline-flex;vertical-align:middle}
+@media print{body{background:white!important;background-image:none!important}.btn,.btn-row,.auth-bar,.sync-bar,.search-box,.arrow-btn{display:none!important}.header-icon,.user-badge{display:none!important}.card,.roster,.stat-card{box-shadow:none!important;border:1px solid #eee}}
 @media(max-width:400px){.child-name{font-size:13px}.child-avatar{width:30px;height:30px;font-size:10px}.pre-btn,.post-btn{min-width:46px;font-size:10px;padding:4px 6px}.check-cell{min-width:46px}.roster-col{min-width:46px}}
 </style>
 </head>
@@ -83,6 +85,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script>
 (function(){
 "use strict";
@@ -120,37 +123,31 @@ var editingChild = -1;
 var editValue = '';
 var currentUser = null;
 var loginLoading = false;
+var db = null;
+var syncStatus = 'idle'; // 'idle' | 'synced' | 'saving' | 'error'
+var firestoreLoaded = false;
 
-var DATES = [
-  {short:'23 mag 2026',full:'Sabato 23 Maggio 2026'},
-  {short:'24 mag 2026',full:'Domenica 24 Maggio 2026'},
-  {short:'25 mag 2026',full:'Luned\u00ec 25 Maggio 2026'},
-  {short:'26 mag 2026',full:'Marted\u00ec 26 Maggio 2026'},
-  {short:'27 mag 2026',full:'Mercoled\u00ec 27 Maggio 2026'}
-];
+// Per-date data storage - stores all dates' data
+var dateData = {}; // { "2026-05-26": {presenze:{}, pre:{}, post:{}}, ... }
 
-// ===== PERSISTENCE (localStorage) =====
-function saveState(){
-  try{
-    localStorage.setItem('rp_data',JSON.stringify({
-      children:children, presenze:presenze, pre:pre, post:post,
-      dateIndex:dateIndex, className:className
-    }));
-  }catch(e){}
-}
-function loadState(){
-  try{
-    var d=JSON.parse(localStorage.getItem('rp_data'));
-    if(d){
-      if(d.children) children=d.children;
-      if(d.presenze) presenze=d.presenze;
-      if(d.pre) pre=d.pre;
-      if(d.post) post=d.post;
-      if(typeof d.dateIndex==='number') dateIndex=d.dateIndex;
-      if(d.className) className=d.className;
-    }
-  }catch(e){}
-}
+// Generate dates dynamically
+var DATES = (function(){
+  var days = ['Domenica','Luned\u00ec','Marted\u00ec','Mercoled\u00ec','Gioved\u00ec','Venerd\u00ec','Sabato'];
+  var months = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+  var monthsShort = ['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
+  var arr = [];
+  var today = new Date();
+  for(var d = -2; d <= 2; d++){
+    var dt = new Date(today);
+    dt.setDate(dt.getDate() + d);
+    arr.push({
+      key: dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0'),
+      short: dt.getDate() + ' ' + monthsShort[dt.getMonth()] + ' ' + dt.getFullYear(),
+      full: days[dt.getDay()] + ' ' + dt.getDate() + ' ' + months[dt.getMonth()] + ' ' + dt.getFullYear()
+    });
+  }
+  return arr;
+})();
 
 // ===== HELPERS =====
 function getInitials(name){
@@ -160,30 +157,247 @@ function getInitials(name){
 }
 function countKeys(obj){var c=0;for(var k in obj)if(obj.hasOwnProperty(k))c++;return c;}
 function hasKey(obj,k){return obj.hasOwnProperty(k);}
+function esc(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ===== DATE DATA MANAGEMENT =====
+function getCurrentDateKey(){
+  return DATES[dateIndex].key;
+}
+
+function saveCurrentDateData(){
+  // Save current presenze/pre/post into dateData for current date
+  var key = getCurrentDateKey();
+  dateData[key] = {
+    presenze: JSON.parse(JSON.stringify(presenze)),
+    pre: JSON.parse(JSON.stringify(pre)),
+    post: JSON.parse(JSON.stringify(post))
+  };
+}
+
+function loadDateData(idx){
+  // Save current date first
+  saveCurrentDateData();
+  // Switch to new date
+  dateIndex = idx;
+  var key = DATES[dateIndex].key;
+  var dd = dateData[key];
+  if(dd){
+    presenze = JSON.parse(JSON.stringify(dd.presenze || {}));
+    pre = JSON.parse(JSON.stringify(dd.pre || {}));
+    post = JSON.parse(JSON.stringify(dd.post || {}));
+  }else{
+    presenze = {};
+    pre = {};
+    post = {};
+  }
+}
+
+// ===== PERSISTENCE =====
+function saveState(){
+  // Save current date data first
+  saveCurrentDateData();
+  
+  // Save to localStorage
+  try{
+    localStorage.setItem('rp_data',JSON.stringify({
+      children:children, dateData:dateData,
+      dateIndex:dateIndex, className:className
+    }));
+  }catch(e){}
+  
+  // Save to Firestore if logged in
+  saveToFirestore();
+}
+
+function loadState(){
+  try{
+    var d=JSON.parse(localStorage.getItem('rp_data'));
+    if(d){
+      if(d.children) children=d.children;
+      if(d.dateData) dateData=d.dateData;
+      // Legacy support: old format had presenze/pre/post at root
+      if(!d.dateData && (d.presenze || d.pre || d.post)){
+        var key = d.dateIndex !== undefined ? DATES[Math.min(d.dateIndex, DATES.length-1)].key : DATES[2].key;
+        dateData[key] = {presenze: d.presenze||{}, pre: d.pre||{}, post: d.post||{}};
+      }
+      if(typeof d.dateIndex==='number') dateIndex=Math.min(d.dateIndex, DATES.length-1);
+      if(d.className) className=d.className;
+    }
+  }catch(e){}
+  
+  // Load current date's data
+  var key = getCurrentDateKey();
+  var dd = dateData[key];
+  if(dd){
+    presenze = dd.presenze || {};
+    pre = dd.pre || {};
+    post = dd.post || {};
+  }
+}
+
+// ===== FIRESTORE =====
+var firestoreSaveTimer = null;
+
+function saveToFirestore(){
+  if(!currentUser || !db) return;
+  
+  // Debounce: wait 1 second before saving
+  if(firestoreSaveTimer) clearTimeout(firestoreSaveTimer);
+  
+  syncStatus = 'saving';
+  renderSyncBar();
+  
+  firestoreSaveTimer = setTimeout(function(){
+    doSaveToFirestore();
+  }, 1000);
+}
+
+function doSaveToFirestore(){
+  if(!currentUser || !db) return;
+  
+  var data = {
+    children: children,
+    className: className,
+    dateData: dateData,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  
+  db.collection('users').doc(currentUser.uid).set(data, {merge: true})
+    .then(function(){
+      syncStatus = 'synced';
+      renderSyncBar();
+      setTimeout(function(){
+        if(syncStatus === 'synced'){
+          syncStatus = 'idle';
+          renderSyncBar();
+        }
+      }, 3000);
+    })
+    .catch(function(err){
+      console.error('Firestore save error:', err);
+      syncStatus = 'error';
+      renderSyncBar();
+    });
+}
+
+function loadFromFirestore(uid){
+  if(!db) return;
+  
+  syncStatus = 'saving';
+  renderSyncBar();
+  
+  db.collection('users').doc(uid).get()
+    .then(function(doc){
+      if(doc.exists){
+        var d = doc.data();
+        if(d.children && d.children.length > 0) children = d.children;
+        if(d.className) className = d.className;
+        if(d.dateData) dateData = d.dateData;
+        
+        // Reload current date's data
+        var key = getCurrentDateKey();
+        var dd = dateData[key];
+        if(dd){
+          presenze = dd.presenze || {};
+          pre = dd.pre || {};
+          post = dd.post || {};
+        }else{
+          presenze = {};
+          pre = {};
+          post = {};
+        }
+        
+        // Also update localStorage with Firestore data
+        try{
+          localStorage.setItem('rp_data',JSON.stringify({
+            children:children, dateData:dateData,
+            dateIndex:dateIndex, className:className
+          }));
+        }catch(e){}
+      }
+      firestoreLoaded = true;
+      syncStatus = 'synced';
+      render();
+      setTimeout(function(){
+        if(syncStatus === 'synced'){
+          syncStatus = 'idle';
+          renderSyncBar();
+        }
+      }, 3000);
+    })
+    .catch(function(err){
+      console.error('Firestore load error:', err);
+      firestoreLoaded = true;
+      syncStatus = 'error';
+      render();
+    });
+}
+
+function renderSyncBar(){
+  var bar = document.getElementById('sync-bar');
+  if(!bar) return;
+  if(!currentUser){
+    bar.style.display = 'none';
+    return;
+  }
+  bar.style.display = 'flex';
+  bar.className = 'sync-bar';
+  if(syncStatus === 'saving'){
+    bar.classList.add('saving');
+    bar.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4m-7.07-3.93l2.83-2.83m8.48-8.48l2.83-2.83M2 12h4m12 0h4m-3.93 7.07l-2.83-2.83M7.76 7.76L4.93 4.93"/></svg> Salvataggio in corso...';
+  }else if(syncStatus === 'synced'){
+    bar.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg> Dati sincronizzati';
+  }else if(syncStatus === 'error'){
+    bar.classList.add('error');
+    bar.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> Errore di sincronizzazione';
+  }else{
+    bar.style.display = 'none';
+  }
+}
 
 // ===== FIREBASE AUTH =====
-var firebaseReady = false;
 function initFirebase(){
   try{
-    if(typeof firebase==='undefined'){console.warn('Firebase SDK not loaded');firebaseReady=true;render();return;}
+    if(typeof firebase==='undefined'){console.warn('Firebase SDK not loaded');render();return;}
     firebase.initializeApp(FIREBASE_CONFIG);
     var auth=firebase.auth();
-    // Try persistence
-    var persistences=[firebase.auth.Auth.Persistence.LOCAL,firebase.auth.Auth.Persistence.SESSION,firebase.auth.Auth.Persistence.NONE];
-    for(var i=0;i<persistences.length;i++){
-      try{auth.setPersistence(persistences[i]);break;}catch(e){}
+    db=firebase.firestore();
+    
+    // Enable offline persistence
+    try{db.enablePersistence({synchronizeTabs:true});}catch(e){console.log('Firestore persistence:', e.message||e);}
+    
+    try{auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);}catch(e){
+      try{auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);}catch(e2){
+        try{auth.setPersistence(firebase.auth.Auth.Persistence.NONE);}catch(e3){}
+      }
     }
-    auth.onAuthStateChanged(function(u){currentUser=u;loginLoading=false;render();});
+    auth.onAuthStateChanged(function(u){
+      currentUser=u;
+      loginLoading=false;
+      if(u){
+        // Load data from Firestore for this user
+        loadFromFirestore(u.uid);
+      }else{
+        // Not logged in - load from localStorage only
+        loadState();
+        syncStatus = 'idle';
+        render();
+      }
+    });
     try{auth.getRedirectResult();}catch(e){}
-    firebaseReady=true;
-  }catch(e){console.error('Firebase init error:',e);firebaseReady=true;render();}
+  }catch(e){console.error('Firebase init error:',e);render();}
 }
 
 function handleLogin(){
   if(typeof firebase==='undefined'){alert('Firebase non caricato. Ricarica la pagina.');return;}
   var auth=firebase.auth();
   if(currentUser){
-    if(confirm('Vuoi disconnettere l\'account "'+(currentUser.displayName||currentUser.email)+'"?')){auth.signOut();}
+    if(confirm('Vuoi disconnettere l\'account "'+(currentUser.displayName||currentUser.email)+'"?\n\nI dati rimarranno salvati nel tuo account Google.')){
+      // Save before logout
+      saveCurrentDateData();
+      doSaveToFirestore();
+      auth.signOut();
+    }
   }else{
     loginLoading=true;render();
     var provider=new firebase.auth.GoogleAuthProvider();
@@ -192,9 +406,8 @@ function handleLogin(){
       var msg='Errore durante il login.';
       if(error.code==='auth/popup-closed-by-user') return;
       else if(error.code==='auth/popup-blocked'){auth.signInWithRedirect(provider);return;}
-      else if(error.code==='auth/unauthorized-domain'){msg='Dominio "'+window.location.hostname+'" non autorizzato.\n\nVai su Firebase Console > Authentication > Settings > Authorized domains e aggiungi: '+window.location.hostname;}
+      else if(error.code==='auth/unauthorized-domain'){msg='Dominio "'+window.location.hostname+'" non autorizzato.\n\nVai su Firebase Console > Authentication > Settings > Authorized domains e aggiungi:\n'+window.location.hostname;}
       else if(error.code==='auth/operation-not-allowed'){msg='Login Google non abilitato. Abilitalo in Firebase Console.';}
-      else if(error.code==='auth/operation-not-supported-in-this-environment'){msg='Ambiente non supportato. Apri il sito direttamente nel browser.\n\nCopia: '+window.location.href;}
       else{msg='Errore: '+error.message;}
       alert(msg);
     });
@@ -204,9 +417,9 @@ function handleLogin(){
 // ===== RENDER =====
 function render(){
   var app=document.getElementById('app');
-  var pCount=countKeys(presezeByFiltered());
-  var preCount=countKeys(preByFiltered());
-  var postCount=countKeys(postByFiltered());
+  var totalPresenze=countKeys(presenze);
+  var totalPre=countKeys(pre);
+  var totalPost=countKeys(post);
 
   var html='';
 
@@ -217,7 +430,7 @@ function render(){
   if(editingClass){
     html+='<input class="class-name-input" id="classInput" value="'+esc(className)+'" onblur="App.finishEditClass()" onkeydown="if(event.key===\'Enter\')App.finishEditClass()"/>';
   }else{
-    html+='<div class="class-name" onclick="App.startEditClass()">'+esc(className)+'</div>';
+    html+='<div class="class-name" onclick="App.startEditClass()" title="Clicca per modificare">'+esc(className)+'</div>';
   }
   html+='<div class="class-sub">Registro presenze</div>';
   html+='</div>';
@@ -232,13 +445,16 @@ function render(){
   if(currentUser){
     html+='<div class="auth-bar success"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg><span>Connesso come '+esc(currentUser.displayName||currentUser.email)+'</span></div>';
   }else{
-    html+='<div class="auth-bar info"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span>Effettua il login con Google per salvare i dati</span></div>';
+    html+='<div class="auth-bar info"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span>Effettua il login con Google per salvare i dati nel cloud</span></div>';
   }
+
+  // Sync status bar
+  html+='<div id="sync-bar" class="sync-bar" style="display:none"></div>';
 
   // Buttons
   html+='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">';
   html+='<div class="btn-row">';
-  html+='<button class="btn" onclick="App.login()">'+googleIcon()+(loginLoading?'\u23f3':(currentUser?'Logout':'Login'))+'</button>';
+  html+='<button class="btn" onclick="App.login()"><span class="google-icon"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg></span>'+(loginLoading?'...':(currentUser?'Logout':'Login'))+'</button>';
   html+='<button class="btn" onclick="App.goToday()">Oggi</button>';
   html+='<button class="btn" onclick="App.resetDay()">Azzera giorno</button>';
   html+='<button class="btn btn-danger" onclick="App.resetMonth()">Azzera mese</button>';
@@ -253,9 +469,6 @@ function render(){
   html+='</div>';
 
   // Date
-  var totalPresenze=countKeys(preseze);
-  var totalPre=countKeys(pre);
-  var totalPost=countKeys(post);
   html+='<div class="card">';
   html+='<div class="card-label">DATA</div>';
   html+='<div class="date-nav">';
@@ -289,16 +502,16 @@ function render(){
   for(var fi=0;fi<filtered.length;fi++){
     var idx=filtered[fi].i;
     var name=filtered[fi].name;
-    html+='<div class="child-row" style="display:grid;grid-template-columns:1fr auto auto auto;align-items:center;padding:8px 16px;border-bottom:1px solid #f0f0f0;gap:8px">';
+    html+='<div class="child-row">';
     html+='<div class="child-info">';
     html+='<div class="child-avatar">'+getInitials(name)+'</div>';
     if(editingChild===idx){
       html+='<input class="child-name-input" id="childInput" value="'+esc(editValue)+'" onblur="App.finishEditChild()" onkeydown="if(event.key===\'Enter\')App.finishEditChild();if(event.key===\'Escape\')App.cancelEditChild()"/>';
     }else{
-      html+='<span class="child-name" onclick="App.startEditChild('+idx+')">'+esc(name)+'</span>';
+      html+='<span class="child-name" onclick="App.startEditChild('+idx+')" title="Clicca per modificare">'+esc(name)+'</span>';
     }
     html+='</div>';
-    html+='<div class="check-cell"><input type="checkbox" '+(hasKey(preseze,idx)?'checked':'')+' onchange="App.togglePresenza('+idx+')"/></div>';
+    html+='<div class="check-cell"><input type="checkbox" '+(hasKey(presenze,idx)?'checked':'')+' onchange="App.togglePresenza('+idx+')"/></div>';
     html+='<button class="pre-btn '+(hasKey(pre,idx)?'active':'')+'" onclick="App.togglePre('+idx+')">PRE</button>';
     html+='<button class="post-btn '+(hasKey(post,idx)?'active':'')+'" onclick="App.togglePost('+idx+')">POST</button>';
     html+='</div>';
@@ -306,12 +519,9 @@ function render(){
   html+='</div>';
 
   // Stats
-  html+='<div class="stat-card"><div><div class="stat-label">Totale presenze mese</div><div class="stat-sub">Maggio 2026</div></div><div class="stat-value" style="color:#28a745">'+totalPresenze+'</div></div>';
-  html+='<div class="stat-card"><div><div class="stat-label">Totale pre mese</div><div class="stat-sub">Ingressi Anticipati</div></div><div class="stat-value" style="color:#e67e00">'+totalPre+'</div></div>';
-  html+='<div class="stat-card"><div><div class="stat-label">Totale post mese</div><div class="stat-sub">Uscite Posticipate</div></div><div class="stat-value" style="color:#6f42c1">'+totalPost+'</div></div>';
-
-  // Notice
-  html+='<div class="notice"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#e67e00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg><span>Usare su pi\u00f9 dispositivi</span></div>';
+  html+='<div class="stat-card"><div><div class="stat-label">Totale presenze</div><div class="stat-sub">'+esc(DATES[dateIndex].full)+'</div></div><div class="stat-value" style="color:#28a745">'+totalPresenze+'</div></div>';
+  html+='<div class="stat-card"><div><div class="stat-label">Totale pre</div><div class="stat-sub">Ingressi Anticipati</div></div><div class="stat-value" style="color:#e67e00">'+totalPre+'</div></div>';
+  html+='<div class="stat-card"><div><div class="stat-label">Totale post</div><div class="stat-sub">Uscite Posticipate</div></div><div class="stat-value" style="color:#007bff">'+totalPost+'</div></div>';
 
   app.innerHTML=html;
 
@@ -324,6 +534,9 @@ function render(){
     var chi=document.getElementById('childInput');
     if(chi){chi.focus();chi.setSelectionRange(chi.value.length,chi.value.length);}
   }
+  
+  // Update sync bar after render
+  renderSyncBar();
 }
 
 function getFilteredChildren(){
@@ -335,15 +548,6 @@ function getFilteredChildren(){
   }
   return result;
 }
-function presenzeByFiltered(){var r={};var f=getFilteredChildren();for(var i=0;i<f.length;i++)if(hasKey(preseze,f[i].i))r[f[i].i]=true;return r;}
-function preByFiltered(){var r={};var f=getFilteredChildren();for(var i=0;i<f.length;i++)if(hasKey(pre,f[i].i))r[f[i].i]=true;return r;}
-function postByFiltered(){var r={};var f=getFilteredChildren();for(var i=0;i<f.length;i++)if(hasKey(post,f[i].i))r[f[i].i]=true;return r;}
-
-function esc(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-
-function googleIcon(){
-  return '<span class="google-icon"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg></span>';
-}
 
 // ===== APP ACTIONS =====
 window.App={
@@ -353,18 +557,47 @@ window.App={
   startEditChild:function(i){editingChild=i;editValue=children[i];render();},
   finishEditChild:function(){var ci=document.getElementById('childInput');if(ci&&ci.value.trim()&&editingChild>=0){children[editingChild]=ci.value.trim();}editingChild=-1;editValue='';saveState();render();},
   cancelEditChild:function(){editingChild=-1;editValue='';render();},
-  togglePresenza:function(i){if(hasKey(preseze,i))delete presenze[i];else presenze[i]=true;saveState();render();},
+  togglePresenza:function(i){if(hasKey(presenze,i))delete presenze[i];else presenze[i]=true;saveState();render();},
   togglePre:function(i){if(hasKey(pre,i))delete pre[i];else pre[i]=true;saveState();render();},
   togglePost:function(i){if(hasKey(post,i))delete post[i];else post[i]=true;saveState();render();},
   selectAllPresenza:function(checked){presenze={};if(checked)for(var i=0;i<children.length;i++)presenze[i]=true;saveState();render();},
   selectAllPre:function(checked){pre={};if(checked)for(var i=0;i<children.length;i++)pre[i]=true;saveState();render();},
   selectAllPost:function(checked){post={};if(checked)for(var i=0;i<children.length;i++)post[i]=true;saveState();render();},
-  prevDate:function(){dateIndex=Math.max(0,dateIndex-1);saveState();render();},
-  nextDate:function(){dateIndex=Math.min(DATES.length-1,dateIndex+1);saveState();render();},
+  prevDate:function(){
+    if(dateIndex>0){
+      loadDateData(dateIndex-1);
+      saveState();
+      render();
+    }
+  },
+  nextDate:function(){
+    if(dateIndex<DATES.length-1){
+      loadDateData(dateIndex+1);
+      saveState();
+      render();
+    }
+  },
   setSearch:function(v){search=v;render();},
-  goToday:function(){dateIndex=2;saveState();render();},
+  goToday:function(){
+    saveCurrentDateData();
+    dateIndex=2;
+    var key=getCurrentDateKey();
+    var dd=dateData[key];
+    if(dd){
+      presenze=JSON.parse(JSON.stringify(dd.presenze||{}));
+      pre=JSON.parse(JSON.stringify(dd.pre||{}));
+      post=JSON.parse(JSON.stringify(dd.post||{}));
+    }else{
+      presenze={};pre={};post={};
+    }
+    saveState();render();
+  },
   resetDay:function(){if(confirm('Azzerare le presenze del giorno?')){presenze={};pre={};post={};saveState();render();}},
-  resetMonth:function(){if(confirm('Azzerare TUTTO il mese?')){presenze={};pre={};post={};saveState();render();}},
+  resetMonth:function(){if(confirm('Azzerare TUTTO il mese? Questa azione non pu\u00f2 essere annullata.')){
+    dateData={};
+    presenze={};pre={};post={};
+    saveState();render();
+  }},
   exportPDF:function(){window.print();},
   importData:function(){
     var input=document.createElement('input');input.type='file';input.accept='.json';
@@ -375,30 +608,76 @@ window.App={
         try{
           var d=JSON.parse(ev.target.result);
           if(d.children)children=d.children;
-          if(d.presenze)presenze=d.presenze;
-          if(d.pre)pre=d.pre;
-          if(d.post)post=d.post;
+          // Support both old and new format
+          if(d.dateData){
+            dateData=d.dateData;
+          }else if(d.presenze||d.pre||d.post){
+            var key=getCurrentDateKey();
+            dateData[key]={presenze:d.presenze||{},pre:d.pre||{},post:d.post||{}};
+          }
           if(d.className)className=d.className;
-          saveState();render();alert('Dati importati!');
-        }catch(err){alert('File non valido');}
+          // Reload current date
+          var ckey=getCurrentDateKey();
+          var dd=dateData[ckey];
+          if(dd){
+            presenze=dd.presenze||{};pre=dd.pre||{};post=dd.post||{};
+          }else{
+            presenze={};pre={};post={};
+          }
+          saveState();render();alert('Dati importati con successo!');
+        }catch(err){alert('File non valido. Usa un file JSON esportato dal Backup.');}
       };reader.readAsText(file);
     };input.click();
   },
   backupData:function(){
-    var data=JSON.stringify({children:children,presenze:presenze,pre:pre,post:post,className:className,dateExport:new Date().toISOString()},null,2);
+    saveCurrentDateData();
+    var data=JSON.stringify({children:children,dateData:dateData,className:className,dateExport:new Date().toISOString()},null,2);
     var blob=new Blob([data],{type:'application/json'});
     var a=document.createElement('a');a.href=URL.createObjectURL(blob);
     a.download='registro-presenze-backup-'+new Date().toISOString().slice(0,10)+'.json';
     a.click();URL.revokeObjectURL(a.href);
   },
-  viewMonth:function(){alert('Vista mese - in sviluppo');},
+  viewMonth:function(){
+    saveCurrentDateData();
+    var summary='--- RIEPILOGO ---\nClasse: '+className+'\n\n';
+    // Show all dates that have data
+    var datesWithData = [];
+    for(var k in dateData){
+      if(dateData.hasOwnProperty(k) && (countKeys(dateData[k].presenze)>0 || countKeys(dateData[k].pre)>0 || countKeys(dateData[k].post)>0)){
+        datesWithData.push(k);
+      }
+    }
+    datesWithData.sort();
+    if(datesWithData.length===0){
+      summary+='Nessun dato salvato per altre date.\n\n';
+    }else{
+      for(var di=0;di<datesWithData.length;di++){
+        var dk=datesWithData[di];
+        var dd2=dateData[dk];
+        summary+='--- '+dk+' ---\n';
+        for(var ci2=0;ci2<children.length;ci2++){
+          if(dd2.presenze[ci2]||dd2.pre[ci2]||dd2.post[ci2]){
+            summary+=children[ci2]+': P='+((dd2.presenze[ci2])?'Si':'No')+' Pre='+((dd2.pre[ci2])?'Si':'No')+' Post='+((dd2.post[ci2])?'Si':'No')+'\n';
+          }
+        }
+        summary+='Totale: '+countKeys(dd2.presenze)+' presenze, '+countKeys(dd2.pre)+' pre, '+countKeys(dd2.post)+' post\n\n';
+      }
+    }
+    // Current date
+    summary+='--- OGGI ('+DATES[dateIndex].full+') ---\n';
+    for(var i=0;i<children.length;i++){
+      summary+=children[i]+': P='+((presenze[i])?'Si':'No')+' Pre='+((pre[i])?'Si':'No')+' Post='+((post[i])?'Si':'No')+'\n';
+    }
+    summary+='\nTotale: '+countKeys(presenze)+' presenze, '+countKeys(pre)+' pre, '+countKeys(post)+' post su '+children.length+' bambini';
+    alert(summary);
+  },
   share:function(){
     if(navigator.share){
       navigator.share({title:'Registro Presenze - '+className,url:window.location.href}).catch(function(){});
     }else{
       var ta=document.createElement('textarea');ta.value=window.location.href;
       document.body.appendChild(ta);ta.select();document.execCommand('copy');
-      document.body.removeChild(ta);alert('Link copiato!');
+      document.body.removeChild(ta);alert('Link copiato negli appunti!');
     }
   }
 };

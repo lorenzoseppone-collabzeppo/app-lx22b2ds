@@ -1,20 +1,23 @@
-# Worklog
-
 ---
 Task ID: 1
 Agent: Main Agent
-Task: Create HTML replica of Arena.site attendance register app
+Task: Add Firebase Firestore to Registro Presenze for per-user data persistence
 
 Work Log:
-- Analyzed 5 uploaded screenshots (IMG_0099, IMG_0100, IMG_0101, IMG_0102, IMG_0103) using VLM
-- Visited the target website at https://019e5ced-194c-759a-b08c-ce9262b18097.arena.site/
-- Discovered the actual app content is served in a nested iframe with Arena wrapper
-- Extracted HTML source from both the wrapper page and the iframe
-- Built a complete standalone HTML file replicating the "Coccinelle - Registro Presenze" app
-- Verified the result using browser screenshots and VLM comparison
+- Read current index.html from GitHub (live version)
+- Added Firebase Firestore SDK (firebase-firestore-compat.js CDN)
+- Implemented per-user data storage in Firestore (collection: users/{uid})
+- Added dateData structure for per-date attendance tracking
+- Added Firestore save with 1-second debounce to avoid excessive writes
+- Added Firestore load on user login (overwrites localStorage with cloud data)
+- Added sync status bar UI (saving/synced/error indicators)
+- Added offline persistence support via Firestore enablePersistence()
+- Fixed date navigation to properly save/load per-date data
+- Pushed updated file to GitHub Pages successfully
+- Verified site is live with Firestore script included
 
 Stage Summary:
-- Created /home/z/my-project/download/registro-presenze.html
-- The HTML includes all sections: header, action buttons, date picker, search, roster table, statistics cards, multi-device notice
-- Interactive features: PRE/POST toggle buttons, checkbox tracking, search filtering, date navigation, live stats updates
-- Design matches: light purple dotted background, white cards with rounded corners, Inter font, color-coded elements
+- Firebase Firestore integration complete
+- Each Google account now has its own data synced across devices
+- Site live at https://lorenzoseppone-collabzeppo.github.io/registro-presenze/
+- User still needs to: 1) Add domain to Firebase authorized domains, 2) Set up Firestore security rules
