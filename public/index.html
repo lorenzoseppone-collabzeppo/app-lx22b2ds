@@ -156,7 +156,7 @@ var presenze = {};
 var pre = {};
 var post = {};
 var childDiets = {};
-var dateIndex = 2;
+var currentDate = new Date();
 var search = '';
 var className = 'Coccinelle';
 var editingClass = false;
@@ -171,23 +171,22 @@ var showDietModal = -1;
 
 var dateData = {};
 
-var DATES = (function(){
-  var days = ['Domenica','Luned\u00ec','Marted\u00ec','Mercoled\u00ec','Gioved\u00ec','Venerd\u00ec','Sabato'];
-  var months = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
-  var monthsShort = ['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
-  var arr = [];
-  var today = new Date();
-  for(var d = -2; d <= 2; d++){
-    var dt = new Date(today);
-    dt.setDate(dt.getDate() + d);
-    arr.push({
-      key: dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0'),
-      short: dt.getDate() + ' ' + monthsShort[dt.getMonth()] + ' ' + dt.getFullYear(),
-      full: days[dt.getDay()] + ' ' + dt.getDate() + ' ' + months[dt.getMonth()] + ' ' + dt.getFullYear()
-    });
-  }
-  return arr;
-})();
+var DAYS = ['Domenica','Luned\u00ec','Marted\u00ec','Mercoled\u00ec','Gioved\u00ec','Venerd\u00ec','Sabato'];
+var MONTHS = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+var MONTHS_SHORT = ['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
+
+function dateToKey(dt){
+  return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
+}
+function dateToShort(dt){
+  return dt.getDate()+' '+MONTHS_SHORT[dt.getMonth()]+' '+dt.getFullYear();
+}
+function dateToFull(dt){
+  return DAYS[dt.getDay()]+' '+dt.getDate()+' '+MONTHS[dt.getMonth()]+' '+dt.getFullYear();
+}
+function dateToInput(dt){
+  return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
+}
 
 function getInitials(name){
   var parts=name.trim().split(/\s+/);
@@ -213,17 +212,17 @@ function getDietTagClass(typeId){
   return typeId;
 }
 
-function getCurrentDateKey(){ return DATES[dateIndex].key; }
+function getCurrentDateKey(){ return dateToKey(currentDate); }
 
 function saveCurrentDateData(){
   var key=getCurrentDateKey();
   dateData[key]={presenze:JSON.parse(JSON.stringify(presenze)),pre:JSON.parse(JSON.stringify(pre)),post:JSON.parse(JSON.stringify(post))};
 }
 
-function loadDateData(idx){
+function switchToDate(dt){
   saveCurrentDateData();
-  dateIndex=idx;
-  var key=DATES[dateIndex].key;
+  currentDate=new Date(dt);
+  var key=getCurrentDateKey();
   var dd=dateData[key];
   if(dd){presenze=JSON.parse(JSON.stringify(dd.presenze||{}));pre=JSON.parse(JSON.stringify(dd.pre||{}));post=JSON.parse(JSON.stringify(dd.post||{}));}
   else{presenze={};pre={};post={};}
@@ -231,7 +230,7 @@ function loadDateData(idx){
 
 function saveState(){
   saveCurrentDateData();
-  try{localStorage.setItem('rp_data',JSON.stringify({children:children,dateData:dateData,childDiets:childDiets,dateIndex:dateIndex,className:className}));}catch(e){}
+  try{localStorage.setItem('rp_data',JSON.stringify({children:children,dateData:dateData,childDiets:childDiets,currentDate:dateToInput(currentDate),className:className}));}catch(e){}
   saveToFirestore();
 }
 
@@ -243,10 +242,11 @@ function loadState(){
       if(d.dateData) dateData=d.dateData;
       if(d.childDiets) childDiets=d.childDiets;
       if(!d.dateData&&(d.presenze||d.pre||d.post)){
-        var key=d.dateIndex!==undefined?DATES[Math.min(d.dateIndex,DATES.length-1)].key:DATES[2].key;
+        var key=d.currentDate||dateToKey(new Date());
         dateData[key]={presenze:d.presenze||{},pre:d.pre||{},post:d.post||{}};
       }
-      if(typeof d.dateIndex==='number') dateIndex=Math.min(d.dateIndex,DATES.length-1);
+      if(d.currentDate){ try{currentDate=new Date(d.currentDate+'T12:00:00');}catch(e){currentDate=new Date();} }
+      else if(typeof d.dateIndex==='number'){ /* legacy: ignore old dateIndex */ }
       if(d.className) className=d.className;
     }
   }catch(e){}
@@ -283,7 +283,7 @@ function loadFromFirestore(uid){
         var key=getCurrentDateKey();var dd=dateData[key];
         if(dd){presenze=dd.presenze||{};pre=dd.pre||{};post=dd.post||{};}
         else{presenze={};pre={};post={};}
-        try{localStorage.setItem('rp_data',JSON.stringify({children:children,dateData:dateData,childDiets:childDiets,dateIndex:dateIndex,className:className}));}catch(e){}
+        try{localStorage.setItem('rp_data',JSON.stringify({children:children,dateData:dateData,childDiets:childDiets,currentDate:dateToInput(currentDate),className:className}));}catch(e){}
       }
       firestoreLoaded=true;syncStatus='synced';render();
       setTimeout(function(){if(syncStatus==='synced'){syncStatus='idle';renderSyncBar();}},3000);
@@ -395,9 +395,10 @@ function render(){
 
   html+='<div class="card"><div class="card-label">DATA</div><div class="date-nav">';
   html+='<button class="arrow-btn" onclick="App.prevDate()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>';
-  html+='<span class="date-text">'+esc(DATES[dateIndex].short)+'</span>';
+  html+='<span class="date-text" onclick="App.pickDate()" style="cursor:pointer" title="Clicca per scegliere la data">'+esc(dateToShort(currentDate))+'</span>';
   html+='<button class="arrow-btn" onclick="App.nextDate()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>';
-  html+='</div><div class="date-full">'+esc(DATES[dateIndex].full)+'</div>';
+  html+='</div><div class="date-full">'+esc(dateToFull(currentDate))+'</div>';
+  html+='<input type="date" id="datePicker" value="'+dateToInput(currentDate)+'" onchange="App.setDate(this.value)" style="display:none"/>';
   html+='<div class="badge-row">';
   html+='<span class="badge badge-green"><span class="dot"></span>'+totalPresenze+' presenze</span>';
   html+='<span class="badge badge-orange"><span class="dot"></span>'+totalPre+' pre</span>';
@@ -437,7 +438,7 @@ function render(){
   }
   html+='</div>';
 
-  html+='<div class="stat-card"><div><div class="stat-label">Totale presenze</div><div class="stat-sub">'+esc(DATES[dateIndex].full)+'</div></div><div class="stat-value" style="color:#28a745">'+totalPresenze+'</div></div>';
+  html+='<div class="stat-card"><div><div class="stat-label">Totale presenze</div><div class="stat-sub">'+esc(dateToFull(currentDate))+'</div></div><div class="stat-value" style="color:#28a745">'+totalPresenze+'</div></div>';
   html+='<div class="stat-card"><div><div class="stat-label">Totale pre</div><div class="stat-sub">Ingressi Anticipati</div></div><div class="stat-value" style="color:#e67e00">'+totalPre+'</div></div>';
   html+='<div class="stat-card"><div><div class="stat-label">Totale post</div><div class="stat-sub">Uscite Posticipate</div></div><div class="stat-value" style="color:#007bff">'+totalPost+'</div></div>';
 
@@ -467,10 +468,7 @@ window.App={
   selectAllPresenza:function(checked){presenze={};if(checked)for(var i=0;i<children.length;i++)presenze[i]=true;saveState();render();},
   selectAllPre:function(checked){pre={};if(checked)for(var i=0;i<children.length;i++)pre[i]=true;saveState();render();},
   selectAllPost:function(checked){post={};if(checked)for(var i=0;i<children.length;i++)post[i]=true;saveState();render();},
-  prevDate:function(){if(dateIndex>0){loadDateData(dateIndex-1);saveState();render();}},
-  nextDate:function(){if(dateIndex<DATES.length-1){loadDateData(dateIndex+1);saveState();render();}},
-  setSearch:function(v){search=v;render();},
-  goToday:function(){saveCurrentDateData();dateIndex=2;var key=getCurrentDateKey();var dd=dateData[key];if(dd){presenze=JSON.parse(JSON.stringify(dd.presenze||{}));pre=JSON.parse(JSON.stringify(dd.pre||{}));post=JSON.parse(JSON.stringify(dd.post||{}));}else{presenze={};pre={};post={};}saveState();render();},
+summary+='--- OGGI ('+dateToFull(currentDate)+') ---\n';
   resetDay:function(){if(confirm('Azzerare le presenze del giorno?')){presenze={};pre={};post={};saveState();render();}},
   resetMonth:function(){if(confirm('Azzerare TUTTO il mese? Questa azione non pu\u00f2 essere annullata.')){dateData={};presenze={};pre={};post={};saveState();render();}},
   exportPDF:function(){window.print();},
