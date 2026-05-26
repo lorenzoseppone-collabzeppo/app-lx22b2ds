@@ -53,18 +53,18 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .search-box input{border:none;outline:none;background:transparent;font-size:14px;color:#333;width:100%;font-family:inherit}
 .search-box svg{flex-shrink:0}
 .roster{background:white;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08);margin-bottom:12px}
-.roster-header{display:grid;grid-template-columns:1fr 36px 52px 52px 52px 52px;align-items:center;padding:10px 16px;background:#fafafa;border-bottom:1px solid #eee;gap:4px}
+.roster-header{display:grid;grid-template-columns:1fr 30px 42px 48px 48px 48px;align-items:center;padding:10px 10px;background:#fafafa;border-bottom:1px solid #eee;gap:3px}
 .roster-header span{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.3px}
 .roster-col{display:flex;flex-direction:column;align-items:center;gap:4px}
 .roster-col label{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;cursor:pointer}
-.child-row{display:grid;grid-template-columns:1fr 36px 52px 52px 52px 52px;align-items:center;padding:8px 16px;border-bottom:1px solid #f0f0f0;gap:4px;transition:background 0.1s}
+.child-row{display:grid;grid-template-columns:1fr 30px 42px 48px 48px 48px;align-items:center;padding:8px 10px;border-bottom:1px solid #f0f0f0;gap:3px;transition:background 0.1s}
 .child-row:last-child{border-bottom:none}
 .child-info{display:flex;align-items:center;min-width:0}
 .child-name-badge{display:flex;align-items:center;justify-content:center;padding:6px 10px;border-radius:8px;background:#1a1a2e;color:white;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;width:100%;letter-spacing:0.2px}
 .child-name-badge.male{background:#5b9bd5}
 .child-name-badge.female{background:#e87da0}
 .child-name-badge:active{transform:scale(0.97)}
-.age-circle{width:30px;height:30px;border-radius:50%;background:#f0eef5;border:1.5px solid #d5d0e0;color:#555;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;cursor:pointer;transition:all 0.15s}
+.age-circle{width:26px;height:26px;border-radius:50%;background:#f0eef5;border:1.5px solid #d5d0e0;color:#555;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0;cursor:pointer;transition:all 0.15s}
 .age-circle:hover{border-color:#1a1a2e;background:#e8e4f0}
 .age-circle.has-age{background:#fff3cd;border-color:#e67e00;color:#856404}
 .age-cell{display:flex;align-items:center;justify-content:center}
@@ -72,14 +72,14 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .child-row.female-row{background:#fdeef3}
 .child-name-input{font-size:13px;font-weight:500;border:1.5px solid #007bff;border-radius:4px;padding:2px 4px;outline:none;background:white;font-family:inherit;min-width:0;width:100%}
 .check-cell{display:flex;align-items:center;justify-content:center}
-.check-cell input[type=checkbox]{width:18px;height:18px;accent-color:#28a745;cursor:pointer}
+.check-cell input[type=checkbox]{width:16px;height:16px;accent-color:#28a745;cursor:pointer}
 .select-all-check{width:16px!important;height:16px!important;accent-color:#28a745;cursor:pointer}
-.pre-btn,.post-btn{padding:4px 6px;border-radius:6px;font-size:10px;font-weight:600;cursor:pointer;width:46px;text-align:center;font-family:inherit;transition:all 0.1s}
+.pre-btn,.post-btn{padding:4px 4px;border-radius:6px;font-size:9px;font-weight:600;cursor:pointer;width:42px;text-align:center;font-family:inherit;transition:all 0.1s}
 .pre-btn{border:1.5px solid #ccc;background:white;color:#888}
 .pre-btn.active{border-color:#e67e00;background:#e67e00;color:white}
 .post-btn{border:1.5px solid #ccc;background:white;color:#888}
 .post-btn.active{border-color:#007bff;background:#007bff;color:white}
-.diet-btn{width:28px;height:28px;border-radius:50%;border:1.5px solid #ccc;background:white;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all 0.1s;padding:0;flex-shrink:0}
+.diet-btn{width:24px;height:24px;border-radius:50%;border:1.5px solid #ccc;background:white;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all 0.1s;padding:0;flex-shrink:0}
 .diet-cell{display:flex;align-items:center;justify-content:center}
 .diet-btn:hover{border-color:#e67e00;background:#fff8f0}
 .diet-btn.has-diet{border-color:#e67e00;background:#fff3cd}
@@ -172,7 +172,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .stat-value{font-size:36px;font-weight:700;line-height:1}
 .google-icon{display:inline-flex;vertical-align:middle}
 @media print{body{background:white!important;background-image:none!important}.btn,.btn-row,.auth-bar,.sync-bar,.search-box,.arrow-btn,.diet-btn{display:none!important}.header-icon,.user-badge{display:none!important}.card,.roster,.stat-card{box-shadow:none!important;border:1px solid #eee}}
-@media(max-width:400px){.roster-header{grid-template-columns:1fr 30px 42px 42px 42px 42px}.child-row{grid-template-columns:1fr 30px 42px 42px 42px 42px}.child-name-badge{font-size:11px;padding:5px 8px}.age-circle{width:24px;height:24px;font-size:8px}.pre-btn,.post-btn{width:38px;font-size:9px;padding:3px 5px}.diet-btn{width:24px;height:24px;font-size:12px}}
+@media(max-width:400px){.roster-header{grid-template-columns:1fr 26px 36px 40px 40px 40px}.child-row{grid-template-columns:1fr 26px 36px 40px 40px 40px}.child-name-badge{font-size:10px;padding:4px 6px}.age-circle{width:22px;height:22px;font-size:8px}.pre-btn,.post-btn{width:34px;font-size:8px;padding:3px 3px}.diet-btn{width:20px;height:20px;font-size:10px}.check-cell input[type=checkbox]{width:14px;height:14px}}
 </style>
 </head>
 <body>
