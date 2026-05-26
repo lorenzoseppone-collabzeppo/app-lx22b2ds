@@ -38,9 +38,9 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .card{background:white;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
 .card-label{font-size:12px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px}
 .date-nav{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:8px}
-.date-text{font-size:18px;font-weight:600;color:#1a1a2e}
+.date-text{font-size:18px;font-weight:600;color:#1a1a2e;cursor:pointer;padding:4px 8px;border-radius:6px;transition:background 0.15s}
 .arrow-btn{width:32px;height:32px;border-radius:50%;border:1px solid #ddd;background:white;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#888;transition:all 0.15s}
-.arrow-btn:active{background:#f0f0f0}
+.date-text:hover{background:#e8e4f0}
 .date-full{text-align:center;font-size:13px;color:#888;margin-bottom:10px}
 .badge-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 .badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:500}
@@ -398,7 +398,7 @@ function render(){
   html+='<span class="date-text" onclick="App.pickDate()" style="cursor:pointer" title="Clicca per scegliere la data">'+esc(dateToShort(currentDate))+'</span>';
   html+='<button class="arrow-btn" onclick="App.nextDate()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>';
   html+='</div><div class="date-full">'+esc(dateToFull(currentDate))+'</div>';
-  html+='<input type="date" id="datePicker" value="'+dateToInput(currentDate)+'" onchange="App.setDate(this.value)" style="display:none"/>';
+  html+='<input type="date" id="datePicker" value="'+dateToInput(currentDate)+'" onchange="App.setDate(this.value)" style="opacity:0;position:absolute;pointer-events:none"/>';
   html+='<div class="badge-row">';
   html+='<span class="badge badge-green"><span class="dot"></span>'+totalPresenze+' presenze</span>';
   html+='<span class="badge badge-orange"><span class="dot"></span>'+totalPre+' pre</span>';
@@ -465,10 +465,14 @@ window.App={
   togglePresenza:function(i){if(hasKey(presenze,i))delete presenze[i];else presenze[i]=true;saveState();render();},
   togglePre:function(i){if(hasKey(pre,i))delete pre[i];else pre[i]=true;saveState();render();},
   togglePost:function(i){if(hasKey(post,i))delete post[i];else post[i]=true;saveState();render();},
+  prevDate:function(){var dt=new Date(currentDate);dt.setDate(dt.getDate()-1);switchToDate(dt);saveState();render();},
+  nextDate:function(){var dt=new Date(currentDate);dt.setDate(dt.getDate()+1);switchToDate(dt);saveState();render();},
+  goToday:function(){switchToDate(new Date());saveState();render();},
+  pickDate:function(){var dp=document.getElementById('datePicker');if(dp){try{dp.showPicker();}catch(e){dp.click();}}},
+  setDate:function(val){if(val){var parts=val.split('-');var dt=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));switchToDate(dt);saveState();render();}},
   selectAllPresenza:function(checked){presenze={};if(checked)for(var i=0;i<children.length;i++)presenze[i]=true;saveState();render();},
   selectAllPre:function(checked){pre={};if(checked)for(var i=0;i<children.length;i++)pre[i]=true;saveState();render();},
   selectAllPost:function(checked){post={};if(checked)for(var i=0;i<children.length;i++)post[i]=true;saveState();render();},
-summary+='--- OGGI ('+dateToFull(currentDate)+') ---\n';
   resetDay:function(){if(confirm('Azzerare le presenze del giorno?')){presenze={};pre={};post={};saveState();render();}},
   resetMonth:function(){if(confirm('Azzerare TUTTO il mese? Questa azione non pu\u00f2 essere annullata.')){dateData={};presenze={};pre={};post={};saveState();render();}},
   exportPDF:function(){window.print();},
@@ -486,7 +490,7 @@ summary+='--- OGGI ('+dateToFull(currentDate)+') ---\n';
     childDiets[idx].note=note;
     if(firestoreSaveTimer) clearTimeout(firestoreSaveTimer);
     syncStatus='saving';renderSyncBar();
-    firestoreSaveTimer=setTimeout(function(){doSaveToFirestore();try{localStorage.setItem('rp_data',JSON.stringify({children:children,dateData:dateData,childDiets:childDiets,dateIndex:dateIndex,className:className}));}catch(e){}},1500);
+    firestoreSaveTimer=setTimeout(function(){doSaveToFirestore();try{localStorage.setItem('rp_data',JSON.stringify({children:children,dateData:dateData,childDiets:childDiets,currentDate:dateToInput(currentDate),className:className}));}catch(e){}},1500);
   },
   importData:function(){
     var input=document.createElement('input');input.type='file';input.accept='.json';
@@ -526,7 +530,7 @@ summary+='--- OGGI ('+dateToFull(currentDate)+') ---\n';
     datesWithData.sort();
     if(datesWithData.length===0){summary+='Nessun dato salvato per altre date.\n\n';}
     else{for(var di=0;di<datesWithData.length;di++){var dk=datesWithData[di];var dd2=dateData[dk];summary+='--- '+dk+' ---\n';for(var ci2=0;ci2<children.length;ci2++){if(dd2.presenze[ci2]||dd2.pre[ci2]||dd2.post[ci2]){summary+=children[ci2]+': P='+((dd2.presenze[ci2])?'Si':'No')+' Pre='+((dd2.pre[ci2])?'Si':'No')+' Post='+((dd2.post[ci2])?'Si':'No')+'\n';}}summary+='Totale: '+countKeys(dd2.presenze)+' presenze, '+countKeys(dd2.pre)+' pre, '+countKeys(dd2.post)+' post\n\n';}}
-    summary+='--- OGGI ('+DATES[dateIndex].full+') ---\n';
+    summary+='--- OGGI ('+dateToFull(currentDate)+') ---\n';
     for(var i=0;i<children.length;i++){summary+=children[i]+': P='+((presenze[i])?'Si':'No')+' Pre='+((pre[i])?'Si':'No')+' Post='+((post[i])?'Si':'No')+'\n';}
     summary+='\nTotale: '+countKeys(presenze)+' presenze, '+countKeys(pre)+' pre, '+countKeys(post)+' post su '+children.length+' bambini';
     alert(summary);
