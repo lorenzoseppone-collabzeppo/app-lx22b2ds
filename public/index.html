@@ -297,15 +297,28 @@ function switchToDate(dt){
   else{presenze={};pre={};post={};}
 }
 
+function getStorageKey(){
+  if(currentUser) return 'rp_data_'+currentUser.uid;
+  return 'rp_data';
+}
+
+function resetAllData(){
+  children=['Sofia Rossi','Leonardo Bianchi','Aurora Romano','Tommaso Ferrari','Giulia Esposito','Mattia Ricci','Alice Marino','Nicola Parisi','Elisa Benedetti','Simone Rinaldi','Beatrice Costa','Davide Moretti','Martina Barbieri','Federico Rizzo','Chiara Lombardi','Gabriele Gallo','Ginevra Conti','Alessandro De Luca','Lorenzo Greco','Emma Bruno','Pietro Colombo','Viola Fontana','Marco Villa','Camilla Russo','Edoardo Messina','Anna Serra','Filippo Mazza','Bianca Pellegrini','Luca Marchetti','Giorgia Ferretti'];
+  dateData={};presenze={};pre={};post={};childDiets={};childGender={};childDeleghe={};
+  className='Coccinelle';
+  currentDate=new Date();
+  search='';selectedChild=-1;showDietModal=-1;
+}
+
 function saveState(){
   saveCurrentDateData();
-  try{localStorage.setItem('rp_data',JSON.stringify({children:children,dateData:dateData,childDiets:childDiets,childGender:childGender,childDeleghe:childDeleghe,currentDate:dateToInput(currentDate),className:className}));}catch(e){}
+  try{localStorage.setItem(getStorageKey(),JSON.stringify({children:children,dateData:dateData,childDiets:childDiets,childGender:childGender,childDeleghe:childDeleghe,currentDate:dateToInput(currentDate),className:className}));}catch(e){}
   saveToFirestore();
 }
 
 function loadState(){
   try{
-    var d=JSON.parse(localStorage.getItem('rp_data'));
+    var d=JSON.parse(localStorage.getItem(getStorageKey()));
     if(d){
       if(d.children) children=d.children;
       if(d.dateData) dateData=d.dateData;
@@ -342,6 +355,7 @@ function doSaveToFirestore(){
 }
 function loadFromFirestore(uid){
   if(!db) return;
+  resetAllData();
   syncStatus='saving';renderSyncBar();
   db.collection('users').doc(uid).get()
     .then(function(doc){
@@ -356,7 +370,9 @@ function loadFromFirestore(uid){
         var key=getCurrentDateKey();var dd=dateData[key];
         if(dd){presenze=dd.presenze||{};pre=dd.pre||{};post=dd.post||{};}
         else{presenze={};pre={};post={};}
-        try{localStorage.setItem('rp_data',JSON.stringify({children:children,dateData:dateData,childDiets:childDiets,childGender:childGender,childDeleghe:childDeleghe,currentDate:dateToInput(currentDate),className:className}));}catch(e){}
+        try{localStorage.setItem(getStorageKey(),JSON.stringify({children:children,dateData:dateData,childDiets:childDiets,childGender:childGender,childDeleghe:childDeleghe,currentDate:dateToInput(currentDate),className:className}));}catch(e){}
+      }else{
+        try{localStorage.removeItem(getStorageKey());}catch(e){}
       }
       firestoreLoaded=true;syncStatus='synced';render();
       setTimeout(function(){if(syncStatus==='synced'){syncStatus='idle';renderSyncBar();}},3000);
@@ -382,7 +398,22 @@ function initFirebase(){
     db=firebase.firestore();
     try{db.enablePersistence({synchronizeTabs:true});}catch(e){console.log('Firestore persistence:',e.message||e);}
     try{auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);}catch(e){try{auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);}catch(e2){try{auth.setPersistence(firebase.auth.Auth.Persistence.NONE);}catch(e3){}}}
-    auth.onAuthStateChanged(function(u){currentUser=u;loginLoading=false;if(u){loadFromFirestore(u.uid);}else{loadState();syncStatus='idle';render();}});
+    auth.onAuthStateChanged(function(u){
+      var previousUser=currentUser;
+      currentUser=u;loginLoading=false;
+      if(u){
+        if(previousUser&&previousUser.uid!==u.uid){
+          resetAllData();
+        }
+        loadFromFirestore(u.uid);
+      }else{
+        try{localStorage.removeItem('rp_data');}catch(e){}
+        try{if(previousUser){localStorage.removeItem('rp_data_'+previousUser.uid);}}catch(e2){}
+        resetAllData();
+        loadState();
+        syncStatus='idle';render();
+      }
+    });
     try{auth.getRedirectResult();}catch(e){}
   }catch(e){console.error('Firebase init error:',e);render();}
 }
@@ -391,7 +422,7 @@ function handleLogin(){
   if(typeof firebase==='undefined'){alert('Firebase non caricato. Ricarica la pagina.');return;}
   var auth=firebase.auth();
   if(currentUser){
-    if(confirm('Vuoi disconnettere l\'account "'+(currentUser.displayName||currentUser.email)+'"?\n\nI dati rimarranno salvati nel tuo account Google.')){saveCurrentDateData();doSaveToFirestore();auth.signOut();}
+    if(confirm('Vuoi disconnettere l\'account "'+(currentUser.displayName||currentUser.email)+'"?\n\nI dati rimarranno salvati nel tuo account Google.')){saveCurrentDateData();doSaveToFirestore();auth.signOut().then(function(){try{localStorage.removeItem(getStorageKey());}catch(e){}resetAllData();render();});}
   }else{
     loginLoading=true;render();
     var provider=new firebase.auth.GoogleAuthProvider();
@@ -820,7 +851,7 @@ window.App={
     childDiets[idx].note=note;
     if(firestoreSaveTimer) clearTimeout(firestoreSaveTimer);
     syncStatus='saving';renderSyncBar();
-    firestoreSaveTimer=setTimeout(function(){doSaveToFirestore();try{localStorage.setItem('rp_data',JSON.stringify({children:children,dateData:dateData,childDiets:childDiets,currentDate:dateToInput(currentDate),className:className}));}catch(e){}},1500);
+    firestoreSaveTimer=setTimeout(function(){doSaveToFirestore();try{localStorage.setItem(getStorageKey(),JSON.stringify({children:children,dateData:dateData,childDiets:childDiets,childGender:childGender,childDeleghe:childDeleghe,currentDate:dateToInput(currentDate),className:className}));}catch(e){}},1500);
   },
   importData:function(){
     var input=document.createElement('input');input.type='file';input.accept='.json';
