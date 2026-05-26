@@ -52,32 +52,61 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .search-box input{border:none;outline:none;background:transparent;font-size:14px;color:#333;width:100%;font-family:inherit}
 .search-box svg{flex-shrink:0}
 .roster{background:white;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08);margin-bottom:12px}
-.roster-header{display:grid;grid-template-columns:1fr auto auto auto;align-items:center;padding:10px 16px;background:#fafafa;border-bottom:1px solid #eee;gap:8px}
+.roster-header{display:grid;grid-template-columns:1fr auto auto auto auto;align-items:center;padding:10px 16px;background:#fafafa;border-bottom:1px solid #eee;gap:8px}
 .roster-header span{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.3px}
-.roster-col{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:54px}
+.roster-col{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:46px}
 .roster-col label{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;cursor:pointer}
-.child-row{display:grid;grid-template-columns:1fr auto auto auto;align-items:center;padding:8px 16px;border-bottom:1px solid #f0f0f0;gap:8px;transition:background 0.1s}
+.child-row{display:grid;grid-template-columns:1fr auto auto auto auto;align-items:center;padding:8px 16px;border-bottom:1px solid #f0f0f0;gap:6px;transition:background 0.1s}
 .child-row:last-child{border-bottom:none}
-.child-info{display:flex;align-items:center;gap:10px;min-width:0}
-.child-avatar{width:34px;height:34px;border-radius:50%;background:#1a1a2e;color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
-.child-name{font-size:14px;font-weight:500;color:#1a1a2e;cursor:pointer;padding:2px 6px;border-radius:4px;border:1.5px solid transparent;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.child-info{display:flex;align-items:center;gap:6px;min-width:0}
+.child-avatar{width:30px;height:30px;border-radius:50%;background:#1a1a2e;color:white;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0}
+.child-name{font-size:13px;font-weight:500;color:#1a1a2e;cursor:pointer;padding:2px 4px;border-radius:4px;border:1.5px solid transparent;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .child-name:hover{border-color:#ccc}
-.child-name-input{font-size:14px;font-weight:500;border:1.5px solid #007bff;border-radius:4px;padding:2px 6px;outline:none;background:white;font-family:inherit;min-width:0;width:100%}
-.check-cell{display:flex;align-items:center;justify-content:center;min-width:54px}
-.check-cell input[type=checkbox]{width:20px;height:20px;accent-color:#28a745;cursor:pointer}
+.child-name-input{font-size:13px;font-weight:500;border:1.5px solid #007bff;border-radius:4px;padding:2px 4px;outline:none;background:white;font-family:inherit;min-width:0;width:100%}
+.check-cell{display:flex;align-items:center;justify-content:center;min-width:46px}
+.check-cell input[type=checkbox]{width:18px;height:18px;accent-color:#28a745;cursor:pointer}
 .select-all-check{width:16px!important;height:16px!important;accent-color:#28a745;cursor:pointer}
-.pre-btn,.post-btn{padding:5px 8px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;min-width:54px;text-align:center;font-family:inherit;transition:all 0.1s}
+.pre-btn,.post-btn{padding:4px 6px;border-radius:6px;font-size:10px;font-weight:600;cursor:pointer;min-width:42px;text-align:center;font-family:inherit;transition:all 0.1s}
 .pre-btn{border:1.5px solid #ccc;background:white;color:#888}
 .pre-btn.active{border-color:#e67e00;background:#e67e00;color:white}
 .post-btn{border:1.5px solid #ccc;background:white;color:#888}
 .post-btn.active{border-color:#007bff;background:#007bff;color:white}
+.diet-btn{width:28px;height:28px;border-radius:50%;border:1.5px solid #ccc;background:white;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all 0.1s;padding:0;flex-shrink:0}
+.diet-btn:hover{border-color:#e67e00;background:#fff8f0}
+.diet-btn.has-diet{border-color:#e67e00;background:#fff3cd}
+.diet-tag{display:inline-block;font-size:9px;font-weight:600;padding:1px 5px;border-radius:8px;margin-left:2px;white-space:nowrap;max-width:60px;overflow:hidden;text-overflow:ellipsis}
+.diet-tag.normale{background:#e8f5e9;color:#2e7d32}
+.diet-tag.senza-glutine{background:#fff3e0;color:#e65100}
+.diet-tag.senza-lattosio{background:#e3f2fd;color:#1565c0}
+.diet-tag.vegetariana{background:#f3e5f5;color:#7b1fa2}
+.diet-tag.vegana{background:#e8f5e9;color:#1b5e20}
+.diet-tag.senza-uova{background:#fce4ec;color:#c62828}
+.diet-tag.senza-frutta-secca{background:#fff8e1;color:#f57f17}
+.diet-tag.senza-pesce{background:#e0f7fa;color:#00695c}
+.diet-tag.personalizzata{background:#f3e5f5;color:#6a1b9a}
+.diet-tag.default{background:#f5f5f5;color:#666}
+.diet-modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px}
+.diet-modal{background:white;border-radius:16px;padding:20px;max-width:360px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,0.2);max-height:80vh;overflow-y:auto}
+.diet-modal-title{font-size:18px;font-weight:700;color:#1a1a2e;margin-bottom:4px}
+.diet-modal-sub{font-size:13px;color:#888;margin-bottom:16px}
+.diet-option{display:flex;align-items:center;gap:10px;padding:10px 12px;border:2px solid #eee;border-radius:10px;margin-bottom:8px;cursor:pointer;transition:all 0.15s}
+.diet-option:hover{border-color:#ccc;background:#fafafa}
+.diet-option.selected{border-color:#007bff;background:#e8f4fd}
+.diet-option-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.diet-option-text{flex:1}
+.diet-option-name{font-size:14px;font-weight:600;color:#1a1a2e}
+.diet-option-desc{font-size:11px;color:#888}
+.diet-modal-close{width:100%;padding:10px;border:none;border-radius:8px;background:#1a1a2e;color:white;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px;font-family:inherit}
+.diet-modal-close:active{transform:scale(0.97)}
+.diet-custom-input{width:100%;padding:8px 12px;border:2px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;outline:none;margin-bottom:8px}
+.diet-custom-input:focus{border-color:#007bff}
 .stat-card{background:white;border-radius:12px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.08);display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .stat-label{font-size:12px;color:#888;font-weight:500}
 .stat-sub{font-size:11px;color:#aaa}
 .stat-value{font-size:36px;font-weight:700;line-height:1}
 .google-icon{display:inline-flex;vertical-align:middle}
-@media print{body{background:white!important;background-image:none!important}.btn,.btn-row,.auth-bar,.sync-bar,.search-box,.arrow-btn{display:none!important}.header-icon,.user-badge{display:none!important}.card,.roster,.stat-card{box-shadow:none!important;border:1px solid #eee}}
-@media(max-width:400px){.child-name{font-size:13px}.child-avatar{width:30px;height:30px;font-size:10px}.pre-btn,.post-btn{min-width:46px;font-size:10px;padding:4px 6px}.check-cell{min-width:46px}.roster-col{min-width:46px}}
+@media print{body{background:white!important;background-image:none!important}.btn,.btn-row,.auth-bar,.sync-bar,.search-box,.arrow-btn,.diet-btn{display:none!important}.header-icon,.user-badge{display:none!important}.card,.roster,.stat-card{box-shadow:none!important;border:1px solid #eee}}
+@media(max-width:400px){.child-name{font-size:12px}.child-avatar{width:26px;height:26px;font-size:9px}.pre-btn,.post-btn{min-width:38px;font-size:9px;padding:3px 5px}.check-cell{min-width:38px}.roster-col{min-width:38px}.diet-btn{width:24px;height:24px;font-size:12px}}
 </style>
 </head>
 <body>
@@ -90,7 +119,6 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 (function(){
 "use strict";
 
-// ===== FIREBASE CONFIG =====
 var FIREBASE_CONFIG = {
   apiKey: "AIzaSyBN3yNgVtgRug-pcjTFAK5PgxxzF2OasfM",
   authDomain: "presenze-pre-post.firebaseapp.com",
@@ -100,7 +128,19 @@ var FIREBASE_CONFIG = {
   appId: "1:291215184515:web:5930221368bc5a3d49c1b6"
 };
 
-// ===== STATE =====
+var DIET_TYPES = [
+  {id:'nessuna', name:'Nessuna dieta', icon:'-', desc:'Nessuna restrizione alimentare', color:'#e0e0e0'},
+  {id:'normale', name:'Normale', icon:'\u2714', desc:'Dieta standard', color:'#4caf50'},
+  {id:'senza-glutine', name:'Senza glutine', icon:'\ud83c\udf3e', desc:'Intolleranza al glutine / Celiachia', color:'#ff9800'},
+  {id:'senza-lattosio', name:'Senza lattosio', icon:'\ud83e\udd5b', desc:'Intolleranza al lattosio', color:'#2196f3'},
+  {id:'vegetariana', name:'Vegetariana', icon:'\ud83e\udd6c', desc:'Dieta vegetariana', color:'#9c27b0'},
+  {id:'vegana', name:'Vegana', icon:'\ud83c\udf31', desc:'Dieta vegana', color:'#4caf50'},
+  {id:'senza-uova', name:'Senza uova', icon:'\ud83e\udd5a', desc:'Allergia alle uova', color:'#f44336'},
+  {id:'senza-frutta-secca', name:'Senza frutta secca', icon:'\u274c', desc:'Allergia alla frutta secca', color:'#ff9800'},
+  {id:'senza-pesce', name:'Senza pesce', icon:'\u274c', desc:'Allergia al pesce', color:'#009688'},
+  {id:'personalizzata', name:'Personalizzata', icon:'\u270f', desc:'Dieta personalizzata', color:'#9c27b0'}
+];
+
 var children = [
   'Sofia Rossi','Leonardo Bianchi','Aurora Romano','Tommaso Ferrari',
   'Giulia Esposito','Mattia Ricci','Alice Marino','Nicola Parisi',
@@ -115,6 +155,7 @@ var children = [
 var presenze = {};
 var pre = {};
 var post = {};
+var childDiets = {};
 var dateIndex = 2;
 var search = '';
 var className = 'Coccinelle';
@@ -124,13 +165,12 @@ var editValue = '';
 var currentUser = null;
 var loginLoading = false;
 var db = null;
-var syncStatus = 'idle'; // 'idle' | 'synced' | 'saving' | 'error'
+var syncStatus = 'idle';
 var firestoreLoaded = false;
+var showDietModal = -1;
 
-// Per-date data storage - stores all dates' data
-var dateData = {}; // { "2026-05-26": {presenze:{}, pre:{}, post:{}}, ... }
+var dateData = {};
 
-// Generate dates dynamically
 var DATES = (function(){
   var days = ['Domenica','Luned\u00ec','Marted\u00ec','Mercoled\u00ec','Gioved\u00ec','Venerd\u00ec','Sabato'];
   var months = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
@@ -149,7 +189,6 @@ var DATES = (function(){
   return arr;
 })();
 
-// ===== HELPERS =====
 function getInitials(name){
   var parts=name.trim().split(/\s+/);
   if(parts.length>=2) return parts[0][0].toUpperCase()+parts[parts.length-1][0].toUpperCase();
@@ -159,53 +198,40 @@ function countKeys(obj){var c=0;for(var k in obj)if(obj.hasOwnProperty(k))c++;re
 function hasKey(obj,k){return obj.hasOwnProperty(k);}
 function esc(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-// ===== DATE DATA MANAGEMENT =====
-function getCurrentDateKey(){
-  return DATES[dateIndex].key;
+function getDietType(typeId){
+  for(var i=0;i<DIET_TYPES.length;i++){
+    if(DIET_TYPES[i].id===typeId) return DIET_TYPES[i];
+  }
+  return DIET_TYPES[0];
+}
+function getDietLabel(idx){
+  if(!childDiets[idx]||childDiets[idx].type==='nessuna') return '';
+  return getDietType(childDiets[idx].type).name;
+}
+function getDietTagClass(typeId){
+  if(!typeId||typeId==='nessuna') return 'default';
+  return typeId;
 }
 
+function getCurrentDateKey(){ return DATES[dateIndex].key; }
+
 function saveCurrentDateData(){
-  // Save current presenze/pre/post into dateData for current date
-  var key = getCurrentDateKey();
-  dateData[key] = {
-    presenze: JSON.parse(JSON.stringify(presenze)),
-    pre: JSON.parse(JSON.stringify(pre)),
-    post: JSON.parse(JSON.stringify(post))
-  };
+  var key=getCurrentDateKey();
+  dateData[key]={presenze:JSON.parse(JSON.stringify(presenze)),pre:JSON.parse(JSON.stringify(pre)),post:JSON.parse(JSON.stringify(post))};
 }
 
 function loadDateData(idx){
-  // Save current date first
   saveCurrentDateData();
-  // Switch to new date
-  dateIndex = idx;
-  var key = DATES[dateIndex].key;
-  var dd = dateData[key];
-  if(dd){
-    presenze = JSON.parse(JSON.stringify(dd.presenze || {}));
-    pre = JSON.parse(JSON.stringify(dd.pre || {}));
-    post = JSON.parse(JSON.stringify(dd.post || {}));
-  }else{
-    presenze = {};
-    pre = {};
-    post = {};
-  }
+  dateIndex=idx;
+  var key=DATES[dateIndex].key;
+  var dd=dateData[key];
+  if(dd){presenze=JSON.parse(JSON.stringify(dd.presenze||{}));pre=JSON.parse(JSON.stringify(dd.pre||{}));post=JSON.parse(JSON.stringify(dd.post||{}));}
+  else{presenze={};pre={};post={};}
 }
 
-// ===== PERSISTENCE =====
 function saveState(){
-  // Save current date data first
   saveCurrentDateData();
-  
-  // Save to localStorage
-  try{
-    localStorage.setItem('rp_data',JSON.stringify({
-      children:children, dateData:dateData,
-      dateIndex:dateIndex, className:className
-    }));
-  }catch(e){}
-  
-  // Save to Firestore if logged in
+  try{localStorage.setItem('rp_data',JSON.stringify({children:children,dateData:dateData,childDiets:childDiets,dateIndex:dateIndex,className:className}));}catch(e){}
   saveToFirestore();
 }
 
@@ -215,175 +241,75 @@ function loadState(){
     if(d){
       if(d.children) children=d.children;
       if(d.dateData) dateData=d.dateData;
-      // Legacy support: old format had presenze/pre/post at root
-      if(!d.dateData && (d.presenze || d.pre || d.post)){
-        var key = d.dateIndex !== undefined ? DATES[Math.min(d.dateIndex, DATES.length-1)].key : DATES[2].key;
-        dateData[key] = {presenze: d.presenze||{}, pre: d.pre||{}, post: d.post||{}};
+      if(d.childDiets) childDiets=d.childDiets;
+      if(!d.dateData&&(d.presenze||d.pre||d.post)){
+        var key=d.dateIndex!==undefined?DATES[Math.min(d.dateIndex,DATES.length-1)].key:DATES[2].key;
+        dateData[key]={presenze:d.presenze||{},pre:d.pre||{},post:d.post||{}};
       }
-      if(typeof d.dateIndex==='number') dateIndex=Math.min(d.dateIndex, DATES.length-1);
+      if(typeof d.dateIndex==='number') dateIndex=Math.min(d.dateIndex,DATES.length-1);
       if(d.className) className=d.className;
     }
   }catch(e){}
-  
-  // Load current date's data
-  var key = getCurrentDateKey();
-  var dd = dateData[key];
-  if(dd){
-    presenze = dd.presenze || {};
-    pre = dd.pre || {};
-    post = dd.post || {};
-  }
+  var key=getCurrentDateKey();
+  var dd=dateData[key];
+  if(dd){presenze=dd.presenze||{};pre=dd.pre||{};post=dd.post||{};}
 }
 
-// ===== FIRESTORE =====
-var firestoreSaveTimer = null;
-
+var firestoreSaveTimer=null;
 function saveToFirestore(){
-  if(!currentUser || !db) return;
-  
-  // Debounce: wait 1 second before saving
+  if(!currentUser||!db) return;
   if(firestoreSaveTimer) clearTimeout(firestoreSaveTimer);
-  
-  syncStatus = 'saving';
-  renderSyncBar();
-  
-  firestoreSaveTimer = setTimeout(function(){
-    doSaveToFirestore();
-  }, 1000);
+  syncStatus='saving';renderSyncBar();
+  firestoreSaveTimer=setTimeout(function(){doSaveToFirestore();},1000);
 }
-
 function doSaveToFirestore(){
-  if(!currentUser || !db) return;
-  
-  var data = {
-    children: children,
-    className: className,
-    dateData: dateData,
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  };
-  
-  db.collection('users').doc(currentUser.uid).set(data, {merge: true})
-    .then(function(){
-      syncStatus = 'synced';
-      renderSyncBar();
-      setTimeout(function(){
-        if(syncStatus === 'synced'){
-          syncStatus = 'idle';
-          renderSyncBar();
-        }
-      }, 3000);
-    })
-    .catch(function(err){
-      console.error('Firestore save error:', err);
-      syncStatus = 'error';
-      renderSyncBar();
-    });
+  if(!currentUser||!db) return;
+  var data={children:children,className:className,dateData:dateData,childDiets:childDiets,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+  db.collection('users').doc(currentUser.uid).set(data,{merge:true})
+    .then(function(){syncStatus='synced';renderSyncBar();setTimeout(function(){if(syncStatus==='synced'){syncStatus='idle';renderSyncBar();}},3000);})
+    .catch(function(err){console.error('Firestore save error:',err);syncStatus='error';renderSyncBar();});
 }
-
 function loadFromFirestore(uid){
   if(!db) return;
-  
-  syncStatus = 'saving';
-  renderSyncBar();
-  
+  syncStatus='saving';renderSyncBar();
   db.collection('users').doc(uid).get()
     .then(function(doc){
       if(doc.exists){
-        var d = doc.data();
-        if(d.children && d.children.length > 0) children = d.children;
-        if(d.className) className = d.className;
-        if(d.dateData) dateData = d.dateData;
-        
-        // Reload current date's data
-        var key = getCurrentDateKey();
-        var dd = dateData[key];
-        if(dd){
-          presenze = dd.presenze || {};
-          pre = dd.pre || {};
-          post = dd.post || {};
-        }else{
-          presenze = {};
-          pre = {};
-          post = {};
-        }
-        
-        // Also update localStorage with Firestore data
-        try{
-          localStorage.setItem('rp_data',JSON.stringify({
-            children:children, dateData:dateData,
-            dateIndex:dateIndex, className:className
-          }));
-        }catch(e){}
+        var d=doc.data();
+        if(d.children&&d.children.length>0) children=d.children;
+        if(d.className) className=d.className;
+        if(d.dateData) dateData=d.dateData;
+        if(d.childDiets) childDiets=d.childDiets;
+        var key=getCurrentDateKey();var dd=dateData[key];
+        if(dd){presenze=dd.presenze||{};pre=dd.pre||{};post=dd.post||{};}
+        else{presenze={};pre={};post={};}
+        try{localStorage.setItem('rp_data',JSON.stringify({children:children,dateData:dateData,childDiets:childDiets,dateIndex:dateIndex,className:className}));}catch(e){}
       }
-      firestoreLoaded = true;
-      syncStatus = 'synced';
-      render();
-      setTimeout(function(){
-        if(syncStatus === 'synced'){
-          syncStatus = 'idle';
-          renderSyncBar();
-        }
-      }, 3000);
+      firestoreLoaded=true;syncStatus='synced';render();
+      setTimeout(function(){if(syncStatus==='synced'){syncStatus='idle';renderSyncBar();}},3000);
     })
-    .catch(function(err){
-      console.error('Firestore load error:', err);
-      firestoreLoaded = true;
-      syncStatus = 'error';
-      render();
-    });
+    .catch(function(err){console.error('Firestore load error:',err);firestoreLoaded=true;syncStatus='error';render();});
 }
-
 function renderSyncBar(){
-  var bar = document.getElementById('sync-bar');
+  var bar=document.getElementById('sync-bar');
   if(!bar) return;
-  if(!currentUser){
-    bar.style.display = 'none';
-    return;
-  }
-  bar.style.display = 'flex';
-  bar.className = 'sync-bar';
-  if(syncStatus === 'saving'){
-    bar.classList.add('saving');
-    bar.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4m-7.07-3.93l2.83-2.83m8.48-8.48l2.83-2.83M2 12h4m12 0h4m-3.93 7.07l-2.83-2.83M7.76 7.76L4.93 4.93"/></svg> Salvataggio in corso...';
-  }else if(syncStatus === 'synced'){
-    bar.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg> Dati sincronizzati';
-  }else if(syncStatus === 'error'){
-    bar.classList.add('error');
-    bar.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> Errore di sincronizzazione';
-  }else{
-    bar.style.display = 'none';
-  }
+  if(!currentUser){bar.style.display='none';return;}
+  bar.style.display='flex';bar.className='sync-bar';
+  if(syncStatus==='saving'){bar.classList.add('saving');bar.innerHTML='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4m-7.07-3.93l2.83-2.83m8.48-8.48l2.83-2.83M2 12h4m12 0h4m-3.93 7.07l-2.83-2.83M7.76 7.76L4.93 4.93"/></svg> Salvataggio in corso...';}
+  else if(syncStatus==='synced'){bar.innerHTML='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg> Dati sincronizzati';}
+  else if(syncStatus==='error'){bar.classList.add('error');bar.innerHTML='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> Errore di sincronizzazione';}
+  else{bar.style.display='none';}
 }
 
-// ===== FIREBASE AUTH =====
 function initFirebase(){
   try{
     if(typeof firebase==='undefined'){console.warn('Firebase SDK not loaded');render();return;}
     firebase.initializeApp(FIREBASE_CONFIG);
     var auth=firebase.auth();
     db=firebase.firestore();
-    
-    // Enable offline persistence
-    try{db.enablePersistence({synchronizeTabs:true});}catch(e){console.log('Firestore persistence:', e.message||e);}
-    
-    try{auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);}catch(e){
-      try{auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);}catch(e2){
-        try{auth.setPersistence(firebase.auth.Auth.Persistence.NONE);}catch(e3){}
-      }
-    }
-    auth.onAuthStateChanged(function(u){
-      currentUser=u;
-      loginLoading=false;
-      if(u){
-        // Load data from Firestore for this user
-        loadFromFirestore(u.uid);
-      }else{
-        // Not logged in - load from localStorage only
-        loadState();
-        syncStatus = 'idle';
-        render();
-      }
-    });
+    try{db.enablePersistence({synchronizeTabs:true});}catch(e){console.log('Firestore persistence:',e.message||e);}
+    try{auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);}catch(e){try{auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);}catch(e2){try{auth.setPersistence(firebase.auth.Auth.Persistence.NONE);}catch(e3){}}}
+    auth.onAuthStateChanged(function(u){currentUser=u;loginLoading=false;if(u){loadFromFirestore(u.uid);}else{loadState();syncStatus='idle';render();}});
     try{auth.getRedirectResult();}catch(e){}
   }catch(e){console.error('Firebase init error:',e);render();}
 }
@@ -392,18 +318,12 @@ function handleLogin(){
   if(typeof firebase==='undefined'){alert('Firebase non caricato. Ricarica la pagina.');return;}
   var auth=firebase.auth();
   if(currentUser){
-    if(confirm('Vuoi disconnettere l\'account "'+(currentUser.displayName||currentUser.email)+'"?\n\nI dati rimarranno salvati nel tuo account Google.')){
-      // Save before logout
-      saveCurrentDateData();
-      doSaveToFirestore();
-      auth.signOut();
-    }
+    if(confirm('Vuoi disconnettere l\'account "'+(currentUser.displayName||currentUser.email)+'"?\n\nI dati rimarranno salvati nel tuo account Google.')){saveCurrentDateData();doSaveToFirestore();auth.signOut();}
   }else{
     loginLoading=true;render();
     var provider=new firebase.auth.GoogleAuthProvider();
     auth.signInWithPopup(provider).catch(function(error){
-      loginLoading=false;render();
-      var msg='Errore durante il login.';
+      loginLoading=false;render();var msg='Errore durante il login.';
       if(error.code==='auth/popup-closed-by-user') return;
       else if(error.code==='auth/popup-blocked'){auth.signInWithRedirect(provider);return;}
       else if(error.code==='auth/unauthorized-domain'){msg='Dominio "'+window.location.hostname+'" non autorizzato.\n\nVai su Firebase Console > Authentication > Settings > Authorized domains e aggiungi:\n'+window.location.hostname;}
@@ -414,52 +334,56 @@ function handleLogin(){
   }
 }
 
-// ===== RENDER =====
+function renderDietModal(childIdx){
+  if(childIdx<0) return '';
+  var diet=childDiets[childIdx]||{type:'nessuna',note:''};
+  var childName=children[childIdx];
+  var html='<div class="diet-modal-overlay" onclick="if(event.target===this)App.closeDietModal()">';
+  html+='<div class="diet-modal">';
+  html+='<div class="diet-modal-title">Dieta</div>';
+  html+='<div class="diet-modal-sub">'+esc(childName)+'</div>';
+  for(var i=0;i<DIET_TYPES.length;i++){
+    var dt=DIET_TYPES[i];var sel=diet.type===dt.id?' selected':'';
+    html+='<div class="diet-option'+sel+'" onclick="App.selectDiet('+childIdx+',\''+dt.id+'\')">';
+    html+='<div class="diet-option-icon" style="background:'+dt.color+'22;color:'+dt.color+'">'+dt.icon+'</div>';
+    html+='<div class="diet-option-text"><div class="diet-option-name">'+esc(dt.name)+'</div><div class="diet-option-desc">'+esc(dt.desc)+'</div></div></div>';
+  }
+  if(diet.type==='personalizzata'){
+    html+='<input class="diet-custom-input" id="dietNote" placeholder="Specifica la dieta..." value="'+esc(diet.note||'')+'" oninput="App.updateDietNote('+childIdx+',this.value)"/>';
+  }
+  html+='<button class="diet-modal-close" onclick="App.closeDietModal()">Chiudi</button>';
+  html+='</div></div>';
+  return html;
+}
+
 function render(){
   var app=document.getElementById('app');
   var totalPresenze=countKeys(presenze);
   var totalPre=countKeys(pre);
   var totalPost=countKeys(post);
-
   var html='';
 
-  // Header
   html+='<div class="header">';
   html+='<div class="header-icon"><svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5zm2 4h10v2H7v-2zm0 4h7v2H7v-2z"/></svg></div>';
   html+='<div class="header-info">';
-  if(editingClass){
-    html+='<input class="class-name-input" id="classInput" value="'+esc(className)+'" onblur="App.finishEditClass()" onkeydown="if(event.key===\'Enter\')App.finishEditClass()"/>';
-  }else{
-    html+='<div class="class-name" onclick="App.startEditClass()" title="Clicca per modificare">'+esc(className)+'</div>';
-  }
-  html+='<div class="class-sub">Registro presenze</div>';
-  html+='</div>';
-  if(currentUser){
-    html+='<div class="user-badge">';
-    if(currentUser.photoURL) html+='<img src="'+esc(currentUser.photoURL)+'" alt=""/>';
-    html+='<span>'+esc(currentUser.displayName||currentUser.email)+'</span></div>';
-  }
+  if(editingClass){html+='<input class="class-name-input" id="classInput" value="'+esc(className)+'" onblur="App.finishEditClass()" onkeydown="if(event.key===\'Enter\')App.finishEditClass()"/>';}
+  else{html+='<div class="class-name" onclick="App.startEditClass()" title="Clicca per modificare">'+esc(className)+'</div>';}
+  html+='<div class="class-sub">Registro presenze</div></div>';
+  if(currentUser){html+='<div class="user-badge">';if(currentUser.photoURL) html+='<img src="'+esc(currentUser.photoURL)+'" alt=""/>';html+='<span>'+esc(currentUser.displayName||currentUser.email)+'</span></div>';}
   html+='</div>';
 
-  // Auth bar
-  if(currentUser){
-    html+='<div class="auth-bar success"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg><span>Connesso come '+esc(currentUser.displayName||currentUser.email)+'</span></div>';
-  }else{
-    html+='<div class="auth-bar info"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span>Effettua il login con Google per salvare i dati nel cloud</span></div>';
-  }
+  if(currentUser){html+='<div class="auth-bar success"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg><span>Connesso come '+esc(currentUser.displayName||currentUser.email)+'</span></div>';}
+  else{html+='<div class="auth-bar info"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span>Effettua il login con Google per salvare i dati nel cloud</span></div>';}
 
-  // Sync status bar
   html+='<div id="sync-bar" class="sync-bar" style="display:none"></div>';
 
-  // Buttons
   html+='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">';
   html+='<div class="btn-row">';
   html+='<button class="btn" onclick="App.login()"><span class="google-icon"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg></span>'+(loginLoading?'...':(currentUser?'Logout':'Login'))+'</button>';
   html+='<button class="btn" onclick="App.goToday()">Oggi</button>';
   html+='<button class="btn" onclick="App.resetDay()">Azzera giorno</button>';
   html+='<button class="btn btn-danger" onclick="App.resetMonth()">Azzera mese</button>';
-  html+='</div>';
-  html+='<div class="btn-row">';
+  html+='</div><div class="btn-row">';
   html+='<button class="btn btn-danger-fill" onclick="App.exportPDF()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> PDF</button>';
   html+='<button class="btn" onclick="App.importData()">Importa</button>';
   html+='<button class="btn" onclick="App.backupData()">Backup</button>';
@@ -468,31 +392,23 @@ function render(){
   html+='<button class="btn btn-success-fill btn-full" onclick="App.share()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> Condividi</button>';
   html+='</div>';
 
-  // Date
-  html+='<div class="card">';
-  html+='<div class="card-label">DATA</div>';
-  html+='<div class="date-nav">';
+  html+='<div class="card"><div class="card-label">DATA</div><div class="date-nav">';
   html+='<button class="arrow-btn" onclick="App.prevDate()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>';
   html+='<span class="date-text">'+esc(DATES[dateIndex].short)+'</span>';
   html+='<button class="arrow-btn" onclick="App.nextDate()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>';
-  html+='</div>';
-  html+='<div class="date-full">'+esc(DATES[dateIndex].full)+'</div>';
+  html+='</div><div class="date-full">'+esc(DATES[dateIndex].full)+'</div>';
   html+='<div class="badge-row">';
   html+='<span class="badge badge-green"><span class="dot"></span>'+totalPresenze+' presenze</span>';
   html+='<span class="badge badge-orange"><span class="dot"></span>'+totalPre+' pre</span>';
   html+='<span class="badge badge-blue"><span class="dot"></span>'+totalPost+' post</span>';
   html+='</div></div>';
 
-  // Search
-  html+='<div class="card">';
-  html+='<div class="card-label">RICERCA BAMBINO</div>';
-  html+='<div class="search-box"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Cerca per nome o cognome..." value="'+esc(search)+'" oninput="App.setSearch(this.value)"/></div>';
-  html+='</div>';
+  html+='<div class="card"><div class="card-label">RICERCA BAMBINO</div>';
+  html+='<div class="search-box"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Cerca per nome o cognome..." value="'+esc(search)+'" oninput="App.setSearch(this.value)"/></div></div>';
 
-  // Roster
-  html+='<div class="roster">';
-  html+='<div class="roster-header">';
+  html+='<div class="roster"><div class="roster-header">';
   html+='<span>BAMBINO</span>';
+  html+='<div class="roster-col"><label>Dieta</label></div>';
   html+='<div class="roster-col"><label>Presenza</label><input type="checkbox" class="select-all-check" '+(totalPresenze===children.length&&children.length>0?'checked':'')+' onchange="App.selectAllPresenza(this.checked)"/></div>';
   html+='<div class="roster-col"><label>Pre</label><input type="checkbox" class="select-all-check" '+(totalPre===children.length&&children.length>0?'checked':'')+' onchange="App.selectAllPre(this.checked)"/></div>';
   html+='<div class="roster-col"><label>Post</label><input type="checkbox" class="select-all-check" '+(totalPost===children.length&&children.length>0?'checked':'')+' onchange="App.selectAllPost(this.checked)"/></div>';
@@ -500,17 +416,19 @@ function render(){
 
   var filtered=getFilteredChildren();
   for(var fi=0;fi<filtered.length;fi++){
-    var idx=filtered[fi].i;
-    var name=filtered[fi].name;
-    html+='<div class="child-row">';
-    html+='<div class="child-info">';
+    var idx=filtered[fi].i;var name=filtered[fi].name;
+    var hasDiet=childDiets[idx]&&childDiets[idx].type&&childDiets[idx].type!=='nessuna';
+    var dietLabel=getDietLabel(idx);
+    var dietTagClass=hasDiet?getDietTagClass(childDiets[idx].type):'';
+    html+='<div class="child-row"><div class="child-info">';
     html+='<div class="child-avatar">'+getInitials(name)+'</div>';
-    if(editingChild===idx){
-      html+='<input class="child-name-input" id="childInput" value="'+esc(editValue)+'" onblur="App.finishEditChild()" onkeydown="if(event.key===\'Enter\')App.finishEditChild();if(event.key===\'Escape\')App.cancelEditChild()"/>';
-    }else{
+    if(editingChild===idx){html+='<input class="child-name-input" id="childInput" value="'+esc(editValue)+'" onblur="App.finishEditChild()" onkeydown="if(event.key===\'Enter\')App.finishEditChild();if(event.key===\'Escape\')App.cancelEditChild()"/>';}
+    else{
       html+='<span class="child-name" onclick="App.startEditChild('+idx+')" title="Clicca per modificare">'+esc(name)+'</span>';
+      if(hasDiet){html+='<span class="diet-tag '+dietTagClass+'" title="'+esc(dietLabel)+(childDiets[idx].note?' - '+esc(childDiets[idx].note):'')+'">'+esc(dietLabel)+'</span>';}
     }
     html+='</div>';
+    html+='<button class="diet-btn '+(hasDiet?'has-diet':'')+'" onclick="App.openDietModal('+idx+')" title="Dieta">\ud83c\udf7d</button>';
     html+='<div class="check-cell"><input type="checkbox" '+(hasKey(presenze,idx)?'checked':'')+' onchange="App.togglePresenza('+idx+')"/></div>';
     html+='<button class="pre-btn '+(hasKey(pre,idx)?'active':'')+'" onclick="App.togglePre('+idx+')">PRE</button>';
     html+='<button class="post-btn '+(hasKey(post,idx)?'active':'')+'" onclick="App.togglePost('+idx+')">POST</button>';
@@ -518,38 +436,23 @@ function render(){
   }
   html+='</div>';
 
-  // Stats
   html+='<div class="stat-card"><div><div class="stat-label">Totale presenze</div><div class="stat-sub">'+esc(DATES[dateIndex].full)+'</div></div><div class="stat-value" style="color:#28a745">'+totalPresenze+'</div></div>';
   html+='<div class="stat-card"><div><div class="stat-label">Totale pre</div><div class="stat-sub">Ingressi Anticipati</div></div><div class="stat-value" style="color:#e67e00">'+totalPre+'</div></div>';
   html+='<div class="stat-card"><div><div class="stat-label">Totale post</div><div class="stat-sub">Uscite Posticipate</div></div><div class="stat-value" style="color:#007bff">'+totalPost+'</div></div>';
 
+  if(showDietModal>=0){html+=renderDietModal(showDietModal);}
+
   app.innerHTML=html;
 
-  // Focus inputs if editing
-  if(editingClass){
-    var ci=document.getElementById('classInput');
-    if(ci){ci.focus();ci.setSelectionRange(ci.value.length,ci.value.length);}
-  }
-  if(editingChild>=0){
-    var chi=document.getElementById('childInput');
-    if(chi){chi.focus();chi.setSelectionRange(chi.value.length,chi.value.length);}
-  }
-  
-  // Update sync bar after render
+  if(editingClass){var ci=document.getElementById('classInput');if(ci){ci.focus();ci.setSelectionRange(ci.value.length,ci.value.length);}}
+  if(editingChild>=0){var chi=document.getElementById('childInput');if(chi){chi.focus();chi.setSelectionRange(chi.value.length,chi.value.length);}}
   renderSyncBar();
 }
 
 function getFilteredChildren(){
-  var result=[];
-  for(var i=0;i<children.length;i++){
-    if(!search||children[i].toLowerCase().indexOf(search.toLowerCase())>=0){
-      result.push({name:children[i],i:i});
-    }
-  }
-  return result;
+  var result=[];for(var i=0;i<children.length;i++){if(!search||children[i].toLowerCase().indexOf(search.toLowerCase())>=0){result.push({name:children[i],i:i});}}return result;
 }
 
-// ===== APP ACTIONS =====
 window.App={
   login:handleLogin,
   startEditClass:function(){editingClass=true;render();},
@@ -563,126 +466,78 @@ window.App={
   selectAllPresenza:function(checked){presenze={};if(checked)for(var i=0;i<children.length;i++)presenze[i]=true;saveState();render();},
   selectAllPre:function(checked){pre={};if(checked)for(var i=0;i<children.length;i++)pre[i]=true;saveState();render();},
   selectAllPost:function(checked){post={};if(checked)for(var i=0;i<children.length;i++)post[i]=true;saveState();render();},
-  prevDate:function(){
-    if(dateIndex>0){
-      loadDateData(dateIndex-1);
-      saveState();
-      render();
-    }
-  },
-  nextDate:function(){
-    if(dateIndex<DATES.length-1){
-      loadDateData(dateIndex+1);
-      saveState();
-      render();
-    }
-  },
+  prevDate:function(){if(dateIndex>0){loadDateData(dateIndex-1);saveState();render();}},
+  nextDate:function(){if(dateIndex<DATES.length-1){loadDateData(dateIndex+1);saveState();render();}},
   setSearch:function(v){search=v;render();},
-  goToday:function(){
-    saveCurrentDateData();
-    dateIndex=2;
-    var key=getCurrentDateKey();
-    var dd=dateData[key];
-    if(dd){
-      presenze=JSON.parse(JSON.stringify(dd.presenze||{}));
-      pre=JSON.parse(JSON.stringify(dd.pre||{}));
-      post=JSON.parse(JSON.stringify(dd.post||{}));
-    }else{
-      presenze={};pre={};post={};
-    }
-    saveState();render();
-  },
+  goToday:function(){saveCurrentDateData();dateIndex=2;var key=getCurrentDateKey();var dd=dateData[key];if(dd){presenze=JSON.parse(JSON.stringify(dd.presenze||{}));pre=JSON.parse(JSON.stringify(dd.pre||{}));post=JSON.parse(JSON.stringify(dd.post||{}));}else{presenze={};pre={};post={};}saveState();render();},
   resetDay:function(){if(confirm('Azzerare le presenze del giorno?')){presenze={};pre={};post={};saveState();render();}},
-  resetMonth:function(){if(confirm('Azzerare TUTTO il mese? Questa azione non pu\u00f2 essere annullata.')){
-    dateData={};
-    presenze={};pre={};post={};
-    saveState();render();
-  }},
+  resetMonth:function(){if(confirm('Azzerare TUTTO il mese? Questa azione non pu\u00f2 essere annullata.')){dateData={};presenze={};pre={};post={};saveState();render();}},
   exportPDF:function(){window.print();},
+  openDietModal:function(idx){showDietModal=idx;render();},
+  closeDietModal:function(){showDietModal=-1;render();},
+  selectDiet:function(idx,typeId){
+    if(!childDiets[idx]) childDiets[idx]={};
+    childDiets[idx].type=typeId;
+    if(typeId!=='personalizzata') childDiets[idx].note='';
+    saveState();render();
+    if(typeId==='personalizzata'){var noteInput=document.getElementById('dietNote');if(noteInput)noteInput.focus();}
+  },
+  updateDietNote:function(idx,note){
+    if(!childDiets[idx]) childDiets[idx]={type:'personalizzata'};
+    childDiets[idx].note=note;
+    if(firestoreSaveTimer) clearTimeout(firestoreSaveTimer);
+    syncStatus='saving';renderSyncBar();
+    firestoreSaveTimer=setTimeout(function(){doSaveToFirestore();try{localStorage.setItem('rp_data',JSON.stringify({children:children,dateData:dateData,childDiets:childDiets,dateIndex:dateIndex,className:className}));}catch(e){}},1500);
+  },
   importData:function(){
     var input=document.createElement('input');input.type='file';input.accept='.json';
     input.onchange=function(e){
-      var file=e.target.files[0];if(!file)return;
-      var reader=new FileReader();
+      var file=e.target.files[0];if(!file)return;var reader=new FileReader();
       reader.onload=function(ev){
         try{
           var d=JSON.parse(ev.target.result);
           if(d.children)children=d.children;
-          // Support both old and new format
-          if(d.dateData){
-            dateData=d.dateData;
-          }else if(d.presenze||d.pre||d.post){
-            var key=getCurrentDateKey();
-            dateData[key]={presenze:d.presenze||{},pre:d.pre||{},post:d.post||{}};
-          }
+          if(d.dateData)dateData=d.dateData;else if(d.presenze||d.pre||d.post){var key=getCurrentDateKey();dateData[key]={presenze:d.presenze||{},pre:d.pre||{},post:d.post||{}};}
+          if(d.childDiets)childDiets=d.childDiets;
           if(d.className)className=d.className;
-          // Reload current date
-          var ckey=getCurrentDateKey();
-          var dd=dateData[ckey];
-          if(dd){
-            presenze=dd.presenze||{};pre=dd.pre||{};post=dd.post||{};
-          }else{
-            presenze={};pre={};post={};
-          }
+          var ckey=getCurrentDateKey();var dd=dateData[ckey];if(dd){presenze=dd.presenze||{};pre=dd.pre||{};post=dd.post||{};}else{presenze={};pre={};post={};}
           saveState();render();alert('Dati importati con successo!');
-        }catch(err){alert('File non valido. Usa un file JSON esportato dal Backup.');}
+        }catch(err){alert('File non valido.');}
       };reader.readAsText(file);
     };input.click();
   },
   backupData:function(){
     saveCurrentDateData();
-    var data=JSON.stringify({children:children,dateData:dateData,className:className,dateExport:new Date().toISOString()},null,2);
-    var blob=new Blob([data],{type:'application/json'});
-    var a=document.createElement('a');a.href=URL.createObjectURL(blob);
-    a.download='registro-presenze-backup-'+new Date().toISOString().slice(0,10)+'.json';
-    a.click();URL.revokeObjectURL(a.href);
+    var data=JSON.stringify({children:children,dateData:dateData,childDiets:childDiets,className:className,dateExport:new Date().toISOString()},null,2);
+    var blob=new Blob([data],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);
+    a.download='registro-presenze-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href);
   },
   viewMonth:function(){
     saveCurrentDateData();
     var summary='--- RIEPILOGO ---\nClasse: '+className+'\n\n';
-    // Show all dates that have data
-    var datesWithData = [];
-    for(var k in dateData){
-      if(dateData.hasOwnProperty(k) && (countKeys(dateData[k].presenze)>0 || countKeys(dateData[k].pre)>0 || countKeys(dateData[k].post)>0)){
-        datesWithData.push(k);
+    var hasAnyDiet=false;
+    for(var di2=0;di2<children.length;di2++){
+      if(childDiets[di2]&&childDiets[di2].type&&childDiets[di2].type!=='nessuna'){
+        if(!hasAnyDiet){summary+='--- DIETE ---\n';hasAnyDiet=true;}
+        summary+=children[di2]+': '+getDietType(childDiets[di2].type).name+(childDiets[di2].note?' ('+childDiets[di2].note+')':'')+'\n';
       }
     }
+    if(hasAnyDiet) summary+='\n';
+    var datesWithData=[];for(var k in dateData){if(dateData.hasOwnProperty(k)&&(countKeys(dateData[k].presenze)>0||countKeys(dateData[k].pre)>0||countKeys(dateData[k].post)>0)){datesWithData.push(k);}}
     datesWithData.sort();
-    if(datesWithData.length===0){
-      summary+='Nessun dato salvato per altre date.\n\n';
-    }else{
-      for(var di=0;di<datesWithData.length;di++){
-        var dk=datesWithData[di];
-        var dd2=dateData[dk];
-        summary+='--- '+dk+' ---\n';
-        for(var ci2=0;ci2<children.length;ci2++){
-          if(dd2.presenze[ci2]||dd2.pre[ci2]||dd2.post[ci2]){
-            summary+=children[ci2]+': P='+((dd2.presenze[ci2])?'Si':'No')+' Pre='+((dd2.pre[ci2])?'Si':'No')+' Post='+((dd2.post[ci2])?'Si':'No')+'\n';
-          }
-        }
-        summary+='Totale: '+countKeys(dd2.presenze)+' presenze, '+countKeys(dd2.pre)+' pre, '+countKeys(dd2.post)+' post\n\n';
-      }
-    }
-    // Current date
+    if(datesWithData.length===0){summary+='Nessun dato salvato per altre date.\n\n';}
+    else{for(var di=0;di<datesWithData.length;di++){var dk=datesWithData[di];var dd2=dateData[dk];summary+='--- '+dk+' ---\n';for(var ci2=0;ci2<children.length;ci2++){if(dd2.presenze[ci2]||dd2.pre[ci2]||dd2.post[ci2]){summary+=children[ci2]+': P='+((dd2.presenze[ci2])?'Si':'No')+' Pre='+((dd2.pre[ci2])?'Si':'No')+' Post='+((dd2.post[ci2])?'Si':'No')+'\n';}}summary+='Totale: '+countKeys(dd2.presenze)+' presenze, '+countKeys(dd2.pre)+' pre, '+countKeys(dd2.post)+' post\n\n';}}
     summary+='--- OGGI ('+DATES[dateIndex].full+') ---\n';
-    for(var i=0;i<children.length;i++){
-      summary+=children[i]+': P='+((presenze[i])?'Si':'No')+' Pre='+((pre[i])?'Si':'No')+' Post='+((post[i])?'Si':'No')+'\n';
-    }
+    for(var i=0;i<children.length;i++){summary+=children[i]+': P='+((presenze[i])?'Si':'No')+' Pre='+((pre[i])?'Si':'No')+' Post='+((post[i])?'Si':'No')+'\n';}
     summary+='\nTotale: '+countKeys(presenze)+' presenze, '+countKeys(pre)+' pre, '+countKeys(post)+' post su '+children.length+' bambini';
     alert(summary);
   },
   share:function(){
-    if(navigator.share){
-      navigator.share({title:'Registro Presenze - '+className,url:window.location.href}).catch(function(){});
-    }else{
-      var ta=document.createElement('textarea');ta.value=window.location.href;
-      document.body.appendChild(ta);ta.select();document.execCommand('copy');
-      document.body.removeChild(ta);alert('Link copiato negli appunti!');
-    }
+    if(navigator.share){navigator.share({title:'Registro Presenze - '+className,url:window.location.href}).catch(function(){});}
+    else{var ta=document.createElement('textarea');ta.value=window.location.href;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);alert('Link copiato negli appunti!');}
   }
 };
 
-// ===== INIT =====
 loadState();
 initFirebase();
 render();
