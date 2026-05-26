@@ -483,8 +483,38 @@ window.App={
     var doc=new jsPDF('p','mm','a4');
     var pageW=doc.internal.pageSize.getWidth();
     var pageH=doc.internal.pageSize.getHeight();
-    var dateStr=dateToFull(currentDate);
     var dateKey=getCurrentDateKey();
+
+    // Calculate monthly totals per child
+    var cm=currentDate.getMonth();
+    var cy=currentDate.getFullYear();
+    var daysInMonth=new Date(cy,cm+1,0).getDate();
+    var monthLabel=MONTHS[cm]+' '+cy;
+
+    // Initialize counters per child
+    var mPresenze=[];var mPre=[];var mPost=[];
+    for(var mi=0;mi<children.length;mi++){mPresenze[mi]=0;mPre[mi]=0;mPost[mi]=0;}
+
+    // Count across all days of the month
+    var totalDaysWithPresenza=0;
+    for(var d=1;d<=daysInMonth;d++){
+      var dKey=cy+'-'+String(cm+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+      var dd=dateData[dKey];
+      if(dd){
+        var hasAny=false;
+        for(var ci=0;ci<children.length;ci++){
+          if(dd.presenze&&dd.presenze[ci]){mPresenze[ci]++;hasAny=true;}
+          if(dd.pre&&dd.pre[ci]){mPre[ci]++;}
+          if(dd.post&&dd.post[ci]){mPost[ci]++;}
+        }
+        if(hasAny) totalDaysWithPresenza++;
+      }
+    }
+
+    // Also include current date data (might not be saved to dateData yet)
+    if(presenze){for(var ci2=0;ci2<children.length;ci2++){if(presenze[ci2])mPresenze[ci2]++;}}
+    if(pre){for(var ci3=0;ci3<children.length;ci3++){if(pre[ci3])mPre[ci3]++;}}
+    if(post){for(var ci4=0;ci4<children.length;ci4++){if(post[ci4])mPost[ci4]++;}}
 
     // Header
     doc.setFillColor(26,26,46);
@@ -495,73 +525,71 @@ window.App={
     doc.text('Registro Presenze - '+className,pageW/2,14,{align:'center'});
     doc.setFontSize(11);
     doc.setFont('helvetica','normal');
-    doc.text(dateStr,pageW/2,24,{align:'center'});
+    doc.text('Riepilogo Mese: '+monthLabel,pageW/2,24,{align:'center'});
 
     doc.setTextColor(0,0,0);
     var y=40;
 
-    // Summary badges
+    // Summary badges - totali mese
+    var totP=0,totPre=0,totPost=0;
+    for(var ti=0;ti<children.length;ti++){totP+=mPresenze[ti];totPre+=mPre[ti];totPost+=mPost[ti];}
+
     doc.setFillColor(212,237,218);
-    doc.roundedRect(14,y,50,14,2,2,'F');
+    doc.roundedRect(14,y,52,14,2,2,'F');
     doc.setFontSize(10);
     doc.setFont('helvetica','bold');
     doc.setTextColor(21,87,36);
-    doc.text(countKeys(presenze)+' Presenze',39,y+9,{align:'center'});
+    doc.text(totP+' Presenze',40,y+9,{align:'center'});
 
     doc.setFillColor(255,243,205);
-    doc.roundedRect(70,y,40,14,2,2,'F');
+    doc.roundedRect(72,y,44,14,2,2,'F');
     doc.setTextColor(133,100,4);
-    doc.text(countKeys(pre)+' Pre',90,y+9,{align:'center'});
+    doc.text(totPre+' Pre',94,y+9,{align:'center'});
 
     doc.setFillColor(204,229,255);
-    doc.roundedRect(116,y,42,14,2,2,'F');
+    doc.roundedRect(122,y,44,14,2,2,'F');
     doc.setTextColor(0,64,133);
-    doc.text(countKeys(post)+' Post',137,y+9,{align:'center'});
+    doc.text(totPost+' Post',144,y+9,{align:'center'});
 
     y+=22;
 
-    // Table data
+    // Table data - conteggi mensili per bambino
     var tableBody=[];
     for(var pi=0;pi<children.length;pi++){
-      var pCheck=hasKey(presenze,pi)?'Si':'No';
-      var preCheck=hasKey(pre,pi)?'Si':'No';
-      var postCheck=hasKey(post,pi)?'Si':'No';
       var dietInfo=getDietLabel(pi);
       if(childDiets[pi]&&childDiets[pi].note) dietInfo+=(dietInfo?' - ':'')+childDiets[pi].note;
-      tableBody.push([pi+1,children[pi],pCheck,preCheck,postCheck,dietInfo||'-']);
+      tableBody.push([pi+1,children[pi],String(mPresenze[pi]),String(mPre[pi]),String(mPost[pi]),dietInfo||'-']);
     }
 
     doc.autoTable({
       startY:y,
-      head:[['#','Bambino','Presenza','Pre','Post','Dieta']],
+      head:[['#','Bambino','Presenze','Pre','Post','Dieta']],
       body:tableBody,
       theme:'grid',
       headStyles:{fillColor:[26,26,46],textColor:[255,255,255],fontStyle:'bold',fontSize:9,halign:'center'},
       columnStyles:{
         0:{cellWidth:10,halign:'center',fontStyle:'bold'},
-        1:{cellWidth:55},
-        2:{cellWidth:22,halign:'center'},
-        3:{cellWidth:16,halign:'center'},
-        4:{cellWidth:18,halign:'center'},
-        5:{cellWidth:55}
+        1:{cellWidth:58},
+        2:{cellWidth:24,halign:'center'},
+        3:{cellWidth:20,halign:'center'},
+        4:{cellWidth:20,halign:'center'},
+        5:{cellWidth:52}
       },
       bodyStyles:{fontSize:8.5},
       alternateRowStyles:{fillColor:[245,245,250]},
       didParseCell:function(data){
         if(data.section==='body'){
+          var numVal=parseInt(data.cell.raw);
           if(data.column.index===2){
-            var val=data.cell.raw;
-            if(val==='Si'){data.cell.styles.textColor=[40,167,69];data.cell.styles.fontStyle='bold';}
+            if(numVal>0){data.cell.styles.textColor=[40,167,69];data.cell.styles.fontStyle='bold';}
             else{data.cell.styles.textColor=[180,180,180];}
           }
           if(data.column.index===3){
-            var val2=data.cell.raw;
-            if(val2==='Si'){data.cell.styles.textColor=[230,126,0];data.cell.styles.fontStyle='bold';}
+            if(numVal>0){data.cell.styles.textColor=[230,126,0];data.cell.styles.fontStyle='bold';}
             else{data.cell.styles.textColor=[180,180,180];}
           }
           if(data.column.index===4){
-            var val3=data.cell.raw;
-            if(val3==='Si'){data.cell.styles.textColor=[0,123,255];data.cell.styles.fontStyle='bold';}
+            if(numVal>0){data.cell.styles.textColor=[0,123,255];data.cell.styles.fontStyle='bold';}
             else{data.cell.styles.textColor=[180,180,180];}
           }
         }
@@ -570,16 +598,16 @@ window.App={
 
     // Footer
     var finalY=doc.lastAutoTable.finalY+10;
-    if(finalY>pageH-25) finalY=pageH-25;
+    if(finalY>pageH-20) finalY=pageH-20;
     doc.setDrawColor(200,200,200);
     doc.line(14,finalY,pageW-14,finalY);
     doc.setFontSize(8);
     doc.setTextColor(150,150,150);
     doc.setFont('helvetica','normal');
-    doc.text('Generato il '+(new Date().toLocaleDateString('it-IT'))+' - Registro Presenze',pageW/2,finalY+6,{align:'center'});
+    doc.text('Generato il '+(new Date().toLocaleDateString('it-IT'))+' - Riepilogo mensile '+monthLabel,pageW/2,finalY+6,{align:'center'});
 
     // Save
-    var fileName='Registro_'+className.replace(/\s+/g,'_')+'_'+dateKey+'.pdf';
+    var fileName='Riepilogo_'+className.replace(/\s+/g,'_')+'_'+MONTHS[cm]+'_'+cy+'.pdf';
     doc.save(fileName);
   },
   openDietModal:function(idx){showDietModal=idx;render();},
