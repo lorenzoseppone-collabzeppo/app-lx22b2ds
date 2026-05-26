@@ -745,24 +745,27 @@ window.App={
     for(var pi=0;pi<children.length;pi++){
       var dietInfo=getDietLabel(pi);
       if(childDiets[pi]&&childDiets[pi].note) dietInfo+=(dietInfo?' - ':'')+childDiets[pi].note;
-      tableBody.push([pi+1,children[pi],String(mPresenze[pi]),String(mPre[pi]),String(mPost[pi]),dietInfo||'-']);
+      var delegheList=childDeleghe[pi]||[];
+      var delegheStr=delegheList.length>0?delegheList.join(', '):'-';
+      tableBody.push([pi+1,children[pi],String(mPresenze[pi]),String(mPre[pi]),String(mPost[pi]),dietInfo||'-',delegheStr]);
     }
 
     doc.autoTable({
       startY:y,
-      head:[['#','Bambino','Presenze','Pre','Post','Dieta']],
+      head:[['#','Bambino','Presenze','Pre','Post','Dieta','Deleghe']],
       body:tableBody,
       theme:'grid',
-      headStyles:{fillColor:[26,26,46],textColor:[255,255,255],fontStyle:'bold',fontSize:9,halign:'center'},
+      headStyles:{fillColor:[26,26,46],textColor:[255,255,255],fontStyle:'bold',fontSize:8,halign:'center'},
       columnStyles:{
-        0:{cellWidth:10,halign:'center',fontStyle:'bold'},
-        1:{cellWidth:58},
-        2:{cellWidth:24,halign:'center'},
-        3:{cellWidth:20,halign:'center'},
-        4:{cellWidth:20,halign:'center'},
-        5:{cellWidth:52}
+        0:{cellWidth:8,halign:'center',fontStyle:'bold'},
+        1:{cellWidth:46},
+        2:{cellWidth:20,halign:'center'},
+        3:{cellWidth:16,halign:'center'},
+        4:{cellWidth:16,halign:'center'},
+        5:{cellWidth:38},
+        6:{cellWidth:36}
       },
-      bodyStyles:{fontSize:8.5},
+      bodyStyles:{fontSize:7.5},
       alternateRowStyles:{fillColor:[245,245,250]},
       didParseCell:function(data){
         if(data.section==='body'){
@@ -777,6 +780,11 @@ window.App={
           }
           if(data.column.index===4){
             if(numVal>0){data.cell.styles.textColor=[0,123,255];data.cell.styles.fontStyle='bold';}
+            else{data.cell.styles.textColor=[180,180,180];}
+          }
+          if(data.column.index===6){
+            var raw=data.cell.raw;
+            if(raw&&raw!=='-'){data.cell.styles.textColor=[120,60,150];data.cell.styles.fontStyle='bold';}
             else{data.cell.styles.textColor=[180,180,180];}
           }
         }
