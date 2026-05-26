@@ -126,6 +126,21 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .child-detail-day-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px}
 .child-detail-close{width:100%;padding:10px;border:none;border-radius:8px;background:#1a1a2e;color:white;font-size:14px;font-weight:600;cursor:pointer;margin-top:12px;font-family:inherit}
 .child-detail-close:active{transform:scale(0.97)}
+.deleghe-box{background:#f0f0f5;border-radius:12px;padding:14px;margin-top:14px}
+.deleghe-box-title{font-size:12px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.deleghe-box-title svg{flex-shrink:0}
+.deleghe-item{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #e0e0e5}
+.deleghe-item:last-child{border-bottom:none}
+.deleghe-item-name{flex:1;font-size:13px;color:#333;font-weight:500}
+.deleghe-item-remove{width:22px;height:22px;border-radius:50%;border:none;background:#e0e0e5;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#888;font-size:14px;font-weight:600;font-family:inherit;transition:all 0.15s;padding:0}
+.deleghe-item-remove:hover{background:#dc3545;color:white}
+.deleghe-add{display:flex;gap:6px;margin-top:8px}
+.deleghe-add input{flex:1;padding:8px 12px;border:2px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;outline:none}
+.deleghe-add input:focus{border-color:#007bff}
+.deleghe-add button{padding:8px 14px;border:none;border-radius:8px;background:#1a1a2e;color:white;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all 0.15s}
+.deleghe-add button:hover{background:#2a2a4e}
+.deleghe-add button:active{transform:scale(0.97)}
+.deleghe-empty{font-size:12px;color:#aaa;font-style:italic;text-align:center;padding:4px 0}
 .child-name-link{cursor:pointer;color:#1a1a2e;transition:color 0.15s}
 .child-name-link:hover{color:#007bff}
 .edit-name-btn{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border:1.5px solid #ccc;border-radius:8px;background:white;font-size:11px;font-weight:600;color:#555;cursor:pointer;font-family:inherit;transition:all 0.15s;white-space:nowrap}
@@ -191,6 +206,7 @@ var pre = {};
 var post = {};
 var childDiets = {};
 var childGender = {};
+var childDeleghe = {};
 var currentDate = new Date();
 var search = '';
 var className = 'Coccinelle';
@@ -282,7 +298,7 @@ function switchToDate(dt){
 
 function saveState(){
   saveCurrentDateData();
-  try{localStorage.setItem('rp_data',JSON.stringify({children:children,dateData:dateData,childDiets:childDiets,childGender:childGender,currentDate:dateToInput(currentDate),className:className}));}catch(e){}
+  try{localStorage.setItem('rp_data',JSON.stringify({children:children,dateData:dateData,childDiets:childDiets,childGender:childGender,childDeleghe:childDeleghe,currentDate:dateToInput(currentDate),className:className}));}catch(e){}
   saveToFirestore();
 }
 
@@ -294,6 +310,7 @@ function loadState(){
       if(d.dateData) dateData=d.dateData;
       if(d.childDiets) childDiets=d.childDiets;
       if(d.childGender) childGender=d.childGender;
+      if(d.childDeleghe) childDeleghe=d.childDeleghe;
       if(!d.dateData&&(d.presenze||d.pre||d.post)){
         var key=d.currentDate||dateToKey(new Date());
         dateData[key]={presenze:d.presenze||{},pre:d.pre||{},post:d.post||{}};
@@ -317,7 +334,7 @@ function saveToFirestore(){
 }
 function doSaveToFirestore(){
   if(!currentUser||!db) return;
-  var data={children:children,className:className,dateData:dateData,childDiets:childDiets,childGender:childGender,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+  var data={children:children,className:className,dateData:dateData,childDiets:childDiets,childGender:childGender,childDeleghe:childDeleghe,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
   db.collection('users').doc(currentUser.uid).set(data,{merge:true})
     .then(function(){syncStatus='synced';renderSyncBar();setTimeout(function(){if(syncStatus==='synced'){syncStatus='idle';renderSyncBar();}},3000);})
     .catch(function(err){console.error('Firestore save error:',err);syncStatus='error';renderSyncBar();});
@@ -334,10 +351,11 @@ function loadFromFirestore(uid){
         if(d.dateData) dateData=d.dateData;
         if(d.childDiets) childDiets=d.childDiets;
         if(d.childGender) childGender=d.childGender;
+        if(d.childDeleghe) childDeleghe=d.childDeleghe;
         var key=getCurrentDateKey();var dd=dateData[key];
         if(dd){presenze=dd.presenze||{};pre=dd.pre||{};post=dd.post||{};}
         else{presenze={};pre={};post={};}
-        try{localStorage.setItem('rp_data',JSON.stringify({children:children,dateData:dateData,childDiets:childDiets,childGender:childGender,currentDate:dateToInput(currentDate),className:className}));}catch(e){}
+        try{localStorage.setItem('rp_data',JSON.stringify({children:children,dateData:dateData,childDiets:childDiets,childGender:childGender,childDeleghe:childDeleghe,currentDate:dateToInput(currentDate),className:className}));}catch(e){}
       }
       firestoreLoaded=true;syncStatus='synced';render();
       setTimeout(function(){if(syncStatus==='synced'){syncStatus='idle';renderSyncBar();}},3000);
@@ -594,6 +612,25 @@ function renderChildDetail(idx){
     html+='<div style="text-align:center;padding:20px;color:#aaa;font-size:13px">Nessuna registrazione per questo mese</div>';
   }
 
+  // Deleghe box
+  var deleghe=childDeleghe[idx]||[];
+  html+='<div class="deleghe-box">';
+  html+='<div class="deleghe-box-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Deleghe</div>';
+  if(deleghe.length>0){
+    for(var di2=0;di2<deleghe.length;di2++){
+      html+='<div class="deleghe-item">';
+      html+='<span class="deleghe-item-name">'+esc(deleghe[di2])+'</span>';
+      html+='<button class="deleghe-item-remove" onclick="App.removeDelega('+idx+','+di2+')" title="Rimuovi">\u00d7</button>';
+      html+='</div>';
+    }
+  }else{
+    html+='<div class="deleghe-empty">Nessuna delega aggiunta</div>';
+  }
+  html+='<div class="deleghe-add">';
+  html+='<input type="text" id="delegaInput" placeholder="Nome delegato..." onkeydown="if(event.key===\'Enter\')App.addDelega('+idx+')"/>';
+  html+='<button onclick="App.addDelega('+idx+')">Aggiungi</button>';
+  html+='</div></div>';
+
   html+='<button class="child-detail-close" onclick="App.closeChildDetail()">Chiudi</button>';
   html+='</div></div>';
   return html;
@@ -610,6 +647,8 @@ window.App={
   closeChildDetail:function(){selectedChild=-1;render();},
   editChildFromDetail:function(i){selectedChild=-1;editingChild=i;editValue=children[i];render();},
   toggleGender:function(i){var g=getGender(i);childGender[i]=(g==='m'?'f':'m');saveState();render();},
+  addDelega:function(i){var inp=document.getElementById('delegaInput');if(inp&&inp.value.trim()){if(!childDeleghe[i])childDeleghe[i]=[];childDeleghe[i].push(inp.value.trim());saveState();render();}},
+  removeDelega:function(i,di){if(childDeleghe[i]){childDeleghe[i].splice(di,1);if(childDeleghe[i].length===0)delete childDeleghe[i];saveState();render();}},
   setSearch:function(v){search=v;render();},
   clearSearch:function(){search='';render();},
   togglePresenza:function(i){if(hasKey(presenze,i))delete presenze[i];else presenze[i]=true;saveState();render();},
