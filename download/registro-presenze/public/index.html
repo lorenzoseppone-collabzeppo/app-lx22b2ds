@@ -24,6 +24,10 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .auth-bar{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:500;margin-bottom:12px}
 .auth-bar.info{background:#fff3cd;color:#856404;border:1px solid #ffeeba}
 .auth-bar.success{background:#d4edda;color:#155724;border:1px solid #c3e6cb}
+.sync-bar{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:500;margin-bottom:12px}
+.sync-bar.synced{background:#d4edda;color:#155724;border:1px solid #c3e6cb}
+.sync-bar.syncing{background:#cce5ff;color:#004085;border:1px solid #b8daff}
+.sync-bar.error{background:#f8d7da;color:#721c24;border:1px solid #f5c6cb}
 .btn-row{display:flex;flex-wrap:wrap;gap:8px;width:100%;margin-bottom:8px}
 .btn-row:last-child{margin-bottom:16px}
 .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;border:1px solid #ddd;background:white;font-size:13px;font-weight:500;color:#333;cursor:pointer;white-space:nowrap;font-family:inherit;transition:all 0.15s}
@@ -73,7 +77,9 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .stat-sub{font-size:11px;color:#aaa}
 .stat-value{font-size:36px;font-weight:700;line-height:1}
 .google-icon{display:inline-flex;vertical-align:middle}
-@media print{body{background:white!important;background-image:none!important}.btn,.btn-row,.auth-bar,.search-box,.arrow-btn{display:none!important}.header-icon,.user-badge{display:none!important}.card,.roster,.stat-card{box-shadow:none!important;border:1px solid #eee}}
+@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.spinner{display:inline-block;width:12px;height:12px;border:2px solid #004085;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite}
+@media print{body{background:white!important;background-image:none!important}.btn,.btn-row,.auth-bar,.sync-bar,.search-box,.arrow-btn{display:none!important}.header-icon,.user-badge{display:none!important}.card,.roster,.stat-card{box-shadow:none!important;border:1px solid #eee}}
 @media(max-width:400px){.child-name{font-size:13px}.child-avatar{width:30px;height:30px;font-size:10px}.pre-btn,.post-btn{min-width:46px;font-size:10px;padding:4px 6px}.check-cell{min-width:46px}.roster-col{min-width:46px}}
 </style>
 </head>
@@ -82,6 +88,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script>
 (function(){
 "use strict";
@@ -95,7 +102,7 @@ var FIREBASE_CONFIG = {
   appId: "1:291215184515:web:5930221368bc5a3d49c1b6"
 };
 
-var children = [
+var DEFAULT_CHILDREN = [
   'Sofia Rossi','Leonardo Bianchi','Aurora Romano','Tommaso Ferrari',
   'Giulia Esposito','Mattia Ricci','Alice Marino','Nicola Parisi',
   'Elisa Benedetti','Simone Rinaldi','Beatrice Costa','Davide Moretti',
@@ -106,6 +113,7 @@ var children = [
   'Luca Marchetti','Giorgia Ferretti'
 ];
 
+var children = DEFAULT_CHILDREN.slice();
 var presenze = {};
 var pre = {};
 var post = {};
@@ -117,25 +125,29 @@ var editingChild = -1;
 var editValue = '';
 var currentUser = null;
 var loginLoading = false;
+var syncStatus = 'none'; // 'none','synced','syncing','error'
+var db = null;
+var saveTimeout = null;
 
 var DATES = (function(){
   var days = ['Domenica','Luned\u00ec','Marted\u00ec','Mercoled\u00ec','Gioved\u00ec','Venerd\u00ec','Sabato'];
   var months = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
-  var monthsShort = ['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
+  var ms = ['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
   var arr = [];
   var today = new Date();
   for(var d = -2; d <= 2; d++){
     var dt = new Date(today);
     dt.setDate(dt.getDate() + d);
     arr.push({
-      short: dt.getDate() + ' ' + monthsShort[dt.getMonth()] + ' ' + dt.getFullYear(),
+      short: dt.getDate() + ' ' + ms[dt.getMonth()] + ' ' + dt.getFullYear(),
       full: days[dt.getDay()] + ' ' + dt.getDate() + ' ' + months[dt.getMonth()] + ' ' + dt.getFullYear()
     });
   }
   return arr;
 })();
 
-function saveState(){
+// ===== SAVE/LOAD LOCAL =====
+function saveLocal(){
   try{
     localStorage.setItem('rp_data',JSON.stringify({
       children:children, presenze:presenze, pre:pre, post:post,
@@ -143,7 +155,7 @@ function saveState(){
     }));
   }catch(e){}
 }
-function loadState(){
+function loadLocal(){
   try{
     var d=JSON.parse(localStorage.getItem('rp_data'));
     if(d){
@@ -157,6 +169,55 @@ function loadState(){
   }catch(e){}
 }
 
+// ===== SAVE/LOAD FIRESTORE =====
+function saveCloud(){
+  if(!currentUser || !db) return;
+  syncStatus='syncing'; render();
+  var uid=currentUser.uid;
+  var data={
+    children:children, presenze:presenze, pre:pre, post:post,
+    dateIndex:dateIndex, className:className,
+    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  };
+  db.collection('users').doc(uid).set(data,{merge:true})
+    .then(function(){syncStatus='synced';render();})
+    .catch(function(e){console.error('Firestore save error:',e);syncStatus='error';render();});
+}
+function loadCloud(uid){
+  if(!db) return;
+  syncStatus='syncing'; render();
+  db.collection('users').doc(uid).get()
+    .then(function(doc){
+      if(doc.exists){
+        var d=doc.data();
+        if(d.children) children=d.children;
+        if(d.presenze) presenze=d.presenze;
+        if(d.pre) pre=d.pre;
+        if(d.post) post=d.post;
+        if(typeof d.dateIndex==='number') dateIndex=d.dateIndex;
+        if(d.className) className=d.className;
+      }
+      syncStatus='synced';
+      saveLocal();
+      render();
+    })
+    .catch(function(e){
+      console.error('Firestore load error:',e);
+      syncStatus='error';
+      render();
+    });
+}
+
+// ===== COMBINED SAVE =====
+function saveState(){
+  saveLocal();
+  if(saveTimeout) clearTimeout(saveTimeout);
+  if(currentUser && db){
+    saveTimeout=setTimeout(saveCloud,500);
+  }
+}
+
+// ===== HELPERS =====
 function getInitials(name){
   var parts=name.trim().split(/\s+/);
   if(parts.length>=2) return parts[0][0].toUpperCase()+parts[parts.length-1][0].toUpperCase();
@@ -166,26 +227,40 @@ function countKeys(obj){var c=0;for(var k in obj)if(obj.hasOwnProperty(k))c++;re
 function hasKey(obj,k){return obj.hasOwnProperty(k);}
 function esc(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
+// ===== FIREBASE INIT =====
 function initFirebase(){
   try{
-    if(typeof firebase==='undefined'){console.warn('Firebase SDK not loaded');render();return;}
+    if(typeof firebase==='undefined'){render();return;}
     firebase.initializeApp(FIREBASE_CONFIG);
+    db=firebase.firestore();
     var auth=firebase.auth();
     try{auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);}catch(e){
       try{auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);}catch(e2){
         try{auth.setPersistence(firebase.auth.Auth.Persistence.NONE);}catch(e3){}
       }
     }
-    auth.onAuthStateChanged(function(u){currentUser=u;loginLoading=false;render();});
+    auth.onAuthStateChanged(function(u){
+      currentUser=u;
+      loginLoading=false;
+      if(u){
+        loadCloud(u.uid);
+      }else{
+        syncStatus='none';
+        loadLocal();
+        render();
+      }
+    });
     try{auth.getRedirectResult();}catch(e){}
   }catch(e){console.error('Firebase init error:',e);render();}
 }
 
 function handleLogin(){
-  if(typeof firebase==='undefined'){alert('Firebase non caricato. Ricarica la pagina.');return;}
+  if(typeof firebase==='undefined'){alert('Firebase non caricato');return;}
   var auth=firebase.auth();
   if(currentUser){
-    if(confirm('Vuoi disconnettere l\'account "'+(currentUser.displayName||currentUser.email)+'"?')){auth.signOut();}
+    if(confirm('Vuoi disconnettere "'+(currentUser.displayName||currentUser.email)+'"?')){
+      auth.signOut();
+    }
   }else{
     loginLoading=true;render();
     var provider=new firebase.auth.GoogleAuthProvider();
@@ -194,122 +269,127 @@ function handleLogin(){
       var msg='Errore durante il login.';
       if(error.code==='auth/popup-closed-by-user') return;
       else if(error.code==='auth/popup-blocked'){auth.signInWithRedirect(provider);return;}
-      else if(error.code==='auth/unauthorized-domain'){msg='Dominio "'+window.location.hostname+'" non autorizzato.\n\nVai su Firebase Console > Authentication > Settings > Authorized domains e aggiungi:\n'+window.location.hostname;}
-      else if(error.code==='auth/operation-not-allowed'){msg='Login Google non abilitato. Abilitalo in Firebase Console.';}
+      else if(error.code==='auth/unauthorized-domain'){msg='Dominio non autorizzato.\n\nVai su Firebase Console > Authentication > Settings > Authorized domains e aggiungi:\n'+window.location.hostname;}
+      else if(error.code==='auth/operation-not-allowed'){msg='Login Google non abilitato.';}
       else{msg='Errore: '+error.message;}
       alert(msg);
     });
   }
 }
 
+// ===== RENDER =====
 function render(){
   var app=document.getElementById('app');
-  var totalPresenze=countKeys(presenze);
-  var totalPre=countKeys(pre);
-  var totalPost=countKeys(post);
+  var tp=countKeys(presenze),tpr=countKeys(pre),tpo=countKeys(post);
 
-  var html='';
+  var h='';
 
-  html+='<div class="header">';
-  html+='<div class="header-icon"><svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5zm2 4h10v2H7v-2zm0 4h7v2H7v-2z"/></svg></div>';
-  html+='<div class="header-info">';
+  // Header
+  h+='<div class="header">';
+  h+='<div class="header-icon"><svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5zm2 4h10v2H7v-2zm0 4h7v2H7v-2z"/></svg></div>';
+  h+='<div class="header-info">';
   if(editingClass){
-    html+='<input class="class-name-input" id="classInput" value="'+esc(className)+'" onblur="App.finishEditClass()" onkeydown="if(event.key===\'Enter\')App.finishEditClass()"/>';
+    h+='<input class="class-name-input" id="classInput" value="'+esc(className)+'" onblur="App.finishEditClass()" onkeydown="if(event.key===\'Enter\')App.finishEditClass()"/>';
   }else{
-    html+='<div class="class-name" onclick="App.startEditClass()" title="Clicca per modificare">'+esc(className)+'</div>';
+    h+='<div class="class-name" onclick="App.startEditClass()" title="Clicca per modificare">'+esc(className)+'</div>';
   }
-  html+='<div class="class-sub">Registro presenze</div>';
-  html+='</div>';
+  h+='<div class="class-sub">Registro presenze</div>';
+  h+='</div>';
   if(currentUser){
-    html+='<div class="user-badge">';
-    if(currentUser.photoURL) html+='<img src="'+esc(currentUser.photoURL)+'" alt=""/>';
-    html+='<span>'+esc(currentUser.displayName||currentUser.email)+'</span></div>';
+    h+='<div class="user-badge">';
+    if(currentUser.photoURL) h+='<img src="'+esc(currentUser.photoURL)+'" alt=""/>';
+    h+='<span>'+esc(currentUser.displayName||currentUser.email)+'</span></div>';
   }
-  html+='</div>';
+  h+='</div>';
 
+  // Auth bar
   if(currentUser){
-    html+='<div class="auth-bar success"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg><span>Connesso come '+esc(currentUser.displayName||currentUser.email)+'</span></div>';
+    h+='<div class="auth-bar success"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg><span>Connesso: '+esc(currentUser.displayName||currentUser.email)+'</span></div>';
   }else{
-    html+='<div class="auth-bar info"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span>Effettua il login con Google per salvare i dati</span></div>';
+    h+='<div class="auth-bar info"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span>Fai login con Google per salvare i dati online</span></div>';
   }
 
-  html+='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">';
-  html+='<div class="btn-row">';
-  html+='<button class="btn" onclick="App.login()"><span class="google-icon"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg></span>'+(loginLoading?'...':(currentUser?'Logout':'Login'))+'</button>';
-  html+='<button class="btn" onclick="App.goToday()">Oggi</button>';
-  html+='<button class="btn" onclick="App.resetDay()">Azzera giorno</button>';
-  html+='<button class="btn btn-danger" onclick="App.resetMonth()">Azzera mese</button>';
-  html+='</div>';
-  html+='<div class="btn-row">';
-  html+='<button class="btn btn-danger-fill" onclick="App.exportPDF()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> PDF</button>';
-  html+='<button class="btn" onclick="App.importData()">Importa</button>';
-  html+='<button class="btn" onclick="App.backupData()">Backup</button>';
-  html+='<button class="btn" onclick="App.viewMonth()">Mese</button>';
-  html+='</div>';
-  html+='<button class="btn btn-success-fill btn-full" onclick="App.share()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> Condividi</button>';
-  html+='</div>';
+  // Sync bar
+  if(currentUser){
+    if(syncStatus==='synced'){
+      h+='<div class="sync-bar synced"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>Dati sincronizzati sul cloud</span></div>';
+    }else if(syncStatus==='syncing'){
+      h+='<div class="sync-bar syncing"><span class="spinner"></span><span>Sincronizzazione...</span></div>';
+    }else if(syncStatus==='error'){
+      h+='<div class="sync-bar error"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg><span>Errore di sincronizzazione</span></div>';
+    }
+  }
 
-  html+='<div class="card">';
-  html+='<div class="card-label">DATA</div>';
-  html+='<div class="date-nav">';
-  html+='<button class="arrow-btn" onclick="App.prevDate()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>';
-  html+='<span class="date-text">'+esc(DATES[dateIndex].short)+'</span>';
-  html+='<button class="arrow-btn" onclick="App.nextDate()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>';
-  html+='</div>';
-  html+='<div class="date-full">'+esc(DATES[dateIndex].full)+'</div>';
-  html+='<div class="badge-row">';
-  html+='<span class="badge badge-green"><span class="dot"></span>'+totalPresenze+' presenze</span>';
-  html+='<span class="badge badge-orange"><span class="dot"></span>'+totalPre+' pre</span>';
-  html+='<span class="badge badge-blue"><span class="dot"></span>'+totalPost+' post</span>';
-  html+='</div></div>';
+  // Buttons
+  h+='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">';
+  h+='<div class="btn-row">';
+  h+='<button class="btn" onclick="App.login()"><span class="google-icon"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg></span>'+(loginLoading?'...':(currentUser?'Logout':'Login'))+'</button>';
+  h+='<button class="btn" onclick="App.goToday()">Oggi</button>';
+  h+='<button class="btn" onclick="App.resetDay()">Azzera giorno</button>';
+  h+='<button class="btn btn-danger" onclick="App.resetMonth()">Azzera mese</button>';
+  h+='</div>';
+  h+='<div class="btn-row">';
+  h+='<button class="btn btn-danger-fill" onclick="App.exportPDF()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> PDF</button>';
+  h+='<button class="btn" onclick="App.importData()">Importa</button>';
+  h+='<button class="btn" onclick="App.backupData()">Backup</button>';
+  h+='<button class="btn" onclick="App.viewMonth()">Mese</button>';
+  h+='</div>';
+  h+='<button class="btn btn-success-fill btn-full" onclick="App.share()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> Condividi</button>';
+  h+='</div>';
 
-  html+='<div class="card">';
-  html+='<div class="card-label">RICERCA BAMBINO</div>';
-  html+='<div class="search-box"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Cerca per nome o cognome..." value="'+esc(search)+'" oninput="App.setSearch(this.value)"/></div>';
-  html+='</div>';
+  // Date
+  h+='<div class="card"><div class="card-label">DATA</div>';
+  h+='<div class="date-nav">';
+  h+='<button class="arrow-btn" onclick="App.prevDate()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>';
+  h+='<span class="date-text">'+esc(DATES[dateIndex].short)+'</span>';
+  h+='<button class="arrow-btn" onclick="App.nextDate()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>';
+  h+='</div>';
+  h+='<div class="date-full">'+esc(DATES[dateIndex].full)+'</div>';
+  h+='<div class="badge-row">';
+  h+='<span class="badge badge-green"><span class="dot"></span>'+tp+' presenze</span>';
+  h+='<span class="badge badge-orange"><span class="dot"></span>'+tpr+' pre</span>';
+  h+='<span class="badge badge-blue"><span class="dot"></span>'+tpo+' post</span>';
+  h+='</div></div>';
 
-  html+='<div class="roster">';
-  html+='<div class="roster-header">';
-  html+='<span>BAMBINO</span>';
-  html+='<div class="roster-col"><label>Presenza</label><input type="checkbox" class="select-all-check" '+(totalPresenze===children.length&&children.length>0?'checked':'')+' onchange="App.selectAllPresenza(this.checked)"/></div>';
-  html+='<div class="roster-col"><label>Pre</label><input type="checkbox" class="select-all-check" '+(totalPre===children.length&&children.length>0?'checked':'')+' onchange="App.selectAllPre(this.checked)"/></div>';
-  html+='<div class="roster-col"><label>Post</label><input type="checkbox" class="select-all-check" '+(totalPost===children.length&&children.length>0?'checked':'')+' onchange="App.selectAllPost(this.checked)"/></div>';
-  html+='</div>';
+  // Search
+  h+='<div class="card"><div class="card-label">RICERCA BAMBINO</div>';
+  h+='<div class="search-box"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Cerca per nome o cognome..." value="'+esc(search)+'" oninput="App.setSearch(this.value)"/></div>';
+  h+='</div>';
+
+  // Roster
+  h+='<div class="roster"><div class="roster-header">';
+  h+='<span>BAMBINO</span>';
+  h+='<div class="roster-col"><label>Presenza</label><input type="checkbox" class="select-all-check" '+(tp===children.length&&children.length>0?'checked':'')+' onchange="App.selectAllPresenza(this.checked)"/></div>';
+  h+='<div class="roster-col"><label>Pre</label><input type="checkbox" class="select-all-check" '+(tpr===children.length&&children.length>0?'checked':'')+' onchange="App.selectAllPre(this.checked)"/></div>';
+  h+='<div class="roster-col"><label>Post</label><input type="checkbox" class="select-all-check" '+(tpo===children.length&&children.length>0?'checked':'')+' onchange="App.selectAllPost(this.checked)"/></div>';
+  h+='</div>';
 
   var filtered=getFilteredChildren();
   for(var fi=0;fi<filtered.length;fi++){
-    var idx=filtered[fi].i;
-    var name=filtered[fi].name;
-    html+='<div class="child-row">';
-    html+='<div class="child-info">';
-    html+='<div class="child-avatar">'+getInitials(name)+'</div>';
+    var idx=filtered[fi].i, name=filtered[fi].name;
+    h+='<div class="child-row"><div class="child-info"><div class="child-avatar">'+getInitials(name)+'</div>';
     if(editingChild===idx){
-      html+='<input class="child-name-input" id="childInput" value="'+esc(editValue)+'" onblur="App.finishEditChild()" onkeydown="if(event.key===\'Enter\')App.finishEditChild();if(event.key===\'Escape\')App.cancelEditChild()"/>';
+      h+='<input class="child-name-input" id="childInput" value="'+esc(editValue)+'" onblur="App.finishEditChild()" onkeydown="if(event.key===\'Enter\')App.finishEditChild();if(event.key===\'Escape\')App.cancelEditChild()"/>';
     }else{
-      html+='<span class="child-name" onclick="App.startEditChild('+idx+')" title="Clicca per modificare">'+esc(name)+'</span>';
+      h+='<span class="child-name" onclick="App.startEditChild('+idx+')" title="Clicca per modificare">'+esc(name)+'</span>';
     }
-    html+='</div>';
-    html+='<div class="check-cell"><input type="checkbox" '+(hasKey(presenze,idx)?'checked':'')+' onchange="App.togglePresenza('+idx+')"/></div>';
-    html+='<button class="pre-btn '+(hasKey(pre,idx)?'active':'')+'" onclick="App.togglePre('+idx+')">PRE</button>';
-    html+='<button class="post-btn '+(hasKey(post,idx)?'active':'')+'" onclick="App.togglePost('+idx+')">POST</button>';
-    html+='</div>';
+    h+='</div>';
+    h+='<div class="check-cell"><input type="checkbox" '+(hasKey(presenze,idx)?'checked':'')+' onchange="App.togglePresenza('+idx+')"/></div>';
+    h+='<button class="pre-btn '+(hasKey(pre,idx)?'active':'')+'" onclick="App.togglePre('+idx+')">PRE</button>';
+    h+='<button class="post-btn '+(hasKey(post,idx)?'active':'')+'" onclick="App.togglePost('+idx+')">POST</button>';
+    h+='</div>';
   }
-  html+='</div>';
+  h+='</div>';
 
-  html+='<div class="stat-card"><div><div class="stat-label">Totale presenze</div><div class="stat-sub">'+esc(DATES[dateIndex].full)+'</div></div><div class="stat-value" style="color:#28a745">'+totalPresenze+'</div></div>';
-  html+='<div class="stat-card"><div><div class="stat-label">Totale pre</div><div class="stat-sub">Ingressi Anticipati</div></div><div class="stat-value" style="color:#e67e00">'+totalPre+'</div></div>';
-  html+='<div class="stat-card"><div><div class="stat-label">Totale post</div><div class="stat-sub">Uscite Posticipate</div></div><div class="stat-value" style="color:#007bff">'+totalPost+'</div></div>';
+  // Stats
+  h+='<div class="stat-card"><div><div class="stat-label">Totale presenze</div><div class="stat-sub">'+esc(DATES[dateIndex].full)+'</div></div><div class="stat-value" style="color:#28a745">'+tp+'</div></div>';
+  h+='<div class="stat-card"><div><div class="stat-label">Totale pre</div><div class="stat-sub">Ingressi Anticipati</div></div><div class="stat-value" style="color:#e67e00">'+tpr+'</div></div>';
+  h+='<div class="stat-card"><div><div class="stat-label">Totale post</div><div class="stat-sub">Uscite Posticipate</div></div><div class="stat-value" style="color:#007bff">'+tpo+'</div></div>';
 
-  app.innerHTML=html;
+  app.innerHTML=h;
 
-  if(editingClass){
-    var ci=document.getElementById('classInput');
-    if(ci){ci.focus();ci.setSelectionRange(ci.value.length,ci.value.length);}
-  }
-  if(editingChild>=0){
-    var chi=document.getElementById('childInput');
-    if(chi){chi.focus();chi.setSelectionRange(chi.value.length,chi.value.length);}
-  }
+  if(editingClass){var ci=document.getElementById('classInput');if(ci){ci.focus();ci.setSelectionRange(ci.value.length,ci.value.length);}}
+  if(editingChild>=0){var chi=document.getElementById('childInput');if(chi){chi.focus();chi.setSelectionRange(chi.value.length,chi.value.length);}}
 }
 
 function getFilteredChildren(){
@@ -322,6 +402,7 @@ function getFilteredChildren(){
   return result;
 }
 
+// ===== APP =====
 window.App={
   login:handleLogin,
   startEditClass:function(){editingClass=true;render();},
@@ -332,15 +413,15 @@ window.App={
   togglePresenza:function(i){if(hasKey(presenze,i))delete presenze[i];else presenze[i]=true;saveState();render();},
   togglePre:function(i){if(hasKey(pre,i))delete pre[i];else pre[i]=true;saveState();render();},
   togglePost:function(i){if(hasKey(post,i))delete post[i];else post[i]=true;saveState();render();},
-  selectAllPresenza:function(checked){presenze={};if(checked)for(var i=0;i<children.length;i++)presenze[i]=true;saveState();render();},
-  selectAllPre:function(checked){pre={};if(checked)for(var i=0;i<children.length;i++)pre[i]=true;saveState();render();},
-  selectAllPost:function(checked){post={};if(checked)for(var i=0;i<children.length;i++)post[i]=true;saveState();render();},
+  selectAllPresenza:function(c){presenze={};if(c)for(var i=0;i<children.length;i++)presenze[i]=true;saveState();render();},
+  selectAllPre:function(c){pre={};if(c)for(var i=0;i<children.length;i++)pre[i]=true;saveState();render();},
+  selectAllPost:function(c){post={};if(c)for(var i=0;i<children.length;i++)post[i]=true;saveState();render();},
   prevDate:function(){dateIndex=Math.max(0,dateIndex-1);presenze={};pre={};post={};saveState();render();},
   nextDate:function(){dateIndex=Math.min(DATES.length-1,dateIndex+1);presenze={};pre={};post={};saveState();render();},
   setSearch:function(v){search=v;render();},
   goToday:function(){dateIndex=2;presenze={};pre={};post={};saveState();render();},
   resetDay:function(){if(confirm('Azzerare le presenze del giorno?')){presenze={};pre={};post={};saveState();render();}},
-  resetMonth:function(){if(confirm('Azzerare TUTTO il mese? Questa azione non pu\u00f2 essere annullata.')){presenze={};pre={};post={};saveState();render();}},
+  resetMonth:function(){if(confirm('Azzerare TUTTO il mese?')){presenze={};pre={};post={};saveState();render();}},
   exportPDF:function(){window.print();},
   importData:function(){
     var input=document.createElement('input');input.type='file';input.accept='.json';
@@ -355,8 +436,8 @@ window.App={
           if(d.pre)pre=d.pre;
           if(d.post)post=d.post;
           if(d.className)className=d.className;
-          saveState();render();alert('Dati importati con successo!');
-        }catch(err){alert('File non valido. Usa un file JSON esportato dal Backup.');}
+          saveState();render();alert('Dati importati!');
+        }catch(err){alert('File non valido.');}
       };reader.readAsText(file);
     };input.click();
   },
@@ -368,12 +449,12 @@ window.App={
     a.click();URL.revokeObjectURL(a.href);
   },
   viewMonth:function(){
-    var summary='--- RIEPILOGO ---\nClasse: '+className+'\nData: '+DATES[dateIndex].full+'\n\n';
+    var s='--- RIEPILOGO ---\nClasse: '+className+'\nData: '+DATES[dateIndex].full+'\n\n';
     for(var i=0;i<children.length;i++){
-      summary+=children[i]+': P='+((presenze[i])?'Si':'No')+' Pre='+((pre[i])?'Si':'No')+' Post='+((post[i])?'Si':'No')+'\n';
+      s+=children[i]+': P='+(presenze[i]?'Si':'No')+' Pre='+(pre[i]?'Si':'No')+' Post='+(post[i]?'Si':'No')+'\n';
     }
-    summary+='\nTotale: '+countKeys(presenze)+' presenze, '+countKeys(pre)+' pre, '+countKeys(post)+' post su '+children.length+' bambini';
-    alert(summary);
+    s+='\nTotale: '+countKeys(presenze)+' presenze, '+countKeys(pre)+' pre, '+countKeys(post)+' post su '+children.length+' bambini';
+    alert(s);
   },
   share:function(){
     if(navigator.share){
@@ -381,12 +462,13 @@ window.App={
     }else{
       var ta=document.createElement('textarea');ta.value=window.location.href;
       document.body.appendChild(ta);ta.select();document.execCommand('copy');
-      document.body.removeChild(ta);alert('Link copiato negli appunti!');
+      document.body.removeChild(ta);alert('Link copiato!');
     }
   }
 };
 
-loadState();
+// ===== INIT =====
+loadLocal();
 initFirebase();
 render();
 
