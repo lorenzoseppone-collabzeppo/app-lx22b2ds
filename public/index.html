@@ -611,9 +611,9 @@ function render(){
 function getFilteredChildren(){
   var result=[];for(var i=0;i<children.length;i++){if(!search||children[i].toLowerCase().indexOf(search.toLowerCase())>=0){result.push({name:children[i],i:i});}}
   if(sortMode==='alpha'){
-    result.sort(function(a,b){return a.name.toLowerCase().localeCompare(b.name.toLowerCase());});
+    result.sort(function(a,b){return nameReversed(a.name).toLowerCase().localeCompare(nameReversed(b.name).toLowerCase());});
   }else if(sortMode==='gender'){
-    result.sort(function(a,b){var ga=getGender(a.i),gb=getGender(b.i);if(ga!==gb) return ga==='f'?-1:1;return a.name.toLowerCase().localeCompare(b.name.toLowerCase());});
+    result.sort(function(a,b){var ga=getGender(a.i),gb=getGender(b.i);if(ga!==gb) return ga==='f'?-1:1;return nameReversed(a.name).toLowerCase().localeCompare(nameReversed(b.name).toLowerCase());});
   }else if(sortMode==='recent'){
     result.sort(function(a,b){var ta=childLastModified[a.i]||0,tb=childLastModified[b.i]||0;return tb-ta;});
   }else if(sortMode==='age-asc'){
