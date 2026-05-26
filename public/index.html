@@ -142,6 +142,15 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .deleghe-add button:hover{background:#2a2a4e}
 .deleghe-add button:active{transform:scale(0.97)}
 .deleghe-empty{font-size:14px;color:#999;font-style:italic;text-align:center;padding:6px 0}
+.contatto-call-btn{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:8px;background:#007bff;color:white;font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap;transition:all 0.15s;cursor:pointer}
+.contatto-call-btn:hover{background:#0056b3}
+.contatto-call-btn:active{transform:scale(0.97)}
+.contatto-add{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.contatto-add input{flex:1;min-width:80px;padding:8px 12px;border:2px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;outline:none}
+.contatto-add input:focus{border-color:#007bff}
+.contatto-add button{padding:8px 14px;border:none;border-radius:8px;background:#1a1a2e;color:white;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all 0.15s}
+.contatto-add button:hover{background:#2a2a4e}
+.contatto-add button:active{transform:scale(0.97)}
 .child-name-link{cursor:pointer;color:#1a1a2e;transition:color 0.15s}
 .child-name-link:hover{color:#007bff}
 .edit-name-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border:1.5px solid #ccc;border-radius:8px;background:white;font-size:13px;font-weight:600;color:#555;cursor:pointer;font-family:inherit;transition:all 0.15s;white-space:nowrap}
@@ -208,6 +217,7 @@ var post = {};
 var childDiets = {};
 var childGender = {};
 var childDeleghe = {};
+var childContatti = {};
 var currentDate = new Date();
 var search = '';
 var className = 'Coccinelle';
@@ -304,7 +314,7 @@ function getStorageKey(){
 
 function resetAllData(){
   children=['Sofia Rossi','Leonardo Bianchi','Aurora Romano','Tommaso Ferrari','Giulia Esposito','Mattia Ricci','Alice Marino','Nicola Parisi','Elisa Benedetti','Simone Rinaldi','Beatrice Costa','Davide Moretti','Martina Barbieri','Federico Rizzo','Chiara Lombardi','Gabriele Gallo','Ginevra Conti','Alessandro De Luca','Lorenzo Greco','Emma Bruno','Pietro Colombo','Viola Fontana','Marco Villa','Camilla Russo','Edoardo Messina','Anna Serra','Filippo Mazza','Bianca Pellegrini','Luca Marchetti','Giorgia Ferretti'];
-  dateData={};presenze={};pre={};post={};childDiets={};childGender={};childDeleghe={};
+  dateData={};presenze={};pre={};post={};childDiets={};childGender={};childDeleghe={};childContatti={};
   className='Coccinelle';
   currentDate=new Date();
   search='';selectedChild=-1;showDietModal=-1;
@@ -312,7 +322,7 @@ function resetAllData(){
 
 function saveState(){
   saveCurrentDateData();
-  try{localStorage.setItem(getStorageKey(),JSON.stringify({children:children,dateData:dateData,childDiets:childDiets,childGender:childGender,childDeleghe:childDeleghe,currentDate:dateToInput(currentDate),className:className}));}catch(e){}
+  try{localStorage.setItem(getStorageKey(),JSON.stringify({children:children,dateData:dateData,childDiets:childDiets,childGender:childGender,childDeleghe:childDeleghe,childContatti:childContatti,currentDate:dateToInput(currentDate),className:className}));}catch(e){}
   saveToFirestore();
 }
 
@@ -325,6 +335,7 @@ function loadState(){
       if(d.childDiets) childDiets=d.childDiets;
       if(d.childGender) childGender=d.childGender;
       if(d.childDeleghe) childDeleghe=d.childDeleghe;
+      if(d.childContatti) childContatti=d.childContatti;
       if(!d.dateData&&(d.presenze||d.pre||d.post)){
         var key=d.currentDate||dateToKey(new Date());
         dateData[key]={presenze:d.presenze||{},pre:d.pre||{},post:d.post||{}};
@@ -348,7 +359,7 @@ function saveToFirestore(){
 }
 function doSaveToFirestore(){
   if(!currentUser||!db) return;
-  var data={children:children,className:className,dateData:dateData,childDiets:childDiets,childGender:childGender,childDeleghe:childDeleghe,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+  var data={children:children,className:className,dateData:dateData,childDiets:childDiets,childGender:childGender,childDeleghe:childDeleghe,childContatti:childContatti,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
   db.collection('users').doc(currentUser.uid).set(data,{merge:true})
     .then(function(){syncStatus='synced';renderSyncBar();setTimeout(function(){if(syncStatus==='synced'){syncStatus='idle';renderSyncBar();}},3000);})
     .catch(function(err){console.error('Firestore save error:',err);syncStatus='error';renderSyncBar();});
@@ -367,10 +378,11 @@ function loadFromFirestore(uid){
         if(d.childDiets) childDiets=d.childDiets;
         if(d.childGender) childGender=d.childGender;
         if(d.childDeleghe) childDeleghe=d.childDeleghe;
+        if(d.childContatti) childContatti=d.childContatti;
         var key=getCurrentDateKey();var dd=dateData[key];
         if(dd){presenze=dd.presenze||{};pre=dd.pre||{};post=dd.post||{};}
         else{presenze={};pre={};post={};}
-        try{localStorage.setItem(getStorageKey(),JSON.stringify({children:children,dateData:dateData,childDiets:childDiets,childGender:childGender,childDeleghe:childDeleghe,currentDate:dateToInput(currentDate),className:className}));}catch(e){}
+        try{localStorage.setItem(getStorageKey(),JSON.stringify({children:children,dateData:dateData,childDiets:childDiets,childGender:childGender,childDeleghe:childDeleghe,childContatti:childContatti,currentDate:dateToInput(currentDate),className:className}));}catch(e){}
       }else{
         try{localStorage.removeItem(getStorageKey());}catch(e){}
       }
@@ -663,6 +675,27 @@ function renderChildDetail(idx){
   html+='<button onclick="App.addDelega('+idx+')">Aggiungi</button>';
   html+='</div></div>';
 
+  // Contatti box
+  var contatti=childContatti[idx]||[];
+  html+='<div class="deleghe-box" style="background:#e8f4fd">';
+  html+='<div class="deleghe-box-title" style="color:#004085"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#004085" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg> Contatti</div>';
+  if(contatti.length>0){
+    for(var ci=0;ci<contatti.length;ci++){
+      html+='<div class="deleghe-item">';
+      html+='<span class="deleghe-item-name">'+esc(contatti[ci].nome||'')+'</span>';
+      html+='<a class="contatto-call-btn" href="tel:'+esc(contatti[ci].telefono||'')+'" title="Chiama '+esc(contatti[ci].nome||'')+'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg> '+esc(contatti[ci].telefono||'')+'</a>';
+      html+='<button class="deleghe-item-remove" onclick="App.removeContatto('+idx+','+ci+')" title="Rimuovi">\u00d7</button>';
+      html+='</div>';
+    }
+  }else{
+    html+='<div class="deleghe-empty">Nessun contatto aggiunto</div>';
+  }
+  html+='<div class="contatto-add">';
+  html+='<input type="text" id="contattoNome" placeholder="Nome (es. Mamma)..." onkeydown="if(event.key===\'Enter\')App.addContatto('+idx+')"/>';
+  html+='<input type="tel" id="contattoTelefono" placeholder="Numero..." onkeydown="if(event.key===\'Enter\')App.addContatto('+idx+')"/>';
+  html+='<button onclick="App.addContatto('+idx+')">Aggiungi</button>';
+  html+='</div></div>';
+
   html+='<button class="child-detail-close" onclick="App.closeChildDetail()">Chiudi</button>';
   html+='</div></div>';
   return html;
@@ -681,6 +714,8 @@ window.App={
   toggleGender:function(i){var g=getGender(i);childGender[i]=(g==='m'?'f':'m');saveState();render();},
   addDelega:function(i){var inp=document.getElementById('delegaInput');if(inp&&inp.value.trim()){if(!childDeleghe[i])childDeleghe[i]=[];childDeleghe[i].push(inp.value.trim());saveState();render();}},
   removeDelega:function(i,di){if(childDeleghe[i]){childDeleghe[i].splice(di,1);if(childDeleghe[i].length===0)delete childDeleghe[i];saveState();render();}},
+  addContatto:function(i){var nomeInp=document.getElementById('contattoNome');var telInp=document.getElementById('contattoTelefono');if(nomeInp&&telInp&&nomeInp.value.trim()&&telInp.value.trim()){if(!childContatti[i])childContatti[i]=[];childContatti[i].push({nome:nomeInp.value.trim(),telefono:telInp.value.trim()});saveState();render();}},
+  removeContatto:function(i,ci){if(childContatti[i]){childContatti[i].splice(ci,1);if(childContatti[i].length===0)delete childContatti[i];saveState();render();}},
   setSearch:function(v){search=v;render();},
   clearSearch:function(){search='';render();},
   togglePresenza:function(i){if(hasKey(presenze,i))delete presenze[i];else presenze[i]=true;saveState();render();},
@@ -779,25 +814,28 @@ window.App={
       if(childDiets[pi]&&childDiets[pi].note) dietInfo+=(dietInfo?' - ':'')+childDiets[pi].note;
       var delegheList=childDeleghe[pi]||[];
       var delegheStr=delegheList.length>0?delegheList.join(', '):'-';
-      tableBody.push([pi+1,children[pi],String(mPresenze[pi]),String(mPre[pi]),String(mPost[pi]),dietInfo||'-',delegheStr]);
+      var contattiList=childContatti[pi]||[];
+      var contattiStr=contattiList.length>0?contattiList.map(function(c){return c.nome+': '+c.telefono;}).join(', '):'-';
+      tableBody.push([pi+1,children[pi],String(mPresenze[pi]),String(mPre[pi]),String(mPost[pi]),dietInfo||'-',delegheStr,contattiStr]);
     }
 
     doc.autoTable({
       startY:y,
-      head:[['#','Bambino','Presenze','Pre','Post','Dieta','Deleghe']],
+      head:[['#','Bambino','Presenze','Pre','Post','Dieta','Deleghe','Contatti']],
       body:tableBody,
       theme:'grid',
-      headStyles:{fillColor:[26,26,46],textColor:[255,255,255],fontStyle:'bold',fontSize:8,halign:'center'},
+      headStyles:{fillColor:[26,26,46],textColor:[255,255,255],fontStyle:'bold',fontSize:7,halign:'center'},
       columnStyles:{
-        0:{cellWidth:8,halign:'center',fontStyle:'bold'},
-        1:{cellWidth:46},
-        2:{cellWidth:20,halign:'center'},
-        3:{cellWidth:16,halign:'center'},
-        4:{cellWidth:16,halign:'center'},
-        5:{cellWidth:38},
-        6:{cellWidth:36}
+        0:{cellWidth:7,halign:'center',fontStyle:'bold'},
+        1:{cellWidth:38},
+        2:{cellWidth:17,halign:'center'},
+        3:{cellWidth:14,halign:'center'},
+        4:{cellWidth:14,halign:'center'},
+        5:{cellWidth:32},
+        6:{cellWidth:30},
+        7:{cellWidth:34}
       },
-      bodyStyles:{fontSize:7.5},
+      bodyStyles:{fontSize:6.5},
       alternateRowStyles:{fillColor:[245,245,250]},
       didParseCell:function(data){
         if(data.section==='body'){
@@ -817,6 +855,11 @@ window.App={
           if(data.column.index===6){
             var raw=data.cell.raw;
             if(raw&&raw!=='-'){data.cell.styles.textColor=[120,60,150];data.cell.styles.fontStyle='bold';}
+            else{data.cell.styles.textColor=[180,180,180];}
+          }
+          if(data.column.index===7){
+            var raw2=data.cell.raw;
+            if(raw2&&raw2!=='-'){data.cell.styles.textColor=[0,64,133];data.cell.styles.fontStyle='bold';}
             else{data.cell.styles.textColor=[180,180,180];}
           }
         }
