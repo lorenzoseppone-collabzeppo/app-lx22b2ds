@@ -151,6 +151,12 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .contatto-add button{padding:8px 14px;border:none;border-radius:8px;background:#1a1a2e;color:white;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all 0.15s}
 .contatto-add button:hover{background:#2a2a4e}
 .contatto-add button:active{transform:scale(0.97)}
+.sort-bar{display:flex;align-items:center;gap:6px;padding:8px 0;margin-bottom:4px;flex-wrap:wrap}
+.sort-label{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.3px;margin-right:2px}
+.sort-btn{padding:5px 10px;border-radius:8px;border:1.5px solid #ddd;background:white;font-size:11px;font-weight:600;color:#666;cursor:pointer;font-family:inherit;transition:all 0.15s;white-space:nowrap}
+.sort-btn:hover{border-color:#999;color:#333}
+.sort-btn.active{border-color:#1a1a2e;background:#1a1a2e;color:white}
+.sort-btn:active{transform:scale(0.97)}
 .child-name-link{cursor:pointer;color:#1a1a2e;transition:color 0.15s}
 .child-name-link:hover{color:#007bff}
 .edit-name-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border:1.5px solid #ccc;border-radius:8px;background:white;font-size:13px;font-weight:600;color:#555;cursor:pointer;font-family:inherit;transition:all 0.15s;white-space:nowrap}
@@ -218,8 +224,10 @@ var childDiets = {};
 var childGender = {};
 var childDeleghe = {};
 var childContatti = {};
+var childLastModified = {};
 var currentDate = new Date();
 var search = '';
+var sortMode = 'default';
 var className = 'Coccinelle';
 var editingClass = false;
 var editingChild = -1;
@@ -322,7 +330,7 @@ function resetAllData(){
 
 function saveState(){
   saveCurrentDateData();
-  try{localStorage.setItem(getStorageKey(),JSON.stringify({children:children,dateData:dateData,childDiets:childDiets,childGender:childGender,childDeleghe:childDeleghe,childContatti:childContatti,currentDate:dateToInput(currentDate),className:className}));}catch(e){}
+  try{localStorage.setItem(getStorageKey(),JSON.stringify({children:children,dateData:dateData,childDiets:childDiets,childGender:childGender,childDeleghe:childDeleghe,childContatti:childContatti,childLastModified:childLastModified,sortMode:sortMode,currentDate:dateToInput(currentDate),className:className}));}catch(e){}
   saveToFirestore();
 }
 
@@ -336,6 +344,8 @@ function loadState(){
       if(d.childGender) childGender=d.childGender;
       if(d.childDeleghe) childDeleghe=d.childDeleghe;
       if(d.childContatti) childContatti=d.childContatti;
+      if(d.childLastModified) childLastModified=d.childLastModified;
+      if(d.sortMode) sortMode=d.sortMode;
       if(!d.dateData&&(d.presenze||d.pre||d.post)){
         var key=d.currentDate||dateToKey(new Date());
         dateData[key]={presenze:d.presenze||{},pre:d.pre||{},post:d.post||{}};
@@ -359,7 +369,7 @@ function saveToFirestore(){
 }
 function doSaveToFirestore(){
   if(!currentUser||!db) return;
-  var data={children:children,className:className,dateData:dateData,childDiets:childDiets,childGender:childGender,childDeleghe:childDeleghe,childContatti:childContatti,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+  var data={children:children,className:className,dateData:dateData,childDiets:childDiets,childGender:childGender,childDeleghe:childDeleghe,childContatti:childContatti,childLastModified:childLastModified,sortMode:sortMode,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
   db.collection('users').doc(currentUser.uid).set(data,{merge:true})
     .then(function(){syncStatus='synced';renderSyncBar();setTimeout(function(){if(syncStatus==='synced'){syncStatus='idle';renderSyncBar();}},3000);})
     .catch(function(err){console.error('Firestore save error:',err);syncStatus='error';renderSyncBar();});
@@ -379,10 +389,12 @@ function loadFromFirestore(uid){
         if(d.childGender) childGender=d.childGender;
         if(d.childDeleghe) childDeleghe=d.childDeleghe;
         if(d.childContatti) childContatti=d.childContatti;
+        if(d.childLastModified) childLastModified=d.childLastModified;
+        if(d.sortMode) sortMode=d.sortMode;
         var key=getCurrentDateKey();var dd=dateData[key];
         if(dd){presenze=dd.presenze||{};pre=dd.pre||{};post=dd.post||{};}
         else{presenze={};pre={};post={};}
-        try{localStorage.setItem(getStorageKey(),JSON.stringify({children:children,dateData:dateData,childDiets:childDiets,childGender:childGender,childDeleghe:childDeleghe,childContatti:childContatti,currentDate:dateToInput(currentDate),className:className}));}catch(e){}
+        try{localStorage.setItem(getStorageKey(),JSON.stringify({children:children,dateData:dateData,childDiets:childDiets,childGender:childGender,childDeleghe:childDeleghe,childContatti:childContatti,childLastModified:childLastModified,sortMode:sortMode,currentDate:dateToInput(currentDate),className:className}));}catch(e){}
       }else{
         try{localStorage.removeItem(getStorageKey());}catch(e){}
       }
@@ -559,6 +571,15 @@ function render(){
   }
   html+='</div>';
 
+  // Sort buttons
+  html+='<div class="sort-bar">';
+  html+='<span class="sort-label">Ordina:</span>';
+  html+='<button class="sort-btn '+(sortMode==='default'?'active':'')+'" onclick="App.setSort(\'default\')" title="Ordine originale">Default</button>';
+  html+='<button class="sort-btn '+(sortMode==='alpha'?'active':'')+'" onclick="App.setSort(\'alpha\')" title="Ordine alfabetico">A-Z</button>';
+  html+='<button class="sort-btn '+(sortMode==='gender'?'active':'')+'" onclick="App.setSort(\'gender\')" title="Femmine poi Maschi">👧👦</button>';
+  html+='<button class="sort-btn '+(sortMode==='recent'?'active':'')+'" onclick="App.setSort(\'recent\')" title="Modificati di recente">Recenti</button>';
+  html+='</div>';
+
   html+='<div class="stat-card"><div><div class="stat-label">Totale presenze</div><div class="stat-sub">'+esc(dateToFull(currentDate))+'</div></div><div class="stat-value" style="color:#28a745">'+totalPresenze+'</div></div>';
   html+='<div class="stat-card"><div><div class="stat-label">Totale pre</div><div class="stat-sub">Ingressi Anticipati</div></div><div class="stat-value" style="color:#e67e00">'+totalPre+'</div></div>';
   html+='<div class="stat-card"><div><div class="stat-label">Totale post</div><div class="stat-sub">Uscite Posticipate</div></div><div class="stat-value" style="color:#007bff">'+totalPost+'</div></div>';
@@ -574,7 +595,15 @@ function render(){
 }
 
 function getFilteredChildren(){
-  var result=[];for(var i=0;i<children.length;i++){if(!search||children[i].toLowerCase().indexOf(search.toLowerCase())>=0){result.push({name:children[i],i:i});}}return result;
+  var result=[];for(var i=0;i<children.length;i++){if(!search||children[i].toLowerCase().indexOf(search.toLowerCase())>=0){result.push({name:children[i],i:i});}}
+  if(sortMode==='alpha'){
+    result.sort(function(a,b){return a.name.toLowerCase().localeCompare(b.name.toLowerCase());});
+  }else if(sortMode==='gender'){
+    result.sort(function(a,b){var ga=getGender(a.i),gb=getGender(b.i);if(ga!==gb) return ga==='f'?-1:1;return a.name.toLowerCase().localeCompare(b.name.toLowerCase());});
+  }else if(sortMode==='recent'){
+    result.sort(function(a,b){var ta=childLastModified[a.i]||0,tb=childLastModified[b.i]||0;return tb-ta;});
+  }
+  return result;
 }
 
 function getChildMonthlyStats(idx){
@@ -706,7 +735,7 @@ window.App={
   startEditClass:function(){editingClass=true;render();},
   finishEditClass:function(){var ci=document.getElementById('classInput');if(ci&&ci.value.trim())className=ci.value.trim();editingClass=false;saveState();render();},
   startEditChild:function(i){editingChild=i;editValue=children[i];render();},
-  finishEditChild:function(){var ci=document.getElementById('childInput');if(ci&&ci.value.trim()&&editingChild>=0){children[editingChild]=ci.value.trim();}editingChild=-1;editValue='';saveState();render();},
+  finishEditChild:function(){var ci=document.getElementById('childInput');if(ci&&ci.value.trim()&&editingChild>=0){children[editingChild]=ci.value.trim();childLastModified[editingChild]=Date.now();}editingChild=-1;editValue='';saveState();render();},
   cancelEditChild:function(){editingChild=-1;editValue='';render();},
   showChildDetail:function(i){selectedChild=i;render();},
   closeChildDetail:function(){selectedChild=-1;render();},
@@ -744,6 +773,7 @@ window.App={
     var rows=document.querySelectorAll('.child-row');
     for(var i=0;i<rows.length;i++){rows[i].style.display='';}
   },
+  setSort:function(mode){sortMode=mode;saveState();render();},
   togglePresenza:function(i){if(hasKey(presenze,i))delete presenze[i];else presenze[i]=true;saveState();render();},
   togglePre:function(i){if(hasKey(pre,i))delete pre[i];else pre[i]=true;saveState();render();},
   togglePost:function(i){if(hasKey(post,i))delete post[i];else post[i]=true;saveState();render();},
@@ -920,7 +950,7 @@ window.App={
     childDiets[idx].note=note;
     if(firestoreSaveTimer) clearTimeout(firestoreSaveTimer);
     syncStatus='saving';renderSyncBar();
-    firestoreSaveTimer=setTimeout(function(){doSaveToFirestore();try{localStorage.setItem(getStorageKey(),JSON.stringify({children:children,dateData:dateData,childDiets:childDiets,childGender:childGender,childDeleghe:childDeleghe,currentDate:dateToInput(currentDate),className:className}));}catch(e){}},1500);
+    firestoreSaveTimer=setTimeout(function(){doSaveToFirestore();try{localStorage.setItem(getStorageKey(),JSON.stringify({children:children,dateData:dateData,childDiets:childDiets,childGender:childGender,childDeleghe:childDeleghe,childContatti:childContatti,childLastModified:childLastModified,sortMode:sortMode,currentDate:dateToInput(currentDate),className:className}));}catch(e){}},1500);
   },
   importData:function(){
     var input=document.createElement('input');input.type='file';input.accept='.json';
