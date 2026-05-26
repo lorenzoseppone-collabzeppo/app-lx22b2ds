@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 <title>Registro Presenze - Coccinelle</title>
-<meta name="version" content="2025-05-26-v3"/>
+<meta name="version" content="2025-05-26-v4"/>
 <meta name="description" content="Registro Presenze per la gestione della classe"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a1a2e'><path d='M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5zm2 4h10v2H7v-2zm0 4h7v2H7v-2z'/></svg>"/>
 <style>
@@ -59,18 +59,17 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .roster-col label{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;cursor:pointer}
 .child-row{display:grid;grid-template-columns:1fr 36px 52px 52px 52px 52px;align-items:center;padding:8px 16px;border-bottom:1px solid #f0f0f0;gap:4px;transition:background 0.1s}
 .child-row:last-child{border-bottom:none}
-.child-info{display:flex;align-items:center;gap:6px;min-width:0}
-.child-avatar{width:30px;height:30px;border-radius:50%;background:#1a1a2e;color:white;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;flex-shrink:0;cursor:pointer;transition:background 0.2s}
-.child-avatar.male{background:#5b9bd5}
-.child-avatar.female{background:#e87da0}
+.child-info{display:flex;align-items:center;min-width:0}
+.child-name-badge{display:flex;align-items:center;justify-content:center;padding:6px 10px;border-radius:8px;background:#1a1a2e;color:white;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;width:100%;letter-spacing:0.2px}
+.child-name-badge.male{background:#5b9bd5}
+.child-name-badge.female{background:#e87da0}
+.child-name-badge:active{transform:scale(0.97)}
 .age-circle{width:30px;height:30px;border-radius:50%;background:#f0eef5;border:1.5px solid #d5d0e0;color:#555;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;cursor:pointer;transition:all 0.15s}
 .age-circle:hover{border-color:#1a1a2e;background:#e8e4f0}
 .age-circle.has-age{background:#fff3cd;border-color:#e67e00;color:#856404}
 .age-cell{display:flex;align-items:center;justify-content:center}
 .child-row.male-row{background:#eaf3fb}
 .child-row.female-row{background:#fdeef3}
-.child-name{font-size:13px;font-weight:500;color:#1a1a2e;cursor:pointer;padding:2px 4px;border-radius:4px;border:1.5px solid transparent;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.child-name:hover{border-color:#ccc}
 .child-name-input{font-size:13px;font-weight:500;border:1.5px solid #007bff;border-radius:4px;padding:2px 4px;outline:none;background:white;font-family:inherit;min-width:0;width:100%}
 .check-cell{display:flex;align-items:center;justify-content:center}
 .check-cell input[type=checkbox]{width:18px;height:18px;accent-color:#28a745;cursor:pointer}
@@ -162,8 +161,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .sort-btn:hover{border-color:#999;color:#333}
 .sort-btn.active{border-color:#1a1a2e;background:#1a1a2e;color:white}
 .sort-btn:active{transform:scale(0.97)}
-.child-name-link{cursor:pointer;color:#1a1a2e;transition:color 0.15s}
-.child-name-link:hover{color:#007bff}
+
 .edit-name-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border:1.5px solid #ccc;border-radius:8px;background:white;font-size:13px;font-weight:600;color:#555;cursor:pointer;font-family:inherit;transition:all 0.15s;white-space:nowrap}
 .edit-name-btn:hover{border-color:#007bff;color:#007bff;background:#f0f6ff}
 .edit-name-btn:active{transform:scale(0.97)}
@@ -174,7 +172,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .stat-value{font-size:36px;font-weight:700;line-height:1}
 .google-icon{display:inline-flex;vertical-align:middle}
 @media print{body{background:white!important;background-image:none!important}.btn,.btn-row,.auth-bar,.sync-bar,.search-box,.arrow-btn,.diet-btn{display:none!important}.header-icon,.user-badge{display:none!important}.card,.roster,.stat-card{box-shadow:none!important;border:1px solid #eee}}
-@media(max-width:400px){.roster-header{grid-template-columns:1fr 30px 42px 42px 42px 42px}.child-row{grid-template-columns:1fr 30px 42px 42px 42px 42px}.child-name{font-size:12px}.child-avatar{width:26px;height:26px;font-size:9px}.age-circle{width:24px;height:24px;font-size:8px}.pre-btn,.post-btn{width:38px;font-size:9px;padding:3px 5px}.diet-btn{width:24px;height:24px;font-size:12px}}
+@media(max-width:400px){.roster-header{grid-template-columns:1fr 30px 42px 42px 42px 42px}.child-row{grid-template-columns:1fr 30px 42px 42px 42px 42px}.child-name-badge{font-size:11px;padding:5px 8px}.age-circle{width:24px;height:24px;font-size:8px}.pre-btn,.post-btn{width:38px;font-size:9px;padding:3px 5px}.diet-btn{width:24px;height:24px;font-size:12px}}
 </style>
 </head>
 <body>
@@ -269,6 +267,11 @@ function getInitials(name){
   var parts=name.trim().split(/\s+/);
   if(parts.length>=2) return parts[0][0].toUpperCase()+parts[parts.length-1][0].toUpperCase();
   return parts[0].substring(0,2).toUpperCase();
+}
+function nameReversed(name){
+  var parts=name.trim().split(/\s+/);
+  if(parts.length>=2) return parts[parts.length-1]+' '+parts[0];
+  return name;
 }
 function countKeys(obj){var c=0;for(var k in obj)if(obj.hasOwnProperty(k))c++;return c;}
 function hasKey(obj,k){return obj.hasOwnProperty(k);}
@@ -576,11 +579,9 @@ function render(){
     var dietTagClass=hasDiet?getDietTagClass(childDiets[idx].type):'';
     var gClass=getGenderClass(idx);
     html+='<div class="child-row '+gClass+'-row" data-name="'+esc(name.toLowerCase())+'"><div class="child-info">';
-    html+='<div class="child-avatar '+gClass+'" onclick="App.showChildDetail('+idx+')" title="Clicca per vedere il riepilogo">'+getInitials(name)+'</div>';
     if(editingChild===idx){html+='<input class="child-name-input" id="childInput" value="'+esc(editValue)+'" onblur="App.finishEditChild()" onkeydown="if(event.key===\'Enter\')App.finishEditChild();if(event.key===\'Escape\')App.cancelEditChild()"/>';}
     else{
-      html+='<span class="child-name child-name-link" onclick="App.showChildDetail('+idx+')" title="Clicca per vedere il riepilogo">'+esc(name)+'</span>';
-      if(hasDiet){html+='<span class="diet-tag '+dietTagClass+'" title="'+esc(dietLabel)+(childDiets[idx].note?' - '+esc(childDiets[idx].note):'')+'">'+esc(dietLabel)+'</span>';}
+      html+='<div class="child-name-badge '+gClass+'" onclick="App.showChildDetail('+idx+')" title="Clicca per vedere il riepilogo">'+esc(nameReversed(name))+'</div>';
     }
     html+='</div>';
     var age=childAge[idx]||'';
