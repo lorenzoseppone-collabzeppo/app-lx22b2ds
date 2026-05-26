@@ -541,6 +541,15 @@ function render(){
   html+='<div id="searchNoResult" style="padding:8px 12px;font-size:13px;color:#888;display:none">Nessun bambino trovato</div>';
   html+='</div>';
 
+  // Sort buttons
+  html+='<div class="sort-bar">';
+  html+='<span class="sort-label">Ordina:</span>';
+  html+='<button class="sort-btn '+(sortMode==='default'?'active':'')+'" onclick="App.setSort(\'default\')" title="Ordine originale">Default</button>';
+  html+='<button class="sort-btn '+(sortMode==='alpha'?'active':'')+'" onclick="App.setSort(\'alpha\')" title="Ordine alfabetico">A-Z</button>';
+  html+='<button class="sort-btn '+(sortMode==='gender'?'active':'')+'" onclick="App.setSort(\'gender\')" title="Femmine poi Maschi">👧👦</button>';
+  html+='<button class="sort-btn '+(sortMode==='recent'?'active':'')+'" onclick="App.setSort(\'recent\')" title="Modificati di recente">Recenti</button>';
+  html+='</div>';
+
   html+='<div class="roster"><div class="roster-header">';
   html+='<span>BAMBINO</span>';
   html+='<div class="roster-col"><label>Dieta</label></div>';
@@ -570,15 +579,6 @@ function render(){
     html+='<div class="check-cell"><button class="post-btn '+(hasKey(post,idx)?'active':'')+'" onclick="App.togglePost('+idx+')">POST</button></div>';
     html+='</div>';
   }
-  html+='</div>';
-
-  // Sort buttons
-  html+='<div class="sort-bar">';
-  html+='<span class="sort-label">Ordina:</span>';
-  html+='<button class="sort-btn '+(sortMode==='default'?'active':'')+'" onclick="App.setSort(\'default\')" title="Ordine originale">Default</button>';
-  html+='<button class="sort-btn '+(sortMode==='alpha'?'active':'')+'" onclick="App.setSort(\'alpha\')" title="Ordine alfabetico">A-Z</button>';
-  html+='<button class="sort-btn '+(sortMode==='gender'?'active':'')+'" onclick="App.setSort(\'gender\')" title="Femmine poi Maschi">👧👦</button>';
-  html+='<button class="sort-btn '+(sortMode==='recent'?'active':'')+'" onclick="App.setSort(\'recent\')" title="Modificati di recente">Recenti</button>';
   html+='</div>';
 
   html+='<div class="stat-card"><div><div class="stat-label">Totale presenze</div><div class="stat-sub">'+esc(dateToFull(currentDate))+'</div></div><div class="stat-value" style="color:#28a745">'+totalPresenze+'</div></div>';
