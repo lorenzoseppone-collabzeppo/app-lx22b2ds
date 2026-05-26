@@ -76,6 +76,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .post-btn{border:1.5px solid #ccc;background:white;color:#888}
 .post-btn.active{border-color:#007bff;background:#007bff;color:white}
 .diet-btn{width:28px;height:28px;border-radius:50%;border:1.5px solid #ccc;background:white;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all 0.1s;padding:0;flex-shrink:0}
+.diet-cell{display:flex;align-items:center;justify-content:center;min-width:46px}
 .diet-btn:hover{border-color:#e67e00;background:#fff8f0}
 .diet-btn.has-diet{border-color:#e67e00;background:#fff3cd}
 .diet-tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 7px;border-radius:8px;margin-left:2px;white-space:nowrap;max-width:80px;overflow:hidden;text-overflow:ellipsis}
@@ -153,7 +154,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .stat-value{font-size:36px;font-weight:700;line-height:1}
 .google-icon{display:inline-flex;vertical-align:middle}
 @media print{body{background:white!important;background-image:none!important}.btn,.btn-row,.auth-bar,.sync-bar,.search-box,.arrow-btn,.diet-btn{display:none!important}.header-icon,.user-badge{display:none!important}.card,.roster,.stat-card{box-shadow:none!important;border:1px solid #eee}}
-@media(max-width:400px){.child-name{font-size:12px}.child-avatar{width:26px;height:26px;font-size:9px}.pre-btn,.post-btn{min-width:38px;font-size:9px;padding:3px 5px}.check-cell{min-width:38px}.roster-col{min-width:38px}.diet-btn{width:24px;height:24px;font-size:12px}}
+@media(max-width:400px){.child-name{font-size:12px}.child-avatar{width:26px;height:26px;font-size:9px}.pre-btn,.post-btn{min-width:38px;font-size:9px;padding:3px 5px}.check-cell{min-width:38px}.diet-cell{min-width:38px}.roster-col{min-width:38px}.diet-btn{width:24px;height:24px;font-size:12px}}
 </style>
 </head>
 <body>
@@ -507,7 +508,7 @@ function render(){
       if(hasDiet){html+='<span class="diet-tag '+dietTagClass+'" title="'+esc(dietLabel)+(childDiets[idx].note?' - '+esc(childDiets[idx].note):'')+'">'+esc(dietLabel)+'</span>';}
     }
     html+='</div>';
-    html+='<button class="diet-btn '+(hasDiet?'has-diet':'')+'" onclick="App.openDietModal('+idx+')" title="Dieta">\ud83c\udf7d</button>';
+    html+='<div class="diet-cell"><button class="diet-btn '+(hasDiet?'has-diet':'')+'" onclick="App.openDietModal('+idx+')" title="Dieta">\ud83c\udf7d</button></div>';
     html+='<div class="check-cell"><input type="checkbox" '+(hasKey(presenze,idx)?'checked':'')+' onchange="App.togglePresenza('+idx+')"/></div>';
     html+='<button class="pre-btn '+(hasKey(pre,idx)?'active':'')+'" onclick="App.togglePre('+idx+')">PRE</button>';
     html+='<button class="post-btn '+(hasKey(post,idx)?'active':'')+'" onclick="App.togglePost('+idx+')">POST</button>';
