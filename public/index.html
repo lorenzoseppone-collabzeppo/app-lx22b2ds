@@ -522,10 +522,10 @@ function render(){
   html+='</div></div>';
 
   html+='<div class="card"><div class="card-label">RICERCA BAMBINO</div>';
-  html+='<div class="search-box"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Cerca per nome o cognome..." value="'+esc(search)+'" oninput="App.setSearch(this.value)"/>';
-  if(search){html+='<button style="background:none;border:none;cursor:pointer;padding:2px;margin-left:4px" onclick="App.clearSearch()" title="Cancella ricerca"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';}
+  html+='<div class="search-box"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="searchInput" placeholder="Cerca per nome o cognome..." value="'+esc(search)+'" oninput="App.setSearchLive(this.value)"/>';
+  html+='<button id="searchClearBtn" style="background:none;border:none;cursor:pointer;padding:2px;margin-left:4px'+(search?'':';display:none')+'" onclick="App.clearSearchLive()" title="Cancella ricerca"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
   html+='</div>';
-  if(search){var sr=getFilteredChildren();if(sr.length===0){html+='<div style="padding:8px 12px;font-size:13px;color:#888">Nessun bambino trovato</div>';}}
+  html+='<div id="searchNoResult" style="padding:8px 12px;font-size:13px;color:#888;display:none">Nessun bambino trovato</div>';
   html+='</div>';
 
   html+='<div class="roster"><div class="roster-header">';
@@ -543,7 +543,7 @@ function render(){
     var dietLabel=getDietLabel(idx);
     var dietTagClass=hasDiet?getDietTagClass(childDiets[idx].type):'';
     var gClass=getGenderClass(idx);
-    html+='<div class="child-row '+gClass+'-row"><div class="child-info">';
+    html+='<div class="child-row '+gClass+'-row" data-name="'+esc(name.toLowerCase())+'"><div class="child-info">';
     html+='<div class="child-avatar '+gClass+'" onclick="App.toggleGender('+idx+')" title="Clicca per cambiare genere">'+getInitials(name)+'</div>';
     if(editingChild===idx){html+='<input class="child-name-input" id="childInput" value="'+esc(editValue)+'" onblur="App.finishEditChild()" onkeydown="if(event.key===\'Enter\')App.finishEditChild();if(event.key===\'Escape\')App.cancelEditChild()"/>';}
     else{
@@ -718,6 +718,32 @@ window.App={
   removeContatto:function(i,ci){if(childContatti[i]){childContatti[i].splice(ci,1);if(childContatti[i].length===0)delete childContatti[i];saveState();render();}},
   setSearch:function(v){search=v;render();},
   clearSearch:function(){search='';render();},
+  setSearchLive:function(v){
+    search=v;
+    var clearBtn=document.getElementById('searchClearBtn');
+    var noResult=document.getElementById('searchNoResult');
+    if(clearBtn) clearBtn.style.display=v?'':'none';
+    var rows=document.querySelectorAll('.child-row');
+    var found=0;
+    var q=v.toLowerCase();
+    for(var i=0;i<rows.length;i++){
+      var name=(rows[i].getAttribute('data-name')||'').toLowerCase();
+      if(!q||name.indexOf(q)>=0){rows[i].style.display='';found++;}
+      else{rows[i].style.display='none';}
+    }
+    if(noResult) noResult.style.display=(v&&found===0)?'block':'none';
+  },
+  clearSearchLive:function(){
+    search='';
+    var inp=document.getElementById('searchInput');
+    if(inp) inp.value='';
+    var clearBtn=document.getElementById('searchClearBtn');
+    var noResult=document.getElementById('searchNoResult');
+    if(clearBtn) clearBtn.style.display='none';
+    if(noResult) noResult.style.display='none';
+    var rows=document.querySelectorAll('.child-row');
+    for(var i=0;i<rows.length;i++){rows[i].style.display='';}
+  },
   togglePresenza:function(i){if(hasKey(presenze,i))delete presenze[i];else presenze[i]=true;saveState();render();},
   togglePre:function(i){if(hasKey(pre,i))delete pre[i];else pre[i]=true;saveState();render();},
   togglePost:function(i){if(hasKey(post,i))delete post[i];else post[i]=true;saveState();render();},
