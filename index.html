@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
 <title>Registro di Classe</title>
-<meta name="version" content="2025-05-28-v24-rest-api-first"/>
+<meta name="version" content="2025-05-28-v25-json-string-sync"/>
 <meta name="description" content="Registro di Classe per la gestione della classe"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a1a2e'><path d='M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z'/></svg>"/>
 <style>
@@ -370,6 +370,7 @@ var weatherData = null;
 var clockTimer = null;
 var _lastSaveId = null;
 var _snapshotListener = null;
+var _mobilePollTimer = null;
 
 
 function regularClassCount(){var c=0;for(var k in classes){if(classes.hasOwnProperty(k)&&k!==COORDINATRICE_ID)c++;}return c;}
@@ -961,22 +962,25 @@ function doSaveToFirestore(){
   syncStatus='saving';renderSyncBar();
   var uid=currentUser.uid;
   
-  // On mobile: use REST API FIRST (SDK is unreliable on iOS Safari)
-  // On desktop: use SDK first (more reliable)
+  // NEW v25: Store data as a JSON string in dataJson field
+  // This avoids complex Firestore type conversion in REST API
+  var dataJson=JSON.stringify(saveData);
+  var docData={dataJson:dataJson,_saveId:_lastSaveId,updatedAt:saveData.updatedAt};
+  
   var isMobile=/iPad|iPhone|iPod|Android/i.test(navigator.userAgent);
   
   if(isMobile){
-    // MOBILE: REST API first, SDK as fallback
-    console.log('[SAVE] Mobile detected - using REST API first');
+    // MOBILE: REST API first (SDK is unreliable on iOS Safari)
+    console.log('[SAVE] Mobile - REST API first (JSON string)');
     if(_saveTimeout){clearTimeout(_saveTimeout);}
     _saveTimeout=setTimeout(function(){
       console.error('[SAVE] REST API timeout, trying SDK...');
-      db.collection('users').doc(uid).set(saveData,{merge:true})
+      db.collection('users').doc(uid).set(docData,{merge:true})
         .then(function(){if(_saveTimeout){clearTimeout(_saveTimeout);_saveTimeout=null;}saveSuccess(classCount);})
         .catch(function(err){if(_saveTimeout){clearTimeout(_saveTimeout);_saveTimeout=null;}saveFailed(err);});
     },15000);
     
-    uploadViaRestAPI(uid, saveData, function(ok, msg){
+    uploadJsonViaRestAPI(uid, dataJson, _lastSaveId, saveData.updatedAt, function(ok, msg){
       if(ok){
         if(_saveTimeout){clearTimeout(_saveTimeout);_saveTimeout=null;}
         console.log('[SAVE] REST API SUCCESS');
@@ -984,8 +988,7 @@ function doSaveToFirestore(){
       }else{
         console.error('[SAVE] REST API failed:',msg,' - trying SDK...');
         if(_saveTimeout){clearTimeout(_saveTimeout);_saveTimeout=null;}
-        // SDK fallback
-        db.collection('users').doc(uid).set(saveData,{merge:true})
+        db.collection('users').doc(uid).set(docData,{merge:true})
           .then(function(){saveSuccess(classCount);})
           .catch(function(err2){saveFailed(err2);});
       }
@@ -995,13 +998,13 @@ function doSaveToFirestore(){
     if(_saveTimeout){clearTimeout(_saveTimeout);}
     _saveTimeout=setTimeout(function(){
       console.error('[SAVE] SDK timeout, trying REST API...');
-      uploadViaRestAPI(uid, saveData, function(ok, msg){
+      uploadJsonViaRestAPI(uid, dataJson, _lastSaveId, saveData.updatedAt, function(ok, msg){
         if(ok){if(_saveTimeout){clearTimeout(_saveTimeout);_saveTimeout=null;}saveSuccess(classCount);}
         else{saveFailed({code:'timeout',message:'Both SDK and REST API failed'});}
       });
     },10000);
     
-    db.collection('users').doc(uid).set(saveData,{merge:true})
+    db.collection('users').doc(uid).set(docData,{merge:true})
       .then(function(){
         if(_saveTimeout){clearTimeout(_saveTimeout);_saveTimeout=null;}
         saveSuccess(classCount);
@@ -1009,7 +1012,7 @@ function doSaveToFirestore(){
       .catch(function(err){
         if(_saveTimeout){clearTimeout(_saveTimeout);_saveTimeout=null;}
         console.error('[SAVE] SDK failed, trying REST API...');
-        uploadViaRestAPI(uid, saveData, function(ok, msg){
+        uploadJsonViaRestAPI(uid, dataJson, _lastSaveId, saveData.updatedAt, function(ok, msg){
           if(ok){saveSuccess(classCount);}
           else{saveFailed(err);}
         });
@@ -1080,18 +1083,17 @@ function loadFromFirestore(uid, forceReload){
   
   if(isMobile){
     // MOBILE: REST API first (SDK is unreliable on iOS Safari)
-    console.log('[LOAD] Mobile detected - using REST API first');
-    downloadViaRestAPI(uid, function(apiOk, apiData){
-      if(apiOk&&apiData&&apiData.classes){
-        console.log('[LOAD] REST API SUCCESS - got '+Object.keys(apiData.classes).length+' classes');
-        var fakeDoc={exists:true,data:function(){return apiData;},metadata:{fromCache:false}};
-        handleFirestoreData(fakeDoc, uid, localData);
+    console.log('[LOAD] Mobile - using REST API (JSON string)');
+    downloadJsonViaRestAPI(uid, function(apiOk, apiData){
+      if(apiOk&&apiData){
+        console.log('[LOAD] REST API SUCCESS - got data');
+        handleFirestoreJsonData(apiData, uid, localData);
       }else{
         console.log('[LOAD] REST API failed, trying SDK...');
-        // SDK fallback
         db.collection('users').doc(uid).get().then(function(doc){
-          if(doc.exists&&doc.data()&&doc.data().classes){
-            handleFirestoreData(doc, uid, localData);
+          var data=resolveDocData(doc);
+          if(data&&data.classes){
+            handleFirestoreJsonData(data, uid, localData);
           }else{
             applyLocalOrDefaults(localData);
             saveToFirestoreNow();
@@ -1111,8 +1113,9 @@ function loadFromFirestore(uid, forceReload){
     console.log('[LOAD] Desktop - using SDK');
     db.collection('users').doc(uid).get({source:'server'})
       .then(function(doc){
-        if(doc.exists&&doc.data()&&doc.data().classes){
-          handleFirestoreData(doc, uid, localData);
+        var data=resolveDocData(doc);
+        if(data&&data.classes){
+          handleFirestoreJsonData(data, uid, localData);
         }else{
           applyLocalOrDefaults(localData);
           saveToFirestoreNow();
@@ -1120,10 +1123,9 @@ function loadFromFirestore(uid, forceReload){
       })
       .catch(function(err){
         console.error('[LOAD] SDK failed, trying REST API...');
-        downloadViaRestAPI(uid, function(apiOk, apiData){
-          if(apiOk&&apiData&&apiData.classes){
-            var fakeDoc={exists:true,data:function(){return apiData;},metadata:{fromCache:false}};
-            handleFirestoreData(fakeDoc, uid, localData);
+        downloadJsonViaRestAPI(uid, function(apiOk, apiData){
+          if(apiOk&&apiData){
+            handleFirestoreJsonData(apiData, uid, localData);
           }else{
             applyLocalOrDefaults(localData);
             syncStatus='error';
@@ -1134,6 +1136,29 @@ function loadFromFirestore(uid, forceReload){
         });
       });
   }
+}
+
+// Resolve document data: check for new dataJson format first, then fall back to old classes format
+function resolveDocData(doc){
+  if(!doc||!doc.exists) return null;
+  var d=doc.data();
+  if(!d) return null;
+  // v25 NEW FORMAT: dataJson string
+  if(d.dataJson&&typeof d.dataJson==='string'&&d.dataJson.length>0){
+    try{
+      var parsed=JSON.parse(d.dataJson);
+      console.log('[RESOLVE] Using dataJson format (v25)');
+      return parsed;
+    }catch(e){
+      console.error('[RESOLVE] dataJson parse error:',e);
+    }
+  }
+  // OLD FORMAT: classes field
+  if(d.classes){
+    console.log('[RESOLVE] Using old classes format (pre-v25)');
+    return d;
+  }
+  return null;
 }
 
 function applyLocalOrDefaults(localData){
@@ -1158,101 +1183,56 @@ function applyLocalOrDefaults(localData){
   render();
 }
 
-function handleFirestoreData(doc, uid, localData){
-  var useFirestoreData=false;
-  if(doc.exists){
-    var d=doc.data();
-    if(d.classes){
-      var fsClassCount=Object.keys(d.classes).length;
-      var localClassCount=localData?Object.keys(localData.classes).length:0;
-      console.log('[LOAD] Firestore classes: '+fsClassCount+', localStorage classes: '+localClassCount);
-      // Log what Firestore has
-      for(var fcid in d.classes){if(d.classes.hasOwnProperty(fcid)){console.log('[LOAD] FS class: '+fcid+' = '+(d.classes[fcid].name||'?'));}}
-      if(localData){for(var lcid in localData.classes){if(localData.classes.hasOwnProperty(lcid)){console.log('[LOAD] LS class: '+lcid+' = '+(localData.classes[lcid].name||'?'));}}}
-      // MERGE: unisci classi da Firestore e localStorage, la versione più recente vince
-      // Partiamo da Firestore come base, poi aggiungiamo classi che esistono solo in localStorage
-      classes=JSON.parse(JSON.stringify(d.classes));
-      currentClassId=d.currentClassId||'';
-      if(d.schoolName) schoolName=d.schoolName;
-      // Aggiungi classi da localStorage che NON esistono in Firestore
-      if(localData&&localData.classes){
-        for(var mk in localData.classes){
-          if(localData.classes.hasOwnProperty(mk)&&!classes.hasOwnProperty(mk)){
-            console.log('[MERGE] Adding local-only class: '+mk+' = '+(localData.classes[mk].name||'?'));
-            classes[mk]=localData.classes[mk];
-          }
-        }
-        // Se localStorage ha una classe con più dati (più bambini o più messaggi), usa quella
-        for(var uk in localData.classes){
-          if(localData.classes.hasOwnProperty(uk)&&classes.hasOwnProperty(uk)){
-            var lsChildren=(localData.classes[uk].children||[]).length;
-            var fsChildren=(classes[uk].children||[]).length;
-            var lsMsgs=(localData.classes[uk].messages||[]).length;
-            var fsMsgs=(classes[uk].messages||[]).length;
-            // Se localStorage ha più contenuti, preferisci quello
-            if(lsChildren>fsChildren||lsMsgs>fsMsgs){
-              console.log('[MERGE] Local class has more data: '+uk+' (LS:'+lsChildren+'children/'+lsMsgs+'msgs vs FS:'+fsChildren+'/'+fsMsgs+')');
-              classes[uk]=localData.classes[uk];
-            }
-          }
-        }
-        // Se il currentClassId non esiste nelle classi merge, usa quello di localStorage
-        if(!classes[currentClassId]&&localData.currentClassId&&classes[localData.currentClassId]){
-          currentClassId=localData.currentClassId;
-        }
-      }
-      useFirestoreData=true;
-    }else{
-      // OLD FORMAT - migrate
-      if(d.children&&d.children.length>0){children=d.children;for(var ui=0;ui<children.length;ui++){children[ui]=children[ui].toUpperCase();}}
-      if(d.className) className=d.className;
-      if(d.schoolName) schoolName=d.schoolName;
-      if(d.teacher1!==undefined) teacher1=d.teacher1;
-      if(d.teacher2!==undefined) teacher2=d.teacher2;
-      if(d.holidays) holidays=d.holidays;
-      if(d.dayNotes) dayNotes=d.dayNotes;
-      if(d.dateData) dateData=d.dateData;
-      if(d.childDiets) childDiets=d.childDiets;
-      if(d.childGender) childGender=d.childGender;
-      if(d.childDeleghe) childDeleghe=d.childDeleghe;
-      if(d.childContatti) childContatti=d.childContatti;
-      if(d.childLastModified) childLastModified=d.childLastModified;
-      if(d.childAge) childAge=d.childAge;
-      if(d.childNotes) childNotes=d.childNotes;
-      if(d.sortMode) sortMode=d.sortMode;
-      ensureDefaultClass();
-    }
-  }else{
-    // No Firestore doc yet — use localStorage as primary source
-    if(localData){
-      classes=localData.classes;
-      currentClassId=localData.currentClassId||'';
-      if(localData.schoolName) schoolName=localData.schoolName;
-      if(localData.currentDate){try{currentDate=new Date(localData.currentDate+'T12:00:00');}catch(e){}}
-    }else{
-      loadState();
-    }
-    ensureDefaultClass();
-    updateClassLockState();
-    firestoreLoadDone=true;firestoreLoaded=true;syncStatus='synced';updateClassLockState();render();
-    setTimeout(function(){if(syncStatus==='synced'){syncStatus='idle';renderSyncBar();}},3000);
+// Handle data loaded from Firestore (supports both v25 dataJson and old classes format)
+function handleFirestoreJsonData(data, uid, localData){
+  if(!data||!data.classes){
+    applyLocalOrDefaults(localData);
     return;
   }
+  var d=data;
+  var fsClassCount=Object.keys(d.classes).length;
+  var localClassCount=localData?Object.keys(localData.classes).length:0;
+  console.log('[LOAD] Firestore classes: '+fsClassCount+', localStorage classes: '+localClassCount);
+  for(var fcid in d.classes){if(d.classes.hasOwnProperty(fcid)){console.log('[LOAD] FS class: '+fcid+' = '+(d.classes[fcid].name||'?'));}}
   
-  if(useFirestoreData){
-    restorePinsFromLocalStorage();
-    if(currentClassId&&classes[currentClassId]){loadClassData(currentClassId);}
-    ensureDefaultClass();
-    restorePinsFromLocalStorage();
+  // MERGE: unisci classi da Firestore e localStorage
+  classes=JSON.parse(JSON.stringify(d.classes));
+  currentClassId=d.currentClassId||'';
+  if(d.schoolName) schoolName=d.schoolName;
+  
+  if(localData&&localData.classes){
+    for(var mk in localData.classes){
+      if(localData.classes.hasOwnProperty(mk)&&!classes.hasOwnProperty(mk)){
+        console.log('[MERGE] Adding local-only class: '+mk+' = '+(localData.classes[mk].name||'?'));
+        classes[mk]=localData.classes[mk];
+      }
+    }
+    for(var uk in localData.classes){
+      if(localData.classes.hasOwnProperty(uk)&&classes.hasOwnProperty(uk)){
+        var lsChildren=(localData.classes[uk].children||[]).length;
+        var fsChildren=(classes[uk].children||[]).length;
+        var lsMsgs=(localData.classes[uk].messages||[]).length;
+        var fsMsgs=(classes[uk].messages||[]).length;
+        if(lsChildren>fsChildren||lsMsgs>fsMsgs){
+          console.log('[MERGE] Local has more data for '+uk);
+          classes[uk]=localData.classes[uk];
+        }
+      }
+    }
+    if(!classes[currentClassId]&&localData.currentClassId&&classes[localData.currentClassId]){
+      currentClassId=localData.currentClassId;
+    }
   }
+  
+  restorePinsFromLocalStorage();
+  if(currentClassId&&classes[currentClassId]){loadClassData(currentClassId);}
+  ensureDefaultClass();
+  restorePinsFromLocalStorage();
   
   var key=getCurrentDateKey();var dd=dateData[key];
   if(dd){presenze=dd.presenze||{};pre=dd.pre||{};post=dd.post||{};}
   else{presenze={};pre={};post={};}
-  // Non sbloccare automaticamente le classi con PIN - l'utente deve inserirlo
-  // Se la classe non ha PIN, sbloccala automaticamente
   if(currentClassId&&classes[currentClassId]&&!(classes[currentClassId].pin&&classes[currentClassId].pin.length>0)){unlockedClasses[currentClassId]=true;}
-  // Always update localStorage with latest data
   try{localStorage.setItem(getStorageKey(),JSON.stringify({classes:JSON.parse(JSON.stringify(classes)),currentClassId:currentClassId,schoolName:schoolName,currentDate:dateToInput(currentDate)}));}catch(e){}
   savePinsToLocalStorage();
   
@@ -1271,31 +1251,78 @@ function renderSyncBar(){
   else{bar.style.display='none';}
 }
 
-// ---- REAL-TIME SYNC with onSnapshot ----
+// ---- REAL-TIME SYNC with onSnapshot (desktop) / REST API polling (mobile) ----
 function startSnapshotListener(uid){
   if(!db||!uid) return;
-  stopSnapshotListener(); // Clean up any existing listener
-  console.log('[SNAPSHOT] Starting real-time listener for uid: '+uid.substring(0,8)+'...');
+  stopSnapshotListener();
   
-  // Use includeMetadataChanges to detect when data transitions from cache to server
+  var isMobile=/iPad|iPhone|iPod|Android/i.test(navigator.userAgent);
+  
+  if(isMobile){
+    // MOBILE: Don't use SDK onSnapshot (it times out on iOS Safari)
+    // Instead, use REST API polling every 30 seconds
+    console.log('[SYNC] Mobile - using REST API polling (no SDK snapshot)');
+    _mobilePollTimer = setInterval(function(){
+      if(!currentUser||!firestoreLoadDone) return;
+      downloadJsonViaRestAPI(uid, function(ok, data){
+        if(!ok||!data||!data.classes) return;
+        var serverClasses=data.classes;
+        var localClasses=JSON.parse(JSON.stringify(classes));
+        var hasNew=false;
+        for(var sk in serverClasses){
+          if(serverClasses.hasOwnProperty(sk)&&!localClasses.hasOwnProperty(sk)){
+            hasNew=true;break;
+          }
+        }
+        if(!hasNew){
+          // Check if server has more data for existing classes
+          for(var ek in serverClasses){
+            if(serverClasses.hasOwnProperty(ek)&&localClasses.hasOwnProperty(ek)){
+              var sKids=(serverClasses[ek].children||[]).length;
+              var lKids=(localClasses[ek].children||[]).length;
+              if(sKids>lKids){hasNew=true;break;}
+            }
+          }
+        }
+        if(!hasNew) return;
+        console.log('[MOBILE-POLL] New data from server!');
+        saveCurrentClassData();
+        var merged=JSON.parse(JSON.stringify(serverClasses));
+        for(var mk in localClasses){
+          if(localClasses.hasOwnProperty(mk)&&!merged.hasOwnProperty(mk)) merged[mk]=localClasses[mk];
+          else if(localClasses.hasOwnProperty(mk)&&merged.hasOwnProperty(mk)){
+            var lKids2=(localClasses[mk].children||[]).length;
+            var sKids2=(merged[mk].children||[]).length;
+            if(lKids2>sKids2) merged[mk]=localClasses[mk];
+          }
+        }
+        classes=merged;
+        if(data.schoolName) schoolName=data.schoolName;
+        if(data.currentClassId&&classes[data.currentClassId]) currentClassId=data.currentClassId;
+        restorePinsFromLocalStorage();
+        if(currentClassId&&classes[currentClassId]) loadClassData(currentClassId);
+        ensureDefaultClass();
+        restorePinsFromLocalStorage();
+        var key=getCurrentDateKey();var dd=dateData[key];
+        if(dd){presenze=dd.presenze||{};pre=dd.pre||{};post=dd.post||{};}
+        try{localStorage.setItem(getStorageKey(),JSON.stringify({classes:JSON.parse(JSON.stringify(classes)),currentClassId:currentClassId,schoolName:schoolName,currentDate:dateToInput(currentDate)}));}catch(e){}
+        savePinsToLocalStorage();
+        updateClassLockState();render();
+      });
+    },30000);
+    return;
+  }
+  
+  // DESKTOP: Use SDK onSnapshot for real-time sync
+  console.log('[SNAPSHOT] Desktop - starting real-time listener');
   _snapshotListener = db.collection('users').doc(uid).onSnapshot({includeMetadataChanges:true}, function(doc){
-    // Ignore if initial load not done yet
     if(!firestoreLoadDone) return;
+    if(doc.metadata&&doc.metadata.hasPendingWrites) return;
     
-    // Ignore our own pending writes (local writes not yet confirmed by server)
-    if(doc.metadata&&doc.metadata.hasPendingWrites){
-      console.log('[SNAPSHOT] Ignoring own pending write');
-      return;
-    }
-    
-    var data = doc.exists ? doc.data() : null;
+    var data = resolveDocData(doc);
     if(!data||!data.classes) return;
     
-    // Check if this is our own confirmed write (same _saveId)
-    if(data._saveId && data._saveId === _lastSaveId){
-      console.log('[SNAPSHOT] Ignoring own confirmed write');
-      return;
-    }
+    if(data._saveId && data._saveId === _lastSaveId) return;
     
     var source = (doc.metadata&&doc.metadata.fromCache) ? 'CACHE' : 'SERVER';
     var serverClasses = data.classes;
@@ -1304,14 +1331,12 @@ function startSnapshotListener(uid){
     var localCount = Object.keys(localClasses).length;
     console.log('[SNAPSHOT] Change from '+source+'! Server: '+serverCount+' classes, Local: '+localCount+' classes');
     
-    // Log what the server has that we don't
     for(var scid in serverClasses){
       if(serverClasses.hasOwnProperty(scid)&&!localClasses.hasOwnProperty(scid)){
         console.log('[SNAPSHOT] NEW class from server: '+(serverClasses[scid].name||scid));
       }
     }
     
-    // Merge: start with server data (it has the latest from all devices), add local-only classes
     var merged = JSON.parse(JSON.stringify(serverClasses));
     var localOnlyCount = 0;
     var needSave = false;
@@ -1321,34 +1346,25 @@ function startSnapshotListener(uid){
           merged[mk] = localClasses[mk];
           localOnlyCount++;
           needSave = true;
-          console.log('[SNAPSHOT] Keeping local-only class: '+(localClasses[mk].name||mk));
         }else{
-          // For overlapping classes, keep version with more children or more recent data
           var lsKids = (localClasses[mk].children||[]).length;
           var fsKids = (merged[mk].children||[]).length;
           var lsMsgs = (localClasses[mk].messages||[]).length;
           var fsMsgs = (merged[mk].messages||[]).length;
-          // Also check dateData entries count
           var lsDD = localClasses[mk].dateData ? Object.keys(localClasses[mk].dateData).length : 0;
           var fsDD = merged[mk].dateData ? Object.keys(merged[mk].dateData).length : 0;
           if(lsKids>fsKids||lsMsgs>fsMsgs||lsDD>fsDD){
             merged[mk] = localClasses[mk];
             needSave = true;
-            console.log('[SNAPSHOT] Local has more data for '+(localClasses[mk].name||mk)+' (kids:'+lsKids+'>'+fsKids+' msgs:'+lsMsgs+'>'+fsMsgs+' dates:'+lsDD+'>'+fsDD+')');
           }
         }
       }
     }
     
-    // Check if anything actually changed (avoid unnecessary re-renders)
     var mergedStr = JSON.stringify(merged);
     var localStr = JSON.stringify(localClasses);
-    if(mergedStr === localStr && data.schoolName === schoolName){
-      console.log('[SNAPSHOT] No real changes, skipping re-render');
-      return;
-    }
+    if(mergedStr === localStr && data.schoolName === schoolName) return;
     
-    // Apply merged data
     classes = merged;
     if(data.currentClassId && classes[data.currentClassId]) currentClassId = data.currentClassId;
     if(data.schoolName) schoolName = data.schoolName;
@@ -1370,19 +1386,16 @@ function startSnapshotListener(uid){
     renderSyncBar();
     setTimeout(function(){if(syncStatus==='synced'){syncStatus='idle';renderSyncBar();}},3000);
     
-    // If we had local-only classes or local had more data, save back to server
-    // Use update() with dot notation to preserve other devices' classes
     if(needSave){
-      console.log('[SNAPSHOT] Saving merged data with '+localOnlyCount+' local-only classes (using update)');
+      console.log('[SNAPSHOT] Saving merged data ('+localOnlyCount+' local-only classes)');
       _lastSaveId = Math.random().toString(36);
-      var snapshotSaveData = {
-        classes: prepareClassesForSave(),
-        currentClassId: currentClassId||'',
-        schoolName: schoolName||'',
-        updatedAt: new Date().toISOString(),
-        _saveId: _lastSaveId
+      var snapshotSaveData = prepareClassesForSave();
+      var snapshotDocData = {
+        dataJson: JSON.stringify({classes:snapshotSaveData,currentClassId:currentClassId||'',schoolName:schoolName||'',updatedAt:new Date().toISOString(),_saveId:_lastSaveId}),
+        _saveId: _lastSaveId,
+        updatedAt: new Date().toISOString()
       };
-      db.collection('users').doc(uid).set(snapshotSaveData,{merge:true}).catch(function(e){
+      db.collection('users').doc(uid).set(snapshotDocData,{merge:true}).catch(function(e){
         console.error('[SNAPSHOT] Save after merge failed:',e);
       });
     }
@@ -1396,6 +1409,11 @@ function stopSnapshotListener(){
     _snapshotListener();
     _snapshotListener = null;
     console.log('[SNAPSHOT] Listener stopped');
+  }
+  if(_mobilePollTimer){
+    clearInterval(_mobilePollTimer);
+    _mobilePollTimer = null;
+    console.log('[SYNC] Mobile poll timer stopped');
   }
 }
 
@@ -1533,18 +1551,62 @@ function testFirestoreConnection(uid, callback){
     });
 }
 
-// Upload via Firestore REST API - bypasses SDK completely
-function uploadViaRestAPI(uid, data, callback){
-  console.log('[REST-API] Starting REST API upload...');
+// v25: Upload data as a JSON STRING via REST API - MUCH simpler than converting to Firestore types
+function uploadJsonViaRestAPI(uid, dataJson, saveId, updatedAt, callback){
+  console.log('[REST-API] Starting JSON string upload...');
   if(!currentUser){callback(false,'Non autenticato');return;}
   
-  // Get auth token
   currentUser.getIdToken(true).then(function(token){
-    console.log('[REST-API] Got auth token, sending request...');
+    console.log('[REST-API] Got auth token, uploading JSON string ('+dataJson.length+' bytes)...');
     
-    // Convert data to Firestore REST API format
+    var body=JSON.stringify({
+      fields:{
+        dataJson:{stringValue:dataJson},
+        _saveId:{stringValue:saveId||''},
+        updatedAt:{stringValue:updatedAt||''}
+      }
+    });
+    
+    var url='https://firestore.googleapis.com/v1/projects/presenze-pre-post/databases/(default)/documents/users/'+uid+'?updateMask.fieldPaths=dataJson&updateMask.fieldPaths=_saveId&updateMask.fieldPaths=updatedAt';
+    
+    var xhr=new XMLHttpRequest();
+    xhr.open('PATCH',url,true);
+    xhr.setRequestHeader('Authorization','Bearer '+token);
+    xhr.setRequestHeader('Content-Type','application/json');
+    xhr.timeout=30000;
+    xhr.onload=function(){
+      if(xhr.status===200||xhr.status===201){
+        console.log('[REST-API] JSON upload SUCCESS!');
+        callback(true,'OK');
+      }else{
+        console.error('[REST-API] HTTP error:',xhr.status,xhr.responseText.substring(0,300));
+        callback(false,'HTTP '+xhr.status+': '+xhr.responseText.substring(0,150));
+      }
+    };
+    xhr.ontimeout=function(){
+      console.error('[REST-API] Timeout');
+      callback(false,'REST API timeout (30s)');
+    };
+    xhr.onerror=function(){
+      console.error('[REST-API] Network error');
+      callback(false,'Errore di rete');
+    };
+    xhr.send(body);
+  }).catch(function(err){
+    console.error('[REST-API] Auth token error:',err);
+    callback(false,'Errore token: '+err.message);
+  });
+}
+
+// OLD: Upload via Firestore REST API with complex type conversion (kept as emergency fallback)
+function uploadViaRestAPI(uid, data, callback){
+  console.log('[REST-API-OLD] Starting old-format REST API upload...');
+  if(!currentUser){callback(false,'Non autenticato');return;}
+  
+  currentUser.getIdToken(true).then(function(token){
+    console.log('[REST-API-OLD] Got auth token, converting and sending...');
+    
     var fields={};
-    // classes field
     fields.classes={mapValue:{fields:{}}};
     if(data.classes){
       for(var classId in data.classes){
@@ -1553,15 +1615,13 @@ function uploadViaRestAPI(uid, data, callback){
         fields.classes.mapValue.fields[classId]={mapValue:{fields:convertToFirestoreFields(classObj)}};
       }
     }
-    // Simple fields
     fields.currentClassId={stringValue:data.currentClassId||''};
     fields.schoolName={stringValue:data.schoolName||''};
     fields.updatedAt={stringValue:data.updatedAt||''};
     fields._saveId={stringValue:data._saveId||''};
     
-    var body={fields:fields};
-    var bodyStr=JSON.stringify(body);
-    console.log('[REST-API] Request body size: '+bodyStr.length+' bytes');
+    var bodyStr=JSON.stringify({fields:fields});
+    console.log('[REST-API-OLD] Request body size: '+bodyStr.length+' bytes');
     
     var url='https://firestore.googleapis.com/v1/projects/presenze-pre-post/databases/(default)/documents/users/'+uid+'?updateMask.fieldPaths=classes&updateMask.fieldPaths=currentClassId&updateMask.fieldPaths=schoolName&updateMask.fieldPaths=updatedAt&updateMask.fieldPaths=_saveId';
     
@@ -1572,24 +1632,17 @@ function uploadViaRestAPI(uid, data, callback){
     xhr.timeout=30000;
     xhr.onload=function(){
       if(xhr.status===200||xhr.status===201){
-        console.log('[REST-API] SUCCESS!');
+        console.log('[REST-API-OLD] SUCCESS!');
         callback(true,'OK');
       }else{
-        console.error('[REST-API] HTTP error:',xhr.status,xhr.responseText.substring(0,200));
+        console.error('[REST-API-OLD] HTTP error:',xhr.status,xhr.responseText.substring(0,200));
         callback(false,'HTTP '+xhr.status+': '+xhr.responseText.substring(0,100));
       }
     };
-    xhr.ontimeout=function(){
-      console.error('[REST-API] Timeout');
-      callback(false,'REST API timeout');
-    };
-    xhr.onerror=function(){
-      console.error('[REST-API] Network error');
-      callback(false,'Errore di rete');
-    };
+    xhr.ontimeout=function(){callback(false,'REST API timeout');};
+    xhr.onerror=function(){callback(false,'Errore di rete');};
     xhr.send(bodyStr);
   }).catch(function(err){
-    console.error('[REST-API] Auth token error:',err);
     callback(false,'Errore token: '+err.message);
   });
 }
@@ -1631,13 +1684,13 @@ function convertToFirestoreFields(obj){
   return fields;
 }
 
-// Download data from Firestore via REST API (fallback when SDK fails)
-function downloadViaRestAPI(uid, callback){
+// v25: Download data via REST API - reads dataJson string (simple!)
+function downloadJsonViaRestAPI(uid, callback){
   if(!currentUser){callback(false,null);return;}
-  console.log('[REST-API-READ] Starting REST API download...');
+  console.log('[REST-API-READ] Starting JSON string download...');
   
   currentUser.getIdToken(true).then(function(token){
-    var url='https://firestore.googleapis.com/v1/projects/presenze-pre-post/databases/(default)/documents/users/'+uid;
+    var url='https://firestore.googleapis.com/v1/projects/presenze-pre-post/databases/(default)/documents/users/'+uid+'?mask.fieldPaths=dataJson&mask.fieldPaths=_saveId&mask.fieldPaths=updatedAt';
     
     var xhr=new XMLHttpRequest();
     xhr.open('GET',url,true);
@@ -1647,23 +1700,36 @@ function downloadViaRestAPI(uid, callback){
       if(xhr.status===200||xhr.status===201){
         try{
           var response=JSON.parse(xhr.responseText);
-          if(response.fields){
+          if(response.fields&&response.fields.dataJson&&response.fields.dataJson.stringValue){
+            var dataJson=response.fields.dataJson.stringValue;
+            console.log('[REST-API-READ] Got JSON string ('+dataJson.length+' bytes)');
+            try{
+              var data=JSON.parse(dataJson);
+              console.log('[REST-API-READ] Parsed! Classes: '+(data.classes?Object.keys(data.classes).length:0));
+              callback(true,data);
+            }catch(e){
+              console.error('[REST-API-READ] JSON parse error:',e);
+              callback(false,null);
+            }
+          }else if(response.fields&&response.fields.classes){
+            // OLD FORMAT: document has classes field but no dataJson
+            console.log('[REST-API-READ] Old format detected, parsing classes...');
             var data=parseFirestoreFields(response.fields);
-            console.log('[REST-API-READ] Got data with '+(data.classes?Object.keys(data.classes).length:0)+' classes');
+            console.log('[REST-API-READ] Got old-format data with '+(data.classes?Object.keys(data.classes).length:0)+' classes');
             callback(true,data);
           }else{
-            console.log('[REST-API-READ] No fields in response');
+            console.log('[REST-API-READ] No dataJson or classes in response');
             callback(false,null);
           }
         }catch(e){
-          console.error('[REST-API-READ] Parse error:',e);
+          console.error('[REST-API-READ] Response parse error:',e);
           callback(false,null);
         }
       }else if(xhr.status===404){
-        console.log('[REST-API-READ] Document not found (404)');
+        console.log('[REST-API-READ] Document not found (404) - new user');
         callback(false,null);
       }else{
-        console.error('[REST-API-READ] HTTP error:',xhr.status);
+        console.error('[REST-API-READ] HTTP error:',xhr.status,xhr.responseText.substring(0,200));
         callback(false,null);
       }
     };
@@ -1680,6 +1746,35 @@ function downloadViaRestAPI(uid, callback){
     console.error('[REST-API-READ] Auth token error:',err);
     callback(false,null);
   });
+}
+
+// OLD: Download with complex type parsing (kept for backward compat)
+function downloadViaRestAPI(uid, callback){
+  if(!currentUser){callback(false,null);return;}
+  console.log('[REST-API-READ-OLD] Starting old-format download...');
+  
+  currentUser.getIdToken(true).then(function(token){
+    var url='https://firestore.googleapis.com/v1/projects/presenze-pre-post/databases/(default)/documents/users/'+uid;
+    
+    var xhr=new XMLHttpRequest();
+    xhr.open('GET',url,true);
+    xhr.setRequestHeader('Authorization','Bearer '+token);
+    xhr.timeout=15000;
+    xhr.onload=function(){
+      if(xhr.status===200||xhr.status===201){
+        try{
+          var response=JSON.parse(xhr.responseText);
+          if(response.fields){
+            var data=parseFirestoreFields(response.fields);
+            callback(true,data);
+          }else{callback(false,null);}
+        }catch(e){callback(false,null);}
+      }else{callback(false,null);}
+    };
+    xhr.ontimeout=function(){callback(false,null);};
+    xhr.onerror=function(){callback(false,null);};
+    xhr.send();
+  }).catch(function(err){callback(false,null);});
 }
 
 // Parse Firestore REST API response format back to JS objects
@@ -2666,7 +2761,7 @@ window.App={
   login:handleLogin,
   // CARICA SU SERVER: salva i dati locali su Firestore
   uploadToServer:function(){
-    if(!currentUser||!db){alert('Nessuna connessione al cloud.');return;}
+    if(!currentUser){alert('Nessuna connessione al cloud.');return;}
     saveCurrentClassData();
     var classCount=regularClassCount();
     var totalKids=0;
@@ -2684,218 +2779,214 @@ window.App={
       _saveId:_lastSaveId
     };
     
-    // Validate before sending
     try{
-      var dataStr=JSON.stringify(uploadData);
-      console.log('[UPLOAD] Data size: '+dataStr.length+' bytes ('+Math.round(dataStr.length/1024)+' KB)');
-      if(dataStr.length>900000){
-        alert('I dati sono troppo grandi ('+Math.round(dataStr.length/1024)+' KB). Il limite di Firestore e 1 MB.\nProva a eliminare vecchi dati di presenze.');return;
+      var dataJson=JSON.stringify(uploadData);
+      if(dataJson.length>900000){
+        alert('I dati sono troppo grandi ('+Math.round(dataJson.length/1024)+' KB). Il limite di Firestore e 1 MB.');return;
       }
-    }catch(e){alert('Errore nella preparazione dei dati: '+e.message);return;}
+    }catch(e){alert('Errore preparazione dati: '+e.message);return;}
     
     syncStatus='saving';renderSyncBar();
-    console.log('[UPLOAD] Step 1: Testing connection...');
+    var isMobile=/iPad|iPhone|iPod|Android/i.test(navigator.userAgent);
     
-    // STEP 1: Test connection with a tiny write first
-    testFirestoreConnection(uid, function(connOk, connMsg){
-      if(!connOk){
-        console.error('[UPLOAD] Connection test FAILED:',connMsg);
-        syncStatus='error';renderSyncBar();
-        alert('CONNessione al server FALLITA: '+connMsg+'\n\nProva:\n1. Verifica la connessione internet\n2. Fai "Pulisci Cache" e riprova\n3. Chiudi e riapri Safari');
-        return;
-      }
-      
-      console.log('[UPLOAD] Step 2: Connection OK, uploading '+Object.keys(classes).length+' classes...');
-      
-      // STEP 2: Connection works, now upload the real data
+    if(isMobile){
+      // MOBILE: REST API directly (no SDK, no connection test)
+      console.log('[UPLOAD] Mobile - using REST API (JSON string)');
       var uploadTimer=setTimeout(function(){
-        console.error('[UPLOAD] TIMEOUT after 20s');
         syncStatus='error';renderSyncBar();
-        alert('Timeout: caricamento troppo lento.\n\nProva:\n1. Fai "Pulisci Cache"\n2. Chiudi e riapri Safari\n3. Riprova');
-      },20000);
-      
-      db.collection('users').doc(uid).set(uploadData,{merge:true})
-        .then(function(){
-          clearTimeout(uploadTimer);
-          console.log('[UPLOAD] SUCCESS!');
+        alert('Timeout: caricamento troppo lento (30s).\n\nControlla la connessione internet e riprova.');
+      },35000);
+      uploadJsonViaRestAPI(uid, dataJson, _lastSaveId, uploadData.updatedAt, function(ok, msg){
+        clearTimeout(uploadTimer);
+        if(ok){
+          console.log('[UPLOAD] REST API SUCCESS!');
           syncStatus='synced';renderSyncBar();
-          alert('Dati caricati con successo sul server!\n\nLe tue classi sono state sincronizzate.');
+          alert('Dati caricati con successo sul server!\nLe tue classi sono state sincronizzate.');
           setTimeout(function(){if(syncStatus==='synced'){syncStatus='idle';renderSyncBar();}},5000);
-        })
-        .catch(function(err){
-          clearTimeout(uploadTimer);
-          console.error('[UPLOAD] FAILED:',err.code,err.message);
-          // Try without merge as fallback
-          console.log('[UPLOAD] Retrying without merge...');
-          var uploadTimer2=setTimeout(function(){
+        }else{
+          console.error('[UPLOAD] REST API failed:',msg);
+          // Try SDK as fallback
+          console.log('[UPLOAD] Trying SDK fallback...');
+          var docData={dataJson:dataJson,_saveId:_lastSaveId,updatedAt:uploadData.updatedAt};
+          db.collection('users').doc(uid).set(docData,{merge:true}).then(function(){
+            syncStatus='synced';renderSyncBar();
+            alert('Dati caricati con successo (via SDK)!');
+            setTimeout(function(){if(syncStatus==='synced'){syncStatus='idle';renderSyncBar();}},5000);
+          }).catch(function(err2){
             syncStatus='error';renderSyncBar();
-            alert('Anche il secondo tentativo e fallito.\nFai "Pulisci Cache" e riprova.');
-          },20000);
-          db.collection('users').doc(uid).set(uploadData)
-            .then(function(){
-              clearTimeout(uploadTimer2);
-              console.log('[UPLOAD] SUCCESS (no merge)!');
-              syncStatus='synced';renderSyncBar();
-              alert('Dati caricati con successo sul server!');
-              setTimeout(function(){if(syncStatus==='synced'){syncStatus='idle';renderSyncBar();}},5000);
-            })
-            .catch(function(err2){
-              clearTimeout(uploadTimer2);
-              console.error('[UPLOAD] Also failed:',err2.code,err2.message);
-              // LAST RESORT: Try REST API
-              console.log('[UPLOAD] Trying REST API fallback...');
-              uploadViaRestAPI(uid, uploadData, function(ok, msg){
-                if(ok){
-                  console.log('[UPLOAD] REST API SUCCESS!');
-                  syncStatus='synced';renderSyncBar();
-                  alert('Dati caricati con successo (via REST API)!');
-                  setTimeout(function(){if(syncStatus==='synced'){syncStatus='idle';renderSyncBar();}},5000);
-                }else{
-                  console.error('[UPLOAD] REST API also failed:',msg);
-                  syncStatus='error';renderSyncBar();
-                  alert('ERRORE: tutti i tentativi falliti.\n\n'+msg+'\n\nFai "Pulisci Cache" e riapri Safari.');
-                }
-              });
-            });
+            alert('ERRORE: caricamento fallito.\n\n'+msg+'\n\nFai "Pulisci Cache" e riapri Safari.');
+          });
+        }
+      });
+    }else{
+      // DESKTOP: SDK first, REST API fallback
+      console.log('[UPLOAD] Desktop - using SDK');
+      var uploadTimer2=setTimeout(function(){
+        console.log('[UPLOAD] SDK timeout, trying REST API...');
+        uploadJsonViaRestAPI(uid, dataJson, _lastSaveId, uploadData.updatedAt, function(ok, msg){
+          if(ok){
+            syncStatus='synced';renderSyncBar();
+            alert('Dati caricati con successo (via REST API)!');
+          }else{
+            syncStatus='error';renderSyncBar();
+            alert('ERRORE: tutti i tentativi falliti.');
+          }
         });
-    });
+      },20000);
+      var docData={dataJson:dataJson,_saveId:_lastSaveId,updatedAt:uploadData.updatedAt};
+      db.collection('users').doc(uid).set(docData,{merge:true}).then(function(){
+        clearTimeout(uploadTimer2);
+        console.log('[UPLOAD] SDK SUCCESS!');
+        syncStatus='synced';renderSyncBar();
+        alert('Dati caricati con successo sul server!');
+        setTimeout(function(){if(syncStatus==='synced'){syncStatus='idle';renderSyncBar();}},5000);
+      }).catch(function(err){
+        clearTimeout(uploadTimer2);
+        console.error('[UPLOAD] SDK failed, trying REST API...');
+        uploadJsonViaRestAPI(uid, dataJson, _lastSaveId, uploadData.updatedAt, function(ok, msg){
+          if(ok){
+            syncStatus='synced';renderSyncBar();
+            alert('Dati caricati con successo (via REST API)!');
+          }else{
+            syncStatus='error';renderSyncBar();
+            alert('ERRORE: caricamento fallito.\n'+msg);
+          }
+        });
+      });
+    }
   },
   // SCARICA DAL SERVER: legge i dati da Firestore e li usa
   downloadFromServer:function(){
-    if(!currentUser||!db){alert('Nessuna connessione al cloud.');return;}
+    if(!currentUser){alert('Nessuna connessione al cloud.');return;}
     if(!confirm('SCARICA DATI DAL SERVER\n\nI dati dal server sostituiranno quelli su questo telefono.\nLe classi che esistono solo localmente verranno mantenute.\n\nContinuare?')) return;
     
     var uid=currentUser.uid;
     syncStatus='saving';renderSyncBar();
-    console.log('[DOWNLOAD] Reading from server...');
+    var isMobile=/iPad|iPhone|iPod|Android/i.test(navigator.userAgent);
     
-    // Timeout di sicurezza
     var downloadTimer=setTimeout(function(){
-      alert('Timeout: la lettura dal server non ha risposto in 20 secondi.\nControlla la connessione internet.');
+      alert('Timeout: la lettura dal server non ha risposto.\nControlla la connessione internet.');
       syncStatus='error';renderSyncBar();
-    },20000);
+    },25000);
     
-    db.collection('users').doc(uid).get()
-      .then(function(doc){
-        clearTimeout(downloadTimer);
-        if(!doc.exists||!doc.data()||!doc.data().classes){
-          alert('Nessun dato trovato sul server.');
-          syncStatus='synced';renderSyncBar();
-          return;
+    function handleDownloadData(data){
+      clearTimeout(downloadTimer);
+      if(!data||!data.classes){
+        alert('Nessun dato trovato sul server.');
+        syncStatus='synced';renderSyncBar();
+        return;
+      }
+      var serverClasses=data.classes;
+      var localClasses=JSON.parse(JSON.stringify(classes));
+      var merged=JSON.parse(JSON.stringify(serverClasses));
+      var addedCount=0;
+      for(var mk in localClasses){
+        if(localClasses.hasOwnProperty(mk)&&!merged.hasOwnProperty(mk)){
+          merged[mk]=localClasses[mk];addedCount++;
         }
-        
-        var serverClasses=doc.data().classes;
-        var localClasses=JSON.parse(JSON.stringify(classes));
-        console.log('[DOWNLOAD] Server has '+Object.keys(serverClasses).length+' classes, local has '+Object.keys(localClasses).length);
-        
-        // MERGE: server come base + aggiungi classi solo locali
-        var merged=JSON.parse(JSON.stringify(serverClasses));
-        var addedCount=0;
-        for(var mk in localClasses){
-          if(localClasses.hasOwnProperty(mk)&&!merged.hasOwnProperty(mk)){
-            merged[mk]=localClasses[mk];
-            addedCount++;
-            console.log('[DOWNLOAD-MERGE] Keeping local class: '+(localClasses[mk].name||mk));
-          }
+      }
+      for(var uk in localClasses){
+        if(localClasses.hasOwnProperty(uk)&&merged.hasOwnProperty(uk)){
+          var lsKids=(localClasses[uk].children||[]).length;
+          var fsKids=(merged[uk].children||[]).length;
+          if(lsKids>fsKids) merged[uk]=localClasses[uk];
         }
-        // Per classi presenti in entrambi, usa versione con più bambini
-        for(var uk in localClasses){
-          if(localClasses.hasOwnProperty(uk)&&merged.hasOwnProperty(uk)){
-            var lsKids=(localClasses[uk].children||[]).length;
-            var fsKids=(merged[uk].children||[]).length;
-            if(lsKids>fsKids){
-              merged[uk]=localClasses[uk];
-              console.log('[DOWNLOAD-MERGE] Local has more data for '+(localClasses[uk].name||uk));
-            }
-          }
+      }
+      classes=merged;
+      if(data.currentClassId) currentClassId=data.currentClassId;
+      if(data.schoolName) schoolName=data.schoolName;
+      restorePinsFromLocalStorage();
+      if(currentClassId&&classes[currentClassId]){loadClassData(currentClassId);}
+      ensureDefaultClass();
+      restorePinsFromLocalStorage();
+      var key=getCurrentDateKey();var dd=dateData[key];
+      if(dd){presenze=dd.presenze||{};pre=dd.pre||{};post=dd.post||{};}
+      try{localStorage.setItem(getStorageKey(),JSON.stringify({classes:JSON.parse(JSON.stringify(classes)),currentClassId:currentClassId,schoolName:schoolName,currentDate:dateToInput(currentDate)}));}catch(e){}
+      savePinsToLocalStorage();
+      syncStatus='synced';
+      alert('Dati scaricati dal server!\n\nClassi sul server: '+Object.keys(serverClasses).length+'\nClassi locali aggiunte: '+addedCount+'\nTotale classi: '+Object.keys(merged).length);
+      updateClassLockState();render();
+      setTimeout(function(){if(syncStatus==='synced'){syncStatus='idle';renderSyncBar();}},5000);
+    }
+    
+    if(isMobile){
+      console.log('[DOWNLOAD] Mobile - using REST API');
+      downloadJsonViaRestAPI(uid, function(ok, data){
+        if(ok&&data){handleDownloadData(data);}
+        else{
+          // SDK fallback
+          db.collection('users').doc(uid).get().then(function(doc){
+            var d=resolveDocData(doc);
+            handleDownloadData(d);
+          }).catch(function(err){
+            clearTimeout(downloadTimer);
+            alert('ERRORE scaricamento: '+(err.code||err.message||'Errore'));
+            syncStatus='error';renderSyncBar();
+          });
         }
-        
-        // Applica i dati fusi
-        classes=merged;
-        currentClassId=doc.data().currentClassId||currentClassId;
-        if(doc.data().schoolName) schoolName=doc.data().schoolName;
-        restorePinsFromLocalStorage();
-        if(currentClassId&&classes[currentClassId]){loadClassData(currentClassId);}
-        ensureDefaultClass();
-        restorePinsFromLocalStorage();
-        var key=getCurrentDateKey();var dd=dateData[key];
-        if(dd){presenze=dd.presenze||{};pre=dd.pre||{};post=dd.post||{};}
-        else{presenze={};pre={};post={};}
-        if(currentClassId&&classes[currentClassId]&&!(classes[currentClassId].pin&&classes[currentClassId].pin.length>0)){unlockedClasses[currentClassId]=true;}
-        try{localStorage.setItem(getStorageKey(),JSON.stringify({classes:JSON.parse(JSON.stringify(classes)),currentClassId:currentClassId,schoolName:schoolName,currentDate:dateToInput(currentDate)}));}catch(e){}
-        savePinsToLocalStorage();
-        
-        syncStatus='synced';
-        var fsCount=Object.keys(serverClasses).length;
-        alert('Dati scaricati dal server!\n\nClassi sul server: '+fsCount+'\nClassi locali aggiunte: '+addedCount+'\nTotale classi: '+Object.keys(merged).length);
-        updateClassLockState();render();
-        setTimeout(function(){if(syncStatus==='synced'){syncStatus='idle';renderSyncBar();}},5000);
-      })
-      .catch(function(err){
-        clearTimeout(downloadTimer);
-        console.error('[DOWNLOAD] FAILED:',err.code,err.message);
-        alert('ERRORE scaricamento: '+(err.code||err.message||'Errore sconosciuto'));
-        syncStatus='error';renderSyncBar();
       });
+    }else{
+      console.log('[DOWNLOAD] Desktop - using SDK');
+      db.collection('users').doc(uid).get().then(function(doc){
+        var d=resolveDocData(doc);
+        handleDownloadData(d);
+      }).catch(function(err){
+        clearTimeout(downloadTimer);
+        console.log('[DOWNLOAD] SDK failed, trying REST API...');
+        downloadJsonViaRestAPI(uid, function(ok, data){
+          if(ok&&data){handleDownloadData(data);}
+          else{
+            alert('ERRORE: scaricamento fallito.');
+            syncStatus='error';renderSyncBar();
+          }
+        });
+      });
+    }
   },
   forceSync:function(){
-    if(!currentUser||!db){alert('Nessuna connessione al cloud.');return;}
+    if(!currentUser){alert('Nessuna connessione al cloud.');return;}
     saveCurrentClassData();
     var uid=currentUser.uid;
     syncStatus='saving';renderSyncBar();
     console.log('[FORCESYNC] Starting read-merge-save...');
+    var isMobile=/iPad|iPhone|iPod|Android/i.test(navigator.userAgent);
     
-    // Step 1: Read from server
-    db.collection('users').doc(uid).get().then(function(doc){
+    function doForceSyncMerge(data){
       var serverClasses={};
-      var serverCurrentClassId='';
-      var serverSchoolName='';
-      if(doc.exists&&doc.data()&&doc.data().classes){
-        serverClasses=doc.data().classes;
-        serverCurrentClassId=doc.data().currentClassId||'';
-        serverSchoolName=doc.data().schoolName||'';
-      }
+      if(data&&data.classes) serverClasses=data.classes;
       var localClasses=JSON.parse(JSON.stringify(classes));
       console.log('[FORCESYNC] Server: '+Object.keys(serverClasses).length+' classes, Local: '+Object.keys(localClasses).length+' classes');
       
-      // Step 2: Merge - start with server, add local-only classes
       var merged=JSON.parse(JSON.stringify(serverClasses));
       var addedFromLocal=0;
       for(var mk in localClasses){
         if(localClasses.hasOwnProperty(mk)){
           if(!merged.hasOwnProperty(mk)){
-            merged[mk]=localClasses[mk];
-            addedFromLocal++;
-            console.log('[FORCESYNC] Adding local-only class: '+(localClasses[mk].name||mk));
+            merged[mk]=localClasses[mk];addedFromLocal++;
           }else{
-            // For overlapping classes, keep version with more children
             var lsKids=(localClasses[mk].children||[]).length;
             var fsKids=(merged[mk].children||[]).length;
-            if(lsKids>fsKids){
-              merged[mk]=localClasses[mk];
-              console.log('[FORCESYNC] Local has more data for '+(localClasses[mk].name||mk));
-            }
+            if(lsKids>fsKids) merged[mk]=localClasses[mk];
           }
         }
       }
       
-      // Step 3: Save merged data using set() with {merge:true}
-      // This is the most reliable approach - works even if doc doesn't exist
       _lastSaveId=Math.random().toString(36);
-      // Prepare merged classes for save (clean + strip childSourceMap)
       var mergedForSave=JSON.parse(JSON.stringify(merged));
       if(mergedForSave[COORDINATRICE_ID]) delete mergedForSave[COORDINATRICE_ID].childSourceMap;
-      var saveMergeData={
+      var savePayload={
         classes:cleanForFirestore(mergedForSave,'merged'),
         currentClassId:currentClassId||'',
         schoolName:schoolName||'',
         updatedAt:new Date().toISOString(),
         _saveId:_lastSaveId
       };
-      db.collection('users').doc(uid).set(saveMergeData,{merge:true}).then(function(){
-        console.log('[FORCESYNC] Saved merged data ('+Object.keys(merged).length+' classes, '+addedFromLocal+' from local)');
+      var dataJson=JSON.stringify(savePayload);
+      var docData={dataJson:dataJson,_saveId:_lastSaveId,updatedAt:savePayload.updatedAt};
+      
+      // Save merged data
+      function saveComplete(){
         classes=merged;
-        if(serverSchoolName) schoolName=serverSchoolName;
         restorePinsFromLocalStorage();
         if(currentClassId&&classes[currentClassId]) loadClassData(currentClassId);
         ensureDefaultClass();
@@ -2908,16 +2999,40 @@ window.App={
         savePinsToLocalStorage();
         syncStatus='synced';updateClassLockState();render();
         setTimeout(function(){if(syncStatus==='synced'){syncStatus='idle';renderSyncBar();}},5000);
-      }).catch(function(err){
-        console.error('[FORCESYNC] Save failed:',err.code,err.message);
-        syncStatus='error';renderSyncBar();
-        alert('Errore salvataggio: '+(err.code||err.message||'Errore'));
+      }
+      
+      if(isMobile){
+        uploadJsonViaRestAPI(uid, dataJson, _lastSaveId, savePayload.updatedAt, function(ok){
+          if(ok){saveComplete();}
+          else{
+            db.collection('users').doc(uid).set(docData,{merge:true}).then(saveComplete).catch(function(err){
+              syncStatus='error';renderSyncBar();alert('Errore salvataggio: '+(err.code||err.message));
+            });
+          }
+        });
+      }else{
+        db.collection('users').doc(uid).set(docData,{merge:true}).then(saveComplete).catch(function(err){
+          uploadJsonViaRestAPI(uid, dataJson, _lastSaveId, savePayload.updatedAt, function(ok){
+            if(ok) saveComplete();
+            else{syncStatus='error';renderSyncBar();alert('Errore salvataggio');}
+          });
+        });
+      }
+    }
+    
+    if(isMobile){
+      downloadJsonViaRestAPI(uid, function(ok, data){
+        doForceSyncMerge(ok?data:null);
       });
-    }).catch(function(err){
-      console.error('[FORCESYNC] Read failed:',err.code,err.message);
-      syncStatus='error';renderSyncBar();
-      alert('Errore lettura: '+(err.code||err.message||'Errore'));
-    });
+    }else{
+      db.collection('users').doc(uid).get().then(function(doc){
+        doForceSyncMerge(resolveDocData(doc));
+      }).catch(function(err){
+        downloadJsonViaRestAPI(uid, function(ok, data){
+          doForceSyncMerge(ok?data:null);
+        });
+      });
+    }
   },
   runDiag:function(){runFirestoreDiagnostic();},
   fixRules:function(){fixFirebaseRules();},
@@ -4058,14 +4173,12 @@ setInterval(function(){
 },3000);
 
 // PERIODIC AUTO-SYNC: Every 30 seconds, sync data with server using REST API on mobile
-// This ensures data is always uploaded even if individual auto-saves fail
 setInterval(function(){
-  if(!currentUser||!db) return;
-  if(syncStatus==='saving') return; // already saving, skip
+  if(!currentUser) return;
+  if(syncStatus==='saving') return;
   var isMobile=/iPad|iPhone|iPod|Android/i.test(navigator.userAgent);
-  if(!isMobile) return; // only on mobile (desktop uses SDK snapshot)
+  if(!isMobile) return;
   
-  // Save current data and upload via REST API
   saveCurrentClassData();
   _lastSaveId=Math.random().toString(36);
   var cleanedClasses=prepareClassesForSave();
@@ -4078,11 +4191,11 @@ setInterval(function(){
   };
   
   try{
-    var dataStr=JSON.stringify(periodicData);
-    if(dataStr.length>900000) return; // too large
+    var dataJson=JSON.stringify(periodicData);
+    if(dataJson.length>900000) return;
   }catch(e){return;}
   
-  uploadViaRestAPI(currentUser.uid, periodicData, function(ok, msg){
+  uploadJsonViaRestAPI(currentUser.uid, dataJson, _lastSaveId, periodicData.updatedAt, function(ok, msg){
     if(ok){
       console.log('[PERIODIC-SYNC] Upload OK');
       if(syncStatus!=='saving'){syncStatus='synced';renderSyncBar();setTimeout(function(){if(syncStatus==='synced'){syncStatus='idle';renderSyncBar();}},2000);}
@@ -4092,55 +4205,9 @@ setInterval(function(){
   });
 },30000);
 
-// PERIODIC DOWNLOAD SYNC: Every 60 seconds, check for new data from server
-setInterval(function(){
-  if(!currentUser||!db||!firestoreLoadDone) return;
-  var isMobile=/iPad|iPhone|iPod|Android/i.test(navigator.userAgent);
-  if(!isMobile) return;
-  
-  downloadViaRestAPI(currentUser.uid, function(apiOk, apiData){
-    if(!apiOk||!apiData||!apiData.classes) return;
-    var serverClasses=apiData.classes;
-    var localClasses=JSON.parse(JSON.stringify(classes));
-    var hasNew=false;
-    // Check if server has classes we don't have
-    for(var sk in serverClasses){
-      if(serverClasses.hasOwnProperty(sk)&&!localClasses.hasOwnProperty(sk)){
-        hasNew=true;
-        console.log('[PERIODIC-DOWNLOAD] New class from server:',serverClasses[sk].name||sk);
-      }
-    }
-    if(!hasNew) return;
-    // Merge and apply
-    saveCurrentClassData();
-    var merged=JSON.parse(JSON.stringify(serverClasses));
-    for(var mk in localClasses){
-      if(localClasses.hasOwnProperty(mk)&&!merged.hasOwnProperty(mk)){
-        merged[mk]=localClasses[mk];
-      }else if(localClasses.hasOwnProperty(mk)&&merged.hasOwnProperty(mk)){
-        var lsKids=(localClasses[mk].children||[]).length;
-        var fsKids=(merged[mk].children||[]).length;
-        if(lsKids>fsKids) merged[mk]=localClasses[mk];
-      }
-    }
-    classes=merged;
-    if(apiData.schoolName) schoolName=apiData.schoolName;
-    restorePinsFromLocalStorage();
-    if(currentClassId&&classes[currentClassId]) loadClassData(currentClassId);
-    ensureDefaultClass();
-    restorePinsFromLocalStorage();
-    var key=getCurrentDateKey();var dd=dateData[key];
-    if(dd){presenze=dd.presenze||{};pre=dd.pre||{};post=dd.post||{};}
-    try{localStorage.setItem(getStorageKey(),JSON.stringify({classes:JSON.parse(JSON.stringify(classes)),currentClassId:currentClassId,schoolName:schoolName,currentDate:dateToInput(currentDate)}));}catch(e){}
-    savePinsToLocalStorage();
-    updateClassLockState();render();
-    console.log('[PERIODIC-DOWNLOAD] Applied merged data');
-  });
-},60000);
-
 // Auto-update: just save version, no redirect (redirect causes cache issues)
 (function(){
-  var CURRENT_VERSION='v24';
+  var CURRENT_VERSION='v25';
   localStorage.setItem('rp_app_version',CURRENT_VERSION);
 })();
 
