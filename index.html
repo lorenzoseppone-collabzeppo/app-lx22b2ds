@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
 <title>Registro di Classe</title>
-<meta name="version" content="2025-05-27-v16-sync-fix"/>
+<meta name="version" content="2025-05-28-v17-definitive-fix"/>
 <meta name="description" content="Registro di Classe per la gestione della classe"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a1a2e'><path d='M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z'/></svg>"/>
 <style>
@@ -857,29 +857,79 @@ function saveToFirestoreNow(){
 
 var _saveTimeout=null;
 
-// Clean data for Firestore: remove undefined values and functions that Firestore rejects
-function cleanForFirestore(obj){
-  if(obj===null||obj===undefined) return null;
+// SUPER-AGGRESSIVE clean for Firestore: strip ANYTHING Firestore might reject
+// Handles: undefined, NaN, Infinity, functions, keys with dots, childSourceMap, etc.
+function cleanForFirestore(obj, path){
+  if(!path) path='root';
+  // Primitives: only allow string, number (not NaN/Infinity), boolean, null
+  if(obj===null) return null;
+  if(obj===undefined) return null;
   if(typeof obj==='function') return null;
-  if(typeof obj!=='object') return obj;
+  if(typeof obj==='boolean') return obj;
+  if(typeof obj==='string') return obj;
+  if(typeof obj==='number'){
+    if(isNaN(obj)||!isFinite(obj)){
+      console.warn('[CLEAN] Replacing invalid number at '+path+': '+obj);
+      return null;
+    }
+    return obj;
+  }
+  // Arrays
   if(Array.isArray(obj)){
     var arr=[];
     for(var i=0;i<obj.length;i++){
-      var cleaned=cleanForFirestore(obj[i]);
-      if(cleaned!==undefined) arr.push(cleaned);
+      var cleaned=cleanForFirestore(obj[i], path+'['+i+']');
+      arr.push(cleaned);
     }
     return arr;
   }
-  var result={};
-  for(var key in obj){
-    if(!obj.hasOwnProperty(key)) continue;
-    var val=obj[key];
-    if(val===undefined||typeof val==='function') continue;
-    // Skip keys with dots (Firestore would interpret as nested paths)
-    if(typeof key==='string'&&key.indexOf('.')>=0) continue;
-    result[key]=cleanForFirestore(val);
+  // Objects
+  if(typeof obj==='object'){
+    // Reject non-plain objects (Date, RegExp, etc.)
+    var proto=Object.prototype.toString.call(obj);
+    if(proto!=='[object Object]'){
+      console.warn('[CLEAN] Skipping non-plain object at '+path+': '+proto);
+      return null;
+    }
+    var result={};
+    for(var key in obj){
+      if(!obj.hasOwnProperty(key)) continue;
+      // Skip keys with dots (Firestore interprets as nested paths)
+      if(typeof key==='string'&&(key.indexOf('.')>=0||key.indexOf('/')>=0||key.indexOf('\\')>=0)){
+        console.warn('[CLEAN] Skipping key with special chars at '+path+': "'+key+'"');
+        continue;
+      }
+      // Skip empty string keys
+      if(key===''){
+        console.warn('[CLEAN] Skipping empty key at '+path);
+        continue;
+      }
+      // Skip childSourceMap (rebuilt dynamically, never needed in Firestore)
+      if(key==='childSourceMap'){
+        console.log('[CLEAN] Skipping childSourceMap at '+path);
+        continue;
+      }
+      var val=obj[key];
+      // Skip undefined and functions
+      if(val===undefined||typeof val==='function') continue;
+      result[key]=cleanForFirestore(val, path+'.'+key);
+    }
+    return result;
   }
-  return result;
+  // Unknown type - skip it
+  console.warn('[CLEAN] Skipping unknown type at '+path+': '+typeof obj);
+  return null;
+}
+
+// Prepare classes for Firestore: deep clone + clean + strip COORDINATRICE childSourceMap
+function prepareClassesForSave(){
+  var cloned=JSON.parse(JSON.stringify(classes));
+  // Strip childSourceMap from COORDINATRICE (rebuilt on load)
+  if(cloned[COORDINATRICE_ID]){
+    delete cloned[COORDINATRICE_ID].childSourceMap;
+  }
+  var cleaned=cleanForFirestore(cloned, 'classes');
+  return cleaned;
 }
 
 function doSaveToFirestore(){
@@ -887,16 +937,22 @@ function doSaveToFirestore(){
   saveCurrentClassData();
   // Always save to localStorage first (synchronous, immediate backup)
   try{localStorage.setItem(getStorageKey(),JSON.stringify({classes:JSON.parse(JSON.stringify(classes)),currentClassId:currentClassId,schoolName:schoolName,currentDate:dateToInput(currentDate)}));}catch(e){}
+  
+  // Validate data before attempting save
+  var issues=validateDataForSave();
+  if(issues.length>0){
+    console.warn('[SAVE] Data validation found '+issues.length+' issues (will be auto-cleaned):');
+    for(var ii=0;ii<Math.min(issues.length,10);ii++) console.warn('  - '+issues[ii]);
+  }
+  
   _lastSaveId=Math.random().toString(36);
   
-  // Use set() with {merge:true} - this is the SIMPLEST and MOST RELIABLE approach:
-  // - Works even if document doesn't exist (creates it)
-  // - Merges with existing data (preserves classes from other devices)
-  // - No dot notation issues, no "document not found" errors
+  // Use set() with {merge:true} - simplest and most reliable approach
+  var cleanedClasses=prepareClassesForSave();
   var saveData={
-    classes:cleanForFirestore(JSON.parse(JSON.stringify(classes))),
-    currentClassId:currentClassId,
-    schoolName:schoolName,
+    classes:cleanedClasses,
+    currentClassId:currentClassId||'',
+    schoolName:schoolName||'',
     updatedAt:new Date().toISOString(),
     _saveId:_lastSaveId
   };
@@ -904,6 +960,22 @@ function doSaveToFirestore(){
   var classCount=Object.keys(classes).length;
   console.log('[SAVE] Saving to Firestore (set+merge): '+classCount+' classes');
   for(var scid in classes){if(classes.hasOwnProperty(scid)){console.log('[SAVE] Class: '+(classes[scid].name||'?')+' - '+(classes[scid].children?classes[scid].children.length:0)+' bambini');}}
+  
+  // Validate data size (Firestore has 1MB limit per document)
+  try{
+    var dataStr=JSON.stringify(saveData);
+    var dataSize=dataStr.length;
+    console.log('[SAVE] Data size: '+dataSize+' bytes ('+Math.round(dataSize/1024)+' KB)');
+    if(dataSize>900000){
+      console.error('[SAVE] Data too large! '+dataSize+' bytes exceeds Firestore 1MB limit');
+      syncStatus='error';renderSyncBar();
+      return;
+    }
+  }catch(e){
+    console.error('[SAVE] Cannot serialize data:',e);
+    syncStatus='error';renderSyncBar();
+    return;
+  }
   
   // Clear any previous timeout
   if(_saveTimeout){clearTimeout(_saveTimeout);}
@@ -927,12 +999,15 @@ function doSaveToFirestore(){
     .catch(function(err){
       if(_saveTimeout){clearTimeout(_saveTimeout);_saveTimeout=null;}
       console.error('[SAVE] Firestore set+merge FAILED:',err.code,err.message);
+      // Log the data that caused the error for debugging
+      try{console.error('[SAVE] Failed data preview: ',JSON.stringify(saveData).substring(0,500));}catch(e2){}
       syncStatus='error';renderSyncBar();
       var bar=document.getElementById('sync-bar');
       if(bar){
         var errMsg=err.code||err.message||'Errore';
         if(err.code==='permission-denied') errMsg='Permesso negato';
         else if(err.code==='unavailable') errMsg='Server non disponibile';
+        else if(err.code==='invalid-argument') errMsg='Dati non validi (v17)';
         bar.className='sync-bar error';
         bar.innerHTML='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> '+esc(errMsg)+' <span style="margin-left:4px;color:#721c24;cursor:pointer;text-decoration:underline;font-size:10px;font-weight:700" onclick="App.forceSync()">Riprova</span>';
       }
@@ -1268,9 +1343,9 @@ function startSnapshotListener(uid){
       console.log('[SNAPSHOT] Saving merged data with '+localOnlyCount+' local-only classes (using update)');
       _lastSaveId = Math.random().toString(36);
       var snapshotSaveData = {
-        classes: cleanForFirestore(JSON.parse(JSON.stringify(classes))),
-        currentClassId: currentClassId,
-        schoolName: schoolName,
+        classes: prepareClassesForSave(),
+        currentClassId: currentClassId||'',
+        schoolName: schoolName||'',
         updatedAt: new Date().toISOString(),
         _saveId: _lastSaveId
       };
@@ -1355,9 +1430,9 @@ function delayedServerRefresh(uid){
       if(needSave){
         _lastSaveId = Math.random().toString(36);
         var delayedSaveData = {
-          classes: cleanForFirestore(JSON.parse(JSON.stringify(classes))),
-          currentClassId: currentClassId,
-          schoolName: schoolName,
+          classes: prepareClassesForSave(),
+          currentClassId: currentClassId||'',
+          schoolName: schoolName||'',
           updatedAt: new Date().toISOString(),
           _saveId: _lastSaveId
         };
@@ -1525,7 +1600,7 @@ function render(){
     html+='<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;padding:4px 8px;flex-wrap:wrap">';
     html+='<button onclick="App.uploadToServer()" style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:8px;border:2px solid #28a745;background:#28a745;color:white;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">Carica su Server</button>';
     html+='<button onclick="App.downloadFromServer()" style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:8px;border:2px solid #007bff;background:#007bff;color:white;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">Scarica dal Server</button>';
-    html+='<span style="font-size:9px;color:#aaa;margin-left:auto">v16</span>';
+    html+='<span style="font-size:9px;color:#aaa;margin-left:auto">v17</span>';
     html+='</div>';
   }
 
@@ -1801,7 +1876,7 @@ function render(){
   if(classLocked){html+='</div>';}
 
   // Version indicator - always visible
-  html+='<div style="position:fixed;bottom:4px;right:6px;font-size:9px;color:#aaa;z-index:9999;pointer-events:none;font-weight:600" id="versionBadge">v16</div>';
+  html+='<div style="position:fixed;bottom:4px;right:6px;font-size:9px;color:#aaa;z-index:9999;pointer-events:none;font-weight:600" id="versionBadge">v17</div>';
 
   if(selectedChild>=0){html+=renderChildDetail(selectedChild);}
   if(showDietModal>=0){html+=renderDietModal(showDietModal);}
@@ -1977,6 +2052,34 @@ function renderChildDetail(idx){
   return html;
 }
 
+// Validate data structure before saving - returns list of issues found
+function validateDataForSave(){
+  var issues=[];
+  var classKeys=Object.keys(classes);
+  for(var ci=0;ci<classKeys.length;ci++){
+    var cId=classKeys[ci];
+    var c=classes[cId];
+    if(!c){issues.push('Class '+cId+' is null/undefined');continue;}
+    if(typeof c!=='object'||Array.isArray(c)){issues.push('Class '+cId+' is not a plain object: '+typeof c);continue;}
+    // Check each field
+    for(var field in c){
+      if(!c.hasOwnProperty(field)) continue;
+      var val=c[field];
+      if(val===undefined) issues.push('Class '+(c.name||cId)+'.'+field+' is undefined');
+      if(typeof val==='function') issues.push('Class '+(c.name||cId)+'.'+field+' is a function');
+      if(typeof val==='number'&&(isNaN(val)||!isFinite(val))) issues.push('Class '+(c.name||cId)+'.'+field+' is NaN/Infinity');
+      if(typeof field==='string'&&field.indexOf('.')>=0) issues.push('Class '+(c.name||cId)+' has key with dot: "'+field+'"');
+    }
+    // Check children array
+    if(c.children&&Array.isArray(c.children)){
+      for(var chi=0;chi<c.children.length;chi++){
+        if(typeof c.children[chi]!=='string') issues.push('Class '+(c.name||cId)+' children['+chi+'] is not a string: '+typeof c.children[chi]);
+      }
+    }
+  }
+  return issues;
+}
+
 function runFirestoreDiagnostic(){
   if(!currentUser||!db){alert('Nessuna connessione Firebase.');return;}
   var uid=currentUser.uid;
@@ -2113,14 +2216,24 @@ window.App={
     
     var uid=currentUser.uid;
     _lastSaveId=Math.random().toString(36);
-    // Use set() with {merge:true} - works always, preserves other devices' classes
+    var cleanedClasses=prepareClassesForSave();
     var uploadData={
-      classes:cleanForFirestore(JSON.parse(JSON.stringify(classes))),
-      currentClassId:currentClassId,
-      schoolName:schoolName,
+      classes:cleanedClasses,
+      currentClassId:currentClassId||'',
+      schoolName:schoolName||'',
       updatedAt:new Date().toISOString(),
       _saveId:_lastSaveId
     };
+    
+    // Validate before sending
+    try{
+      var dataStr=JSON.stringify(uploadData);
+      console.log('[UPLOAD] Data size: '+dataStr.length+' bytes');
+      if(dataStr.length>900000){
+        alert('I dati sono troppo grandi ('+Math.round(dataStr.length/1024)+' KB). Il limite di Firestore e 1 MB.');return;
+      }
+    }catch(e){alert('Errore nella preparazione dei dati: '+e.message);return;}
+    
     syncStatus='saving';renderSyncBar();
     console.log('[UPLOAD] Uploading '+Object.keys(classes).length+' classes to server (set+merge)...');
     
@@ -2141,7 +2254,11 @@ window.App={
       .catch(function(err){
         clearTimeout(uploadTimer);
         console.error('[UPLOAD] FAILED:',err.code,err.message);
-        alert('ERRORE caricamento: '+(err.code||err.message||'Errore sconosciuto'));
+        try{console.error('[UPLOAD] Failed data preview: ',JSON.stringify(uploadData).substring(0,500));}catch(e2){}
+        var errMsg=err.code||err.message||'Errore sconosciuto';
+        if(err.code==='invalid-argument') errMsg='Dati non validi - prova a riavviare l\'app (v17)';
+        else if(err.code==='permission-denied') errMsg='Permesso negato - controlla le regole Firebase';
+        alert('ERRORE caricamento: '+errMsg);
         syncStatus='error';renderSyncBar();
       });
   },
@@ -2267,10 +2384,13 @@ window.App={
       // Step 3: Save merged data using set() with {merge:true}
       // This is the most reliable approach - works even if doc doesn't exist
       _lastSaveId=Math.random().toString(36);
+      // Prepare merged classes for save (clean + strip childSourceMap)
+      var mergedForSave=JSON.parse(JSON.stringify(merged));
+      if(mergedForSave[COORDINATRICE_ID]) delete mergedForSave[COORDINATRICE_ID].childSourceMap;
       var saveMergeData={
-        classes:cleanForFirestore(JSON.parse(JSON.stringify(merged))),
-        currentClassId:currentClassId,
-        schoolName:schoolName,
+        classes:cleanForFirestore(mergedForSave,'merged'),
+        currentClassId:currentClassId||'',
+        schoolName:schoolName||'',
         updatedAt:new Date().toISOString(),
         _saveId:_lastSaveId
       };
@@ -3429,7 +3549,7 @@ setInterval(function(){
 
 // Auto-update: just save version, no redirect (redirect causes cache issues)
 (function(){
-  var CURRENT_VERSION='v16';
+  var CURRENT_VERSION='v17';
   localStorage.setItem('rp_app_version',CURRENT_VERSION);
 })();
 
