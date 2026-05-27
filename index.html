@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
 <title>Registro di Classe</title>
-<meta name="version" content="2025-05-28-v21-auth-fix"/>
+<meta name="version" content="2025-05-28-v22-auth-robust"/>
 <meta name="description" content="Registro di Classe per la gestione della classe"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a1a2e'><path d='M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z'/></svg>"/>
 <style>
@@ -286,6 +286,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script>
@@ -1598,50 +1599,52 @@ function convertToFirestoreFields(obj){
   return fields;
 }
 
+var _authMethod=''; // tracks which auth method is being used
+var _gisTried=false;
+
 function initFirebase(){
   try{
     if(typeof firebase==='undefined'){console.warn('Firebase SDK not loaded');render();return;}
     firebase.initializeApp(FIREBASE_CONFIG);
     var auth=firebase.auth();
     db=firebase.firestore();
-    // DISABLED persistence - causes timeout/hang on iOS Safari with IndexedDB limits
-    // localStorage is used as backup instead (more reliable on Safari)
-    console.log('[FIREBASE] Persistence DISABLED for iOS Safari compatibility');
-    // Use LOCAL persistence so redirect login survives page reload
+    // DISABLED Firestore persistence - causes timeout/hang on iOS Safari with IndexedDB
+    console.log('[FIREBASE] Firestore persistence DISABLED for iOS Safari compatibility');
+    // Auth persistence = LOCAL so login survives redirect and page close
     try{auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);}catch(e){console.log('[FIREBASE] Auth persistence:',e);}
     
-    // Check if we're returning from a redirect login
-    var returningFromRedirect=false;
-    try{if(localStorage.getItem('rp_login_redirect')==='1'){returningFromRedirect=true;localStorage.removeItem('rp_login_redirect');console.log('[FIREBASE] Returning from redirect login...');}}catch(e){}
-    
-    // Handle redirect result - this resolves when coming back from Google login
+    // Handle redirect result FIRST (before onAuthStateChanged)
     try{
       auth.getRedirectResult().then(function(result){
         if(result&&result.user){
-          console.log('[LOGIN] Redirect login OK:',result.user.displayName||result.user.email);
+          console.log('[AUTH] Redirect login OK:',result.user.displayName||result.user.email);
           loginLoading=false;
-          // onAuthStateChanged will handle the rest
-        }else if(returningFromRedirect){
-          // Redirect returned but no user - might have been cancelled
-          console.log('[LOGIN] Redirect returned but no user');
+        }else{
+          // No redirect result - either first visit or redirect was cancelled
+          console.log('[AUTH] No redirect result (normal on first visit)');
           loginLoading=false;
         }
+        try{localStorage.removeItem('rp_login_redirect');}catch(e){}
       }).catch(function(error){
-        console.error('[LOGIN] Redirect result error:',error.code,error.message);
+        console.error('[AUTH] Redirect result error:',error.code,error.message);
         loginLoading=false;
+        try{localStorage.removeItem('rp_login_redirect');}catch(e){}
         var msg='';
         if(error.code==='auth/unauthorized-domain'){
-          msg='Dominio non autorizzato!\n\nDevi aggiungere "'+window.location.hostname+'" in Firebase Console:\n1. Vai su console.firebase.google.com\n2. Seleziona il progetto "presenze-pre-post"\n3. Authentication > Settings > Authorized domains\n4. Aggiungi: '+window.location.hostname;
+          msg='DOMINIO NON AUTORIZZATO!\n\nDevi aggiungere il dominio in Firebase Console:\n\n1. Vai su: console.firebase.google.com\n2. Seleziona il progetto "presenze-pre-post"\n3. Clicca: Authentication (sinistra)\n4. Clicca: Settings (sopra)\n5. Scorri fino a: Authorized domains\n6. Clicca: Add domain\n7. Aggiungi: '+window.location.hostname+'\n\nDomini che DEVONO essere presenti:\n  - localhost\n  - presenze-pre-post.firebaseapp.com\n  - '+window.location.hostname;
         }else if(error.code==='auth/operation-not-allowed'){
-          msg='Login Google non abilitato in Firebase Console.';
+          msg='Login Google non abilitato in Firebase Console.\nAbilita Google come provider in Authentication > Sign-in method.';
+        }else if(error.code==='auth/network-request-failed'){
+          msg='Errore di rete. Controlla la connessione internet e riprova.';
         }else{
-          msg='Errore login: '+(error.code||error.message);
+          msg='Errore login: '+(error.code||'')+'\n'+(error.message||'');
         }
         alert(msg);
         render();
       });
-    }catch(e){console.error('[FIREBASE] getRedirectResult error:',e);}
+    }catch(e){console.error('[FIREBASE] getRedirectResult error:',e);loginLoading=false;}
     
+    // Auth state listener
     auth.onAuthStateChanged(function(u){
       var previousUser=currentUser;
       currentUser=u;loginLoading=false;
@@ -1653,24 +1656,133 @@ function initFirebase(){
         }
         loadFromFirestore(u.uid, false);
         startSnapshotListener(u.uid);
-        // After 3 seconds, check server for any classes we might have missed from cache
         delayedServerRefresh(u.uid);
       }else{
         stopSnapshotListener();
         firestoreLoadDone=false;
-        // NON pulire localStorage per uid - serve come backup quando si rientra!
-        // Rimuovi solo il vecchio key generico
         try{localStorage.removeItem('rp_data');}catch(e){}
         resetAllData();
         syncStatus='idle';render();
       }
     });
+    
+    // Safety: clear loginLoading if stuck for more than 30 seconds
+    setTimeout(function(){
+      if(loginLoading){
+        console.log('[AUTH] Login loading stuck - clearing');
+        loginLoading=false;
+        render();
+      }
+    },30000);
+    
   }catch(e){console.error('Firebase init error:',e);render();}
+}
+
+// Try Google Identity Services (GIS) One Tap - works on ALL browsers without popup/redirect
+function tryGISLogin(){
+  if(typeof google==='undefined'||!google.accounts){
+    console.log('[GIS] Google Identity Services not loaded, falling back to redirect');
+    doRedirectLogin();
+    return;
+  }
+  try{
+    var clientId='291215184515-'+
+      'g1e0p5r7j8v9a2b3c4d5e6f7g8h9i0'+ // placeholder - will try redirect if fails
+      '.apps.googleusercontent.com';
+    // Try to initialize GIS
+    google.accounts.id.initialize({
+      client_id: clientId,
+      callback: function(response){
+        if(response.credential){
+          console.log('[GIS] Got credential, signing in to Firebase...');
+          var credential=firebase.auth.GoogleAuthProvider.credential(response.credential);
+          firebase.auth().signInWithCredential(credential).then(function(result){
+            console.log('[GIS] Firebase sign-in OK:',result.user.displayName);
+            loginLoading=false;
+          }).catch(function(error){
+            console.error('[GIS] Firebase credential error:',error.code);
+            loginLoading=false;
+            // Fallback to redirect
+            doRedirectLogin();
+          });
+        }else{
+          console.log('[GIS] No credential, falling back to redirect');
+          doRedirectLogin();
+        }
+      },
+      error_callback: function(error){
+        console.log('[GIS] Error:',error);
+        doRedirectLogin();
+      }
+    });
+    google.accounts.id.prompt();
+  }catch(e){
+    console.error('[GIS] Exception:',e);
+    doRedirectLogin();
+  }
+}
+
+function doRedirectLogin(){
+  if(_gisTried){
+    // Already tried GIS and it failed, go straight to redirect
+  }
+  var auth=firebase.auth();
+  var provider=new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({prompt:'select_account'});
+  console.log('[AUTH] Using signInWithRedirect');
+  try{localStorage.setItem('rp_login_redirect','1');}catch(e){}
+  auth.signInWithRedirect(provider).catch(function(error){
+    console.error('[AUTH] Redirect error:',error.code,error.message);
+    loginLoading=false;
+    try{localStorage.removeItem('rp_login_redirect');}catch(e){}
+    var msg='';
+    if(error.code==='auth/unauthorized-domain'){
+      msg='DOMINIO NON AUTORIZZATO!\n\nAggiungi "'+window.location.hostname+'" in Firebase Console:\nAuthentication > Settings > Authorized domains > Add domain\n\nDomini richiesti:\n  - localhost\n  - presenze-pre-post.firebaseapp.com\n  - '+window.location.hostname;
+    }else{
+      msg='Errore login: '+(error.code||error.message||'Errore sconosciuto');
+    }
+    alert(msg);
+    render();
+  });
+}
+
+function doPopupLogin(){
+  var auth=firebase.auth();
+  var provider=new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({prompt:'select_account'});
+  console.log('[AUTH] Using signInWithPopup');
+  auth.signInWithPopup(provider).then(function(result){
+    console.log('[AUTH] Popup success:',result.user.displayName);
+    loginLoading=false;
+    render();
+  }).catch(function(error){
+    console.error('[AUTH] Popup error:',error.code);
+    loginLoading=false;
+    if(error.code==='auth/popup-closed-by-user'){
+      render();return;
+    }
+    if(error.code==='auth/popup-blocked'||error.code==='auth/cancelled-popup-request'){
+      // Popup failed, try redirect
+      console.log('[AUTH] Popup blocked, falling back to redirect...');
+      doRedirectLogin();
+      return;
+    }
+    var msg='';
+    if(error.code==='auth/unauthorized-domain'){
+      msg='DOMINIO NON AUTORIZZATO!\n\nAggiungi "'+window.location.hostname+'" in Firebase Console:\nAuthentication > Settings > Authorized domains > Add domain';
+    }else{
+      msg='Errore login: '+(error.code||error.message||'Errore');
+    }
+    alert(msg);
+    render();
+  });
 }
 
 function handleLogin(){
   if(typeof firebase==='undefined'){alert('Firebase non caricato. Ricarica la pagina.');return;}
   var auth=firebase.auth();
+  
+  // LOGOUT
   if(currentUser){
     if(confirm('Vuoi disconnettere l\'account "'+(currentUser.displayName||currentUser.email)+'"?\n\nI dati rimarranno salvati nel tuo account Google.')){
       var uid=currentUser.uid;
@@ -1685,43 +1797,31 @@ function handleLogin(){
       try{auth.signOut();}catch(e){}
       setTimeout(function(){window.location.reload();},500);
     }
+    return;
+  }
+  
+  // LOGIN - Try multiple methods for maximum compatibility
+  loginLoading=true;render();
+  
+  // Strategy: Try popup first (works on most devices), fall back to redirect if blocked
+  // On iOS Safari, popup often fails, so redirect is the reliable fallback
+  var isMobile=/iPad|iPhone|iPod|Android/i.test(navigator.userAgent);
+  var isSafari=/Safari\//i.test(navigator.userAgent)&&!/Chrome\//i.test(navigator.userAgent)&&!/CriOS\//i.test(navigator.userAgent);
+  var isIOSWebView=/(iPhone|iPad|iPod).*AppleWebKit(?!.*Safari)/i.test(navigator.userAgent);
+  
+  if(isIOSWebView){
+    // iOS in-app browser (WebView) - redirect is the only option
+    console.log('[AUTH] iOS WebView detected - using redirect');
+    doRedirectLogin();
+  }else if(isMobile||isSafari){
+    // Mobile or Safari - try popup first, fall back to redirect
+    // Popup CAN work on some iOS Safari versions, and it's faster when it works
+    console.log('[AUTH] Mobile/Safari detected - trying popup with redirect fallback');
+    doPopupLogin();
   }else{
-    loginLoading=true;render();
-    var provider=new firebase.auth.GoogleAuthProvider();
-    // On ALL mobile devices, use redirect (popup is unreliable on Safari/Chrome iOS)
-    var isMobile=/iPad|iPhone|iPod|Android/i.test(navigator.userAgent);
-    var isSafari=/Safari\//i.test(navigator.userAgent)&&!/Chrome\//i.test(navigator.userAgent);
-    
-    if(isMobile||isSafari){
-      console.log('[LOGIN] Using signInWithRedirect (mobile/Safari detected)');
-      // Save a flag so we know redirect is in progress
-      try{localStorage.setItem('rp_login_redirect','1');}catch(e){}
-      auth.signInWithRedirect(provider).catch(function(error){
-        console.error('[LOGIN] Redirect error:',error);
-        loginLoading=false;
-        try{localStorage.removeItem('rp_login_redirect');}catch(e){}
-        alert('Errore login: '+(error.code||error.message||'Errore'));
-        render();
-      });
-    }else{
-      console.log('[LOGIN] Using signInWithPopup');
-      auth.signInWithPopup(provider).then(function(result){
-        console.log('[LOGIN] Popup success:',result.user.displayName);
-      }).catch(function(error){
-        loginLoading=false;render();
-        if(error.code==='auth/popup-closed-by-user') return;
-        if(error.code==='auth/popup-blocked'||error.code==='auth/cancelled-popup-request'){
-          // Fallback to redirect
-          console.log('[LOGIN] Popup failed, trying redirect...');
-          try{localStorage.setItem('rp_login_redirect','1');}catch(e){}
-          auth.signInWithRedirect(provider);
-          return;
-        }
-        var msg='Errore login: '+(error.code||error.message);
-        if(error.code==='auth/unauthorized-domain'){msg='Dominio non autorizzato. Aggiungi "'+window.location.hostname+'" in Firebase Console > Authentication > Settings > Authorized domains.';}
-        alert(msg);
-      });
-    }
+    // Desktop - popup almost always works
+    console.log('[AUTH] Desktop browser - using popup');
+    doPopupLogin();
   }
 }
 
@@ -1804,7 +1904,11 @@ function render(){
   html+='</div>';
 
   if(currentUser){html+='<div class="auth-bar success"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg><span>Connesso come '+esc(currentUser.displayName||currentUser.email)+'</span></div>';}
-  else{html+='<div class="auth-bar info"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span>Effettua il login con Google per salvare i dati nel cloud</span></div>';}
+  else{
+    html+='<div class="auth-bar info"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span>Effettua il login con Google per salvare i dati nel cloud</span></div>';
+    if(loginLoading){html+='<div style="padding:6px 12px;margin-bottom:8px;background:#fff3cd;border:1px solid #ffeeba;border-radius:8px;font-size:12px;color:#856404">Login in corso... Se non compare la finestra di Google, ricarica la pagina e riprova.</div>';}
+    else{html+='<div style="padding:6px 12px;margin-bottom:8px;background:#e8f4fd;border:1px solid #bee5eb;border-radius:8px;font-size:10px;color:#0c5460">Dominio: '+esc(window.location.hostname)+' — Deve essere in Firebase Console > Authentication > Settings > Authorized domains</div>';}
+  }
 
   html+='<div id="sync-bar" class="sync-bar" style="display:none"></div>';
   // Diagnostica + versione - sempre visibile se loggato
@@ -1813,7 +1917,7 @@ function render(){
     html+='<button onclick="App.uploadToServer()" style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:8px;border:2px solid #28a745;background:#28a745;color:white;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">Carica su Server</button>';
     html+='<button onclick="App.downloadFromServer()" style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:8px;border:2px solid #007bff;background:#007bff;color:white;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">Scarica dal Server</button>';
     html+='<button onclick="App.clearCache()" style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:8px;border:2px solid #dc3545;background:white;color:#dc3545;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap">Pulisci Cache</button>';
-    html+='<span style="font-size:9px;color:#aaa;margin-left:auto">v21</span>';
+    html+='<span style="font-size:9px;color:#aaa;margin-left:auto">v22</span>';
     html+='</div>';
   }
 
@@ -3839,7 +3943,7 @@ setInterval(function(){
 
 // Auto-update: just save version, no redirect (redirect causes cache issues)
 (function(){
-  var CURRENT_VERSION='v21';
+  var CURRENT_VERSION='v22';
   localStorage.setItem('rp_app_version',CURRENT_VERSION);
 })();
 
