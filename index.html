@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
 <title>Registro di Classe</title>
-<meta name="version" content="2025-05-28-v25b-fix-download-mask"/>
+<meta name="version" content="2025-05-28-v26-clean-ui"/>
 <meta name="description" content="Registro di Classe per la gestione della classe"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a1a2e'><path d='M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z'/></svg>"/>
 <style>
@@ -2128,15 +2128,6 @@ function render(){
   }
 
   html+='<div id="sync-bar" class="sync-bar" style="display:none"></div>';
-  // Diagnostica + versione - sempre visibile se loggato
-  if(currentUser){
-    html+='<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;padding:4px 8px;flex-wrap:wrap">';
-    html+='<button onclick="App.uploadToServer()" style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:8px;border:2px solid #28a745;background:#28a745;color:white;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">Carica su Server</button>';
-    html+='<button onclick="App.downloadFromServer()" style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:8px;border:2px solid #007bff;background:#007bff;color:white;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">Scarica dal Server</button>';
-    html+='<button onclick="App.clearCache()" style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:8px;border:2px solid #dc3545;background:white;color:#dc3545;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap">Pulisci Cache</button>';
-    html+='<span style="font-size:9px;color:#aaa;margin-left:auto">v25</span>';
-    html+='</div>';
-  }
 
   // Class tabs
   html+='<div class="class-tabs">';
@@ -4213,7 +4204,7 @@ setInterval(function(){
 
 // Auto-update: just save version, no redirect (redirect causes cache issues)
 (function(){
-  var CURRENT_VERSION='v25';
+  var CURRENT_VERSION='v26';
   localStorage.setItem('rp_app_version',CURRENT_VERSION);
 })();
 
