@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
 <title>Registro di Classe</title>
-<meta name="version" content="2025-05-28-v22-auth-robust"/>
+<meta name="version" content="2025-05-28-v23-sync-fix"/>
 <meta name="description" content="Registro di Classe per la gestione della classe"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a1a2e'><path d='M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z'/></svg>"/>
 <style>
@@ -981,14 +981,25 @@ function doSaveToFirestore(){
   // Clear any previous timeout
   if(_saveTimeout){clearTimeout(_saveTimeout);}
   _saveTimeout=setTimeout(function(){
-    console.error('[SAVE] TIMEOUT - save did not complete in 15 seconds');
-    syncStatus='error';
-    var bar=document.getElementById('sync-bar');
-    if(bar){
-      bar.className='sync-bar error';
-      bar.innerHTML='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> Timeout salvataggio <span style="margin-left:4px;color:#721c24;cursor:pointer;text-decoration:underline;font-size:10px;font-weight:700" onclick="App.forceSync()">Riprova</span>';
-    }
-  },15000);
+    console.error('[SAVE] TIMEOUT - SDK save did not complete in 10 seconds, trying REST API...');
+    // AUTO FALLBACK: Try REST API when SDK times out
+    var uid=currentUser.uid;
+    uploadViaRestAPI(uid, saveData, function(ok, msg){
+      if(ok){
+        console.log('[SAVE] REST API fallback SUCCESS after SDK timeout');
+        syncStatus='synced';renderSyncBar();savePinsToLocalStorage();
+        setTimeout(function(){if(syncStatus==='synced'){syncStatus='idle';renderSyncBar();}},3000);
+      }else{
+        console.error('[SAVE] REST API fallback also failed:',msg);
+        syncStatus='error';renderSyncBar();
+        var bar=document.getElementById('sync-bar');
+        if(bar){
+          bar.className='sync-bar error';
+          bar.innerHTML='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> Salvataggio fallito <span style="margin-left:4px;color:#721c24;cursor:pointer;text-decoration:underline;font-size:10px;font-weight:700" onclick="App.forceSync()">Riprova</span>';
+        }
+      }
+    });
+  },10000);
   
   db.collection('users').doc(currentUser.uid).set(saveData,{merge:true})
     .then(function(){
@@ -1000,18 +1011,28 @@ function doSaveToFirestore(){
     .catch(function(err){
       if(_saveTimeout){clearTimeout(_saveTimeout);_saveTimeout=null;}
       console.error('[SAVE] Firestore set+merge FAILED:',err.code,err.message);
-      // Log the data that caused the error for debugging
-      try{console.error('[SAVE] Failed data preview: ',JSON.stringify(saveData).substring(0,500));}catch(e2){}
-      syncStatus='error';renderSyncBar();
-      var bar=document.getElementById('sync-bar');
-      if(bar){
-        var errMsg=err.code||err.message||'Errore';
-        if(err.code==='permission-denied') errMsg='Permesso negato';
-        else if(err.code==='unavailable') errMsg='Server non disponibile';
-        else if(err.code==='invalid-argument') errMsg='Dati non validi (v17)';
-        bar.className='sync-bar error';
-        bar.innerHTML='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> '+esc(errMsg)+' <span style="margin-left:4px;color:#721c24;cursor:pointer;text-decoration:underline;font-size:10px;font-weight:700" onclick="App.forceSync()">Riprova</span>';
-      }
+      // AUTO FALLBACK: Try REST API when SDK fails
+      console.log('[SAVE] Trying REST API fallback...');
+      var uid=currentUser.uid;
+      uploadViaRestAPI(uid, saveData, function(ok, msg){
+        if(ok){
+          console.log('[SAVE] REST API fallback SUCCESS after SDK error');
+          syncStatus='synced';renderSyncBar();savePinsToLocalStorage();
+          setTimeout(function(){if(syncStatus==='synced'){syncStatus='idle';renderSyncBar();}},3000);
+        }else{
+          console.error('[SAVE] REST API fallback also failed:',msg);
+          syncStatus='error';renderSyncBar();
+          var bar=document.getElementById('sync-bar');
+          if(bar){
+            var errMsg=err.code||err.message||'Errore';
+            if(err.code==='permission-denied') errMsg='Permesso negato';
+            else if(err.code==='unavailable') errMsg='Server non disponibile';
+            else if(err.code==='invalid-argument') errMsg='Dati non validi';
+            bar.className='sync-bar error';
+            bar.innerHTML='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> '+esc(errMsg)+' <span style="margin-left:4px;color:#721c24;cursor:pointer;text-decoration:underline;font-size:10px;font-weight:700" onclick="App.forceSync()">Riprova</span>';
+          }
+        }
+      });
     });
 }
 
@@ -1056,9 +1077,9 @@ function loadFromFirestore(uid, forceReload){
   resetAllData();
   syncStatus='saving';renderSyncBar();
   
-  // STEP 2: Load from Firestore - users collection (allowed by Firebase rules)
-  // Always try SERVER first to get latest data, fall back to cache if offline
-  db.collection('users').doc(uid).get()
+  // STEP 2: Load from Firestore - FORCE SERVER READ to get latest data
+  console.log('[LOAD] Reading from Firestore SERVER (source=server)...');
+  db.collection('users').doc(uid).get({source:'server'})
     .then(function(doc){
       console.log('[LOAD] Firestore get() success (source='+(doc.metadata&&doc.metadata.fromCache?'cache':'server')+'), doc exists: '+doc.exists);
       if(doc.exists&&doc.data()&&doc.data().classes){
@@ -1067,40 +1088,67 @@ function loadFromFirestore(uid, forceReload){
         for(var fc in fsClasses){if(fsClasses.hasOwnProperty(fc)){console.log('[LOAD] FS class: '+fc+' = '+(fsClasses[fc].name||'?'));}}
         handleFirestoreData(doc, uid, localData);
       }else{
-        // No data in users collection - try registro_presenze as fallback
-        console.log('[LOAD] No data in users, trying registro_presenze...');
-        db.collection('registro_presenze').doc(uid).get()
-          .then(function(rpDoc){
-            if(rpDoc.exists&&rpDoc.data()&&rpDoc.data().classes){
-              console.log('[LOAD] Found data in registro_presenze!');
-              handleFirestoreData(rpDoc, uid, localData);
+        // No data on server - try cache as fallback
+        console.log('[LOAD] No data from server, trying cache...');
+        db.collection('users').doc(uid).get({source:'cache'})
+          .then(function(cacheDoc){
+            if(cacheDoc.exists&&cacheDoc.data()&&cacheDoc.data().classes){
+              console.log('[LOAD] Found data in cache!');
+              handleFirestoreData(cacheDoc, uid, localData);
             }else{
-              console.log('[LOAD] No Firestore data. Using localStorage/defaults.');
-              applyLocalOrDefaults(localData);
-              saveToFirestoreNow();
+              // Try registro_presenze as fallback
+              console.log('[LOAD] No data in cache, trying registro_presenze...');
+              db.collection('registro_presenze').doc(uid).get()
+                .then(function(rpDoc){
+                  if(rpDoc.exists&&rpDoc.data()&&rpDoc.data().classes){
+                    console.log('[LOAD] Found data in registro_presenze!');
+                    handleFirestoreData(rpDoc, uid, localData);
+                  }else{
+                    console.log('[LOAD] No Firestore data anywhere. Using localStorage/defaults.');
+                    applyLocalOrDefaults(localData);
+                    saveToFirestoreNow();
+                  }
+                })
+                .catch(function(){
+                  console.warn('[LOAD] registro_presenze failed. Using localStorage/defaults.');
+                  applyLocalOrDefaults(localData);
+                  saveToFirestoreNow();
+                });
             }
           })
           .catch(function(){
-            console.warn('[LOAD] registro_presenze failed. Using localStorage/defaults.');
+            console.warn('[LOAD] Cache read also failed. Using localStorage/defaults.');
             applyLocalOrDefaults(localData);
             saveToFirestoreNow();
           });
       }
     })
     .catch(function(err){
-      console.error('[LOAD] Firestore get() failed:', err.code, err.message);
-      // If read failed, use localStorage as fallback
-      applyLocalOrDefaults(localData);
-      syncStatus='error';
-      var bar=document.getElementById('sync-bar');
-      if(bar){
-        bar.style.display='flex';bar.className='sync-bar error';
-        var errMsg=err.code||err.message||'Errore';
-        if(errMsg==='unavailable') errMsg='Server non disponibile';
-        bar.innerHTML='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> '+esc(errMsg)+' <span style="margin-left:4px;color:#721c24;cursor:pointer;text-decoration:underline;font-size:10px;font-weight:700" onclick="App.forceSync()">Riprova</span>';
-      }
-      firestoreLoadDone=true;firestoreLoaded=true;
-      updateClassLockState();render();
+      console.error('[LOAD] Firestore get(SERVER) failed:', err.code, err.message);
+      // If server read failed, try REST API read as fallback
+      console.log('[LOAD] Trying REST API read as fallback...');
+      downloadViaRestAPI(uid, function(apiOk, apiData){
+        if(apiOk&&apiData&&apiData.classes){
+          console.log('[LOAD] REST API read SUCCESS - got '+Object.keys(apiData.classes).length+' classes');
+          // Convert REST API data to a fake doc for handleFirestoreData
+          var fakeDoc = {exists:true, data:function(){return apiData;}, metadata:{fromCache:false}};
+          handleFirestoreData(fakeDoc, uid, localData);
+        }else{
+          // REST API also failed, use localStorage
+          console.warn('[LOAD] REST API also failed. Using localStorage/defaults.');
+          applyLocalOrDefaults(localData);
+          syncStatus='error';
+          var bar=document.getElementById('sync-bar');
+          if(bar){
+            bar.style.display='flex';bar.className='sync-bar error';
+            var errMsg=err.code||err.message||'Errore';
+            if(errMsg==='unavailable') errMsg='Server non disponibile';
+            bar.innerHTML='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> '+esc(errMsg)+' <span style="margin-left:4px;color:#721c24;cursor:pointer;text-decoration:underline;font-size:10px;font-weight:700" onclick="App.forceSync()">Riprova</span>';
+          }
+          firestoreLoadDone=true;firestoreLoaded=true;
+          updateClassLockState();render();
+        }
+      });
     });
 }
 
@@ -1599,6 +1647,90 @@ function convertToFirestoreFields(obj){
   return fields;
 }
 
+// Download data from Firestore via REST API (fallback when SDK fails)
+function downloadViaRestAPI(uid, callback){
+  if(!currentUser){callback(false,null);return;}
+  console.log('[REST-API-READ] Starting REST API download...');
+  
+  currentUser.getIdToken(true).then(function(token){
+    var url='https://firestore.googleapis.com/v1/projects/presenze-pre-post/databases/(default)/documents/users/'+uid;
+    
+    var xhr=new XMLHttpRequest();
+    xhr.open('GET',url,true);
+    xhr.setRequestHeader('Authorization','Bearer '+token);
+    xhr.timeout=15000;
+    xhr.onload=function(){
+      if(xhr.status===200||xhr.status===201){
+        try{
+          var response=JSON.parse(xhr.responseText);
+          if(response.fields){
+            var data=parseFirestoreFields(response.fields);
+            console.log('[REST-API-READ] Got data with '+(data.classes?Object.keys(data.classes).length:0)+' classes');
+            callback(true,data);
+          }else{
+            console.log('[REST-API-READ] No fields in response');
+            callback(false,null);
+          }
+        }catch(e){
+          console.error('[REST-API-READ] Parse error:',e);
+          callback(false,null);
+        }
+      }else if(xhr.status===404){
+        console.log('[REST-API-READ] Document not found (404)');
+        callback(false,null);
+      }else{
+        console.error('[REST-API-READ] HTTP error:',xhr.status);
+        callback(false,null);
+      }
+    };
+    xhr.ontimeout=function(){
+      console.error('[REST-API-READ] Timeout');
+      callback(false,null);
+    };
+    xhr.onerror=function(){
+      console.error('[REST-API-READ] Network error');
+      callback(false,null);
+    };
+    xhr.send();
+  }).catch(function(err){
+    console.error('[REST-API-READ] Auth token error:',err);
+    callback(false,null);
+  });
+}
+
+// Parse Firestore REST API response format back to JS objects
+function parseFirestoreFields(fields){
+  var result={};
+  for(var key in fields){
+    if(!fields.hasOwnProperty(key)) continue;
+    var val=fields[key];
+    result[key]=parseFirestoreValue(val);
+  }
+  return result;
+}
+
+function parseFirestoreValue(val){
+  if(val.nullValue!==undefined) return null;
+  if(val.stringValue!==undefined) return val.stringValue;
+  if(val.booleanValue!==undefined) return val.booleanValue;
+  if(val.integerValue!==undefined) return parseInt(val.integerValue,10);
+  if(val.doubleValue!==undefined) return parseFloat(val.doubleValue);
+  if(val.timestampValue!==undefined) return val.timestampValue;
+  if(val.arrayValue){
+    if(!val.arrayValue.values) return [];
+    var arr=[];
+    for(var i=0;i<val.arrayValue.values.length;i++){
+      arr.push(parseFirestoreValue(val.arrayValue.values[i]));
+    }
+    return arr;
+  }
+  if(val.mapValue){
+    if(!val.mapValue.fields) return {};
+    return parseFirestoreFields(val.mapValue.fields);
+  }
+  return null;
+}
+
 var _authMethod=''; // tracks which auth method is being used
 var _gisTried=false;
 
@@ -1917,7 +2049,7 @@ function render(){
     html+='<button onclick="App.uploadToServer()" style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:8px;border:2px solid #28a745;background:#28a745;color:white;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">Carica su Server</button>';
     html+='<button onclick="App.downloadFromServer()" style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:8px;border:2px solid #007bff;background:#007bff;color:white;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">Scarica dal Server</button>';
     html+='<button onclick="App.clearCache()" style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:8px;border:2px solid #dc3545;background:white;color:#dc3545;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap">Pulisci Cache</button>';
-    html+='<span style="font-size:9px;color:#aaa;margin-left:auto">v22</span>';
+    html+='<span style="font-size:9px;color:#aaa;margin-left:auto">v23</span>';
     html+='</div>';
   }
 
@@ -3943,7 +4075,7 @@ setInterval(function(){
 
 // Auto-update: just save version, no redirect (redirect causes cache issues)
 (function(){
-  var CURRENT_VERSION='v22';
+  var CURRENT_VERSION='v23';
   localStorage.setItem('rp_app_version',CURRENT_VERSION);
 })();
 
