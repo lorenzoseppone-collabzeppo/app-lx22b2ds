@@ -856,6 +856,32 @@ function saveToFirestoreNow(){
 }
 
 var _saveTimeout=null;
+
+// Clean data for Firestore: remove undefined values and functions that Firestore rejects
+function cleanForFirestore(obj){
+  if(obj===null||obj===undefined) return null;
+  if(typeof obj==='function') return null;
+  if(typeof obj!=='object') return obj;
+  if(Array.isArray(obj)){
+    var arr=[];
+    for(var i=0;i<obj.length;i++){
+      var cleaned=cleanForFirestore(obj[i]);
+      if(cleaned!==undefined) arr.push(cleaned);
+    }
+    return arr;
+  }
+  var result={};
+  for(var key in obj){
+    if(!obj.hasOwnProperty(key)) continue;
+    var val=obj[key];
+    if(val===undefined||typeof val==='function') continue;
+    // Skip keys with dots (Firestore would interpret as nested paths)
+    if(typeof key==='string'&&key.indexOf('.')>=0) continue;
+    result[key]=cleanForFirestore(val);
+  }
+  return result;
+}
+
 function doSaveToFirestore(){
   if(!currentUser||!db) return;
   saveCurrentClassData();
@@ -869,7 +895,8 @@ function doSaveToFirestore(){
   var updateData={};
   for(var cid in classes){
     if(classes.hasOwnProperty(cid)){
-      updateData['classes.'+cid]=JSON.parse(JSON.stringify(classes[cid]));
+      var cleanedClass=cleanForFirestore(JSON.parse(JSON.stringify(classes[cid])));
+      updateData['classes.'+cid]=cleanedClass;
     }
   }
   updateData.currentClassId=currentClassId;
@@ -907,7 +934,7 @@ function doSaveToFirestore(){
       // If document doesn't exist, create it with set()
       if(err.code==='not-found'||err.code==='5'||(err.message&&err.message.indexOf('No document to update')>=0)){
         console.log('[SAVE] Document not found, creating with set()...');
-        var createData={classes:JSON.parse(JSON.stringify(classes)),currentClassId:currentClassId,schoolName:schoolName,updatedAt:new Date().toISOString(),_saveId:_lastSaveId};
+        var createData={classes:cleanForFirestore(JSON.parse(JSON.stringify(classes))),currentClassId:currentClassId,schoolName:schoolName,updatedAt:new Date().toISOString(),_saveId:_lastSaveId};
         db.collection('users').doc(currentUser.uid).set(createData)
           .then(function(){
             if(_saveTimeout){clearTimeout(_saveTimeout);_saveTimeout=null;}
@@ -1266,7 +1293,7 @@ function startSnapshotListener(uid){
       var saveUpdate = {};
       for(var sid in classes){
         if(classes.hasOwnProperty(sid)){
-          saveUpdate['classes.'+sid] = JSON.parse(JSON.stringify(classes[sid]));
+          saveUpdate['classes.'+sid] = cleanForFirestore(JSON.parse(JSON.stringify(classes[sid])));
         }
       }
       saveUpdate.currentClassId = currentClassId;
@@ -1356,7 +1383,7 @@ function delayedServerRefresh(uid){
         var saveUpdate = {};
         for(var sid in classes){
           if(classes.hasOwnProperty(sid)){
-            saveUpdate['classes.'+sid] = JSON.parse(JSON.stringify(classes[sid]));
+            saveUpdate['classes.'+sid] = cleanForFirestore(JSON.parse(JSON.stringify(classes[sid])));
           }
         }
         saveUpdate.currentClassId = currentClassId;
@@ -2119,7 +2146,7 @@ window.App={
     var uploadData={currentClassId:currentClassId,schoolName:schoolName,updatedAt:new Date().toISOString(),_saveId:_lastSaveId};
     for(var uc in classes){
       if(classes.hasOwnProperty(uc)){
-        uploadData['classes.'+uc]=JSON.parse(JSON.stringify(classes[uc]));
+        uploadData['classes.'+uc]=cleanForFirestore(JSON.parse(JSON.stringify(classes[uc])));
       }
     }
     syncStatus='saving';renderSyncBar();
@@ -2144,7 +2171,7 @@ window.App={
         // If document doesn't exist yet, create it with set()
         if(err.code==='not-found'||err.code==='5'||(err.message&&err.message.indexOf('No document to update')>=0)){
           console.log('[UPLOAD] Document not found, creating with set()...');
-          var createData={classes:JSON.parse(JSON.stringify(classes)),currentClassId:currentClassId,schoolName:schoolName,updatedAt:new Date().toISOString(),_saveId:_lastSaveId};
+          var createData={classes:cleanForFirestore(JSON.parse(JSON.stringify(classes))),currentClassId:currentClassId,schoolName:schoolName,updatedAt:new Date().toISOString(),_saveId:_lastSaveId};
           db.collection('users').doc(uid).set(createData)
             .then(function(){
               clearTimeout(uploadTimer);
@@ -2292,7 +2319,7 @@ window.App={
       var saveUpdate={currentClassId:currentClassId,schoolName:schoolName,updatedAt:new Date().toISOString(),_saveId:_lastSaveId};
       for(var fcid in merged){
         if(merged.hasOwnProperty(fcid)){
-          saveUpdate['classes.'+fcid]=JSON.parse(JSON.stringify(merged[fcid]));
+          saveUpdate['classes.'+fcid]=cleanForFirestore(JSON.parse(JSON.stringify(merged[fcid])));
         }
       }
       db.collection('users').doc(uid).update(saveUpdate).then(function(){
@@ -2314,7 +2341,7 @@ window.App={
       }).catch(function(err){
         // If document doesn't exist, create with set()
         if(err.code==='not-found'||err.code==='5'||(err.message&&err.message.indexOf('No document to update')>=0)){
-          var createData={classes:merged,currentClassId:currentClassId,schoolName:schoolName,updatedAt:new Date().toISOString(),_saveId:_lastSaveId};
+          var createData={classes:cleanForFirestore(merged),currentClassId:currentClassId,schoolName:schoolName,updatedAt:new Date().toISOString(),_saveId:_lastSaveId};
           db.collection('users').doc(uid).set(createData).then(function(){
             classes=merged;
             restorePinsFromLocalStorage();
