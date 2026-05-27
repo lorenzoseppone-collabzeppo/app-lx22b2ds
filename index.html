@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
 <title>Registro di Classe</title>
-<meta name="version" content="2025-05-28-v19-rest-fallback"/>
+<meta name="version" content="2025-05-28-v20-redirect-login"/>
 <meta name="description" content="Registro di Classe per la gestione della classe"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a1a2e'><path d='M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z'/></svg>"/>
 <style>
@@ -1606,9 +1606,9 @@ function initFirebase(){
     db=firebase.firestore();
     // DISABLED persistence - causes timeout/hang on iOS Safari with IndexedDB limits
     // localStorage is used as backup instead (more reliable on Safari)
-    // try{db.enablePersistence({synchronizeTabs:false}).then(function(){console.log('Firestore persistence enabled');}).catch(function(e){console.log('Firestore persistence note:',e.code||e.message||e);});}catch(e){console.log('Firestore persistence:',e.message||e);}
     console.log('[FIREBASE] Persistence DISABLED for iOS Safari compatibility');
-    try{auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);}catch(e){}
+    // Use LOCAL persistence so redirect login survives page reload
+    try{auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);}catch(e){console.log('[FIREBASE] Auth persistence:',e);}
     auth.onAuthStateChanged(function(u){
       var previousUser=currentUser;
       currentUser=u;loginLoading=false;
@@ -1631,7 +1631,23 @@ function initFirebase(){
         syncStatus='idle';render();
       }
     });
-    try{auth.getRedirectResult();}catch(e){}
+    // Handle redirect result for iOS (signInWithRedirect comes back here)
+    try{
+      auth.getRedirectResult().then(function(result){
+        if(result&&result.user){
+          console.log('[LOGIN] Redirect login successful:',result.user.displayName||result.user.email);
+        }
+      }).catch(function(error){
+        console.error('[LOGIN] Redirect result error:',error.code,error.message);
+        loginLoading=false;
+        var msg='Errore durante il login.';
+        if(error.code==='auth/unauthorized-domain'){msg='Dominio non autorizzato. Aggiungi "'+window.location.hostname+'" in Firebase Console.';}
+        else if(error.code==='auth/operation-not-allowed'){msg='Login Google non abilitato.';}
+        else{msg='Errore login: '+(error.code||error.message);}
+        alert(msg);
+        render();
+      });
+    }catch(e){}
   }catch(e){console.error('Firebase init error:',e);render();}
 }
 
@@ -1647,7 +1663,8 @@ function handleLogin(){
       // Prova a salvare su Firestore (fire and forget - non bloccare il logout)
       try{
         if(db&&uid){
-          db.collection('users').doc(uid).set({classes:JSON.parse(JSON.stringify(classes)),currentClassId:currentClassId,schoolName:schoolName,updatedAt:new Date().toISOString()}).catch(function(err){console.error('[LOGOUT] Firestore save failed:',err);});
+          var logoutClasses=prepareClassesForSave();
+          db.collection('users').doc(uid).set({classes:logoutClasses,currentClassId:currentClassId||'',schoolName:schoolName||'',updatedAt:new Date().toISOString()},{merge:true}).catch(function(err){console.error('[LOGOUT] Firestore save failed:',err);});
         }
       }catch(e){console.error('[LOGOUT] Firestore error:',e);}
       // Fai logout SUBITO - non aspettare Firestore
@@ -1657,15 +1674,29 @@ function handleLogin(){
   }else{
     loginLoading=true;render();
     var provider=new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider).catch(function(error){
-      loginLoading=false;render();var msg='Errore durante il login.';
-      if(error.code==='auth/popup-closed-by-user') return;
-      else if(error.code==='auth/popup-blocked'){msg='Il popup è stato bloccato. Per favore consenti i popup per questo sito e riprova.\n\nSu Chrome: Impostazioni → Impostazioni siti → Popup → Consenti';}
-      else if(error.code==='auth/unauthorized-domain'){msg='Dominio "'+window.location.hostname+'" non autorizzato.\n\nVai su Firebase Console > Authentication > Settings > Authorized domains e aggiungi:\n'+window.location.hostname;}
-      else if(error.code==='auth/operation-not-allowed'){msg='Login Google non abilitato. Abilitalo in Firebase Console.';}
-      else{msg='Errore: '+error.message;}
-      alert(msg);
-    });
+    // Use redirect instead of popup on iOS Safari - popup is unreliable
+    // Popup causes "auth/cancelled-popup-request" on iOS Safari
+    var isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
+    if(isIOS){
+      console.log('[LOGIN] Using signInWithRedirect (iOS detected)');
+      auth.signInWithRedirect(provider);
+    }else{
+      console.log('[LOGIN] Using signInWithPopup');
+      auth.signInWithPopup(provider).catch(function(error){
+        loginLoading=false;render();var msg='Errore durante il login.';
+        if(error.code==='auth/popup-closed-by-user') return;
+        else if(error.code==='auth/popup-blocked'||error.code==='auth/cancelled-popup-request'){
+          // Fallback to redirect
+          console.log('[LOGIN] Popup failed, falling back to redirect...');
+          auth.signInWithRedirect(provider);
+          return;
+        }
+        else if(error.code==='auth/unauthorized-domain'){msg='Dominio "'+window.location.hostname+'" non autorizzato.\n\nVai su Firebase Console > Authentication > Settings > Authorized domains e aggiungi:\n'+window.location.hostname;}
+        else if(error.code==='auth/operation-not-allowed'){msg='Login Google non abilitato. Abilitalo in Firebase Console.';}
+        else{msg='Errore: '+error.message;}
+        alert(msg);
+      });
+    }
   }
 }
 
@@ -1757,7 +1788,7 @@ function render(){
     html+='<button onclick="App.uploadToServer()" style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:8px;border:2px solid #28a745;background:#28a745;color:white;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">Carica su Server</button>';
     html+='<button onclick="App.downloadFromServer()" style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:8px;border:2px solid #007bff;background:#007bff;color:white;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">Scarica dal Server</button>';
     html+='<button onclick="App.clearCache()" style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:8px;border:2px solid #dc3545;background:white;color:#dc3545;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap">Pulisci Cache</button>';
-    html+='<span style="font-size:9px;color:#aaa;margin-left:auto">v19</span>';
+    html+='<span style="font-size:9px;color:#aaa;margin-left:auto">v20</span>';
     html+='</div>';
   }
 
@@ -2033,7 +2064,7 @@ function render(){
   if(classLocked){html+='</div>';}
 
   // Version indicator - always visible
-  html+='<div style="position:fixed;bottom:4px;right:6px;font-size:9px;color:#aaa;z-index:9999;pointer-events:none;font-weight:600" id="versionBadge">v19</div>';
+  html+='<div style="position:fixed;bottom:4px;right:6px;font-size:9px;color:#aaa;z-index:9999;pointer-events:none;font-weight:600" id="versionBadge">v20</div>';
 
   if(selectedChild>=0){html+=renderChildDetail(selectedChild);}
   if(showDietModal>=0){html+=renderDietModal(showDietModal);}
@@ -3757,7 +3788,7 @@ setInterval(function(){
 
 // Auto-update: just save version, no redirect (redirect causes cache issues)
 (function(){
-  var CURRENT_VERSION='v19';
+  var CURRENT_VERSION='v20';
   localStorage.setItem('rp_app_version',CURRENT_VERSION);
 })();
 
