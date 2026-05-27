@@ -2134,16 +2134,36 @@ window.App={
     db.collection('users').doc(uid).update(uploadData)
       .then(function(){
         clearTimeout(uploadTimer);
-        console.log('[UPLOAD] SUCCESS!');
+        console.log('[UPLOAD] SUCCESS (update)!');
         syncStatus='synced';renderSyncBar();
         alert('Dati caricati con successo sul server!\n\nLe tue classi sono state sincronizzate.\nGli altri dispositivi riceveranno automaticamente le modifiche.');
         setTimeout(function(){if(syncStatus==='synced'){syncStatus='idle';renderSyncBar();}},5000);
       })
       .catch(function(err){
         clearTimeout(uploadTimer);
-        console.error('[UPLOAD] FAILED:',err.code,err.message);
-        alert('ERRORE caricamento: '+(err.code||err.message||'Errore sconosciuto'));
-        syncStatus='error';renderSyncBar();
+        // If document doesn't exist yet, create it with set()
+        if(err.code==='not-found'||err.code==='5'||(err.message&&err.message.indexOf('No document to update')>=0)){
+          console.log('[UPLOAD] Document not found, creating with set()...');
+          var createData={classes:JSON.parse(JSON.stringify(classes)),currentClassId:currentClassId,schoolName:schoolName,updatedAt:new Date().toISOString(),_saveId:_lastSaveId};
+          db.collection('users').doc(uid).set(createData)
+            .then(function(){
+              clearTimeout(uploadTimer);
+              console.log('[UPLOAD] SUCCESS (create)!');
+              syncStatus='synced';renderSyncBar();
+              alert('Dati caricati con successo sul server!\n\nLe tue classi sono state sincronizzate.\nGli altri dispositivi riceveranno automaticamente le modifiche.');
+              setTimeout(function(){if(syncStatus==='synced'){syncStatus='idle';renderSyncBar();}},5000);
+            })
+            .catch(function(err2){
+              clearTimeout(uploadTimer);
+              console.error('[UPLOAD] Create FAILED:',err2.code,err2.message);
+              alert('ERRORE caricamento: '+(err2.code||err2.message||'Errore sconosciuto'));
+              syncStatus='error';renderSyncBar();
+            });
+        }else{
+          console.error('[UPLOAD] FAILED:',err.code,err.message);
+          alert('ERRORE caricamento: '+(err.code||err.message||'Errore sconosciuto'));
+          syncStatus='error';renderSyncBar();
+        }
       });
   },
   // SCARICA DAL SERVER: legge i dati da Firestore e li usa
@@ -2292,9 +2312,26 @@ window.App={
         syncStatus='synced';updateClassLockState();render();
         setTimeout(function(){if(syncStatus==='synced'){syncStatus='idle';renderSyncBar();}},5000);
       }).catch(function(err){
-        console.error('[FORCESYNC] Save failed:',err.code,err.message);
-        syncStatus='error';renderSyncBar();
-        alert('Errore salvataggio: '+(err.code||err.message||'Errore'));
+        // If document doesn't exist, create with set()
+        if(err.code==='not-found'||err.code==='5'||(err.message&&err.message.indexOf('No document to update')>=0)){
+          var createData={classes:merged,currentClassId:currentClassId,schoolName:schoolName,updatedAt:new Date().toISOString(),_saveId:_lastSaveId};
+          db.collection('users').doc(uid).set(createData).then(function(){
+            classes=merged;
+            restorePinsFromLocalStorage();
+            if(currentClassId&&classes[currentClassId]) loadClassData(currentClassId);
+            ensureDefaultClass();
+            restorePinsFromLocalStorage();
+            try{localStorage.setItem(getStorageKey(),JSON.stringify({classes:JSON.parse(JSON.stringify(classes)),currentClassId:currentClassId,schoolName:schoolName,currentDate:dateToInput(currentDate)}));}catch(e){}
+            savePinsToLocalStorage();
+            syncStatus='synced';updateClassLockState();render();
+          }).catch(function(e2){
+            syncStatus='error';renderSyncBar();
+            alert('Errore salvataggio: '+(e2.code||e2.message||'Errore'));
+          });
+        }else{
+          syncStatus='error';renderSyncBar();
+          alert('Errore salvataggio: '+(err.code||err.message||'Errore'));
+        }
       });
     }).catch(function(err){
       console.error('[FORCESYNC] Read failed:',err.code,err.message);
