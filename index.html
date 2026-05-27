@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
 <title>Registro di Classe</title>
-<meta name="version" content="2025-05-28-v17-definitive-fix"/>
+<meta name="version" content="2025-05-28-v18-persistence-off"/>
 <meta name="description" content="Registro di Classe per la gestione della classe"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a1a2e'><path d='M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z'/></svg>"/>
 <style>
@@ -1445,13 +1445,37 @@ function delayedServerRefresh(uid){
 }
 // ---- END REAL-TIME SYNC ----
 
+function clearIndexedDBCache(){
+  // Clear Firestore IndexedDB cache - fixes timeout issues on iOS Safari
+  try{
+    var dbs=['firestore/[DEFAULT]/presenze-pre-post/main'];
+    if(typeof indexedDB!=='undefined'&&indexedDB.databases){
+      indexedDB.databases().then(function(dbList){
+        dbList.forEach(function(dbInfo){
+          if(dbInfo.name&&dbInfo.name.indexOf('firestore')>=0){
+            console.log('[CACHE] Deleting IndexedDB: '+dbInfo.name);
+            indexedDB.deleteDatabase(dbInfo.name);
+          }
+        });
+      }).catch(function(){});
+    }
+    // Also try deleting by known names
+    try{indexedDB.deleteDatabase('firestore/[DEFAULT]/presenze-pre-post/main');}catch(e){}
+    try{indexedDB.deleteDatabase('firebaseLocalStorageDb');}catch(e){}
+    console.log('[CACHE] IndexedDB cache cleared');
+  }catch(e){console.log('[CACHE] Clear error:',e);}
+}
+
 function initFirebase(){
   try{
     if(typeof firebase==='undefined'){console.warn('Firebase SDK not loaded');render();return;}
     firebase.initializeApp(FIREBASE_CONFIG);
     var auth=firebase.auth();
     db=firebase.firestore();
-    try{db.enablePersistence({synchronizeTabs:false}).then(function(){console.log('Firestore persistence enabled');}).catch(function(e){console.log('Firestore persistence note:',e.code||e.message||e);});}catch(e){console.log('Firestore persistence:',e.message||e);}
+    // DISABLED persistence - causes timeout/hang on iOS Safari with IndexedDB limits
+    // localStorage is used as backup instead (more reliable on Safari)
+    // try{db.enablePersistence({synchronizeTabs:false}).then(function(){console.log('Firestore persistence enabled');}).catch(function(e){console.log('Firestore persistence note:',e.code||e.message||e);});}catch(e){console.log('Firestore persistence:',e.message||e);}
+    console.log('[FIREBASE] Persistence DISABLED for iOS Safari compatibility');
     try{auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);}catch(e){}
     auth.onAuthStateChanged(function(u){
       var previousUser=currentUser;
@@ -1600,7 +1624,8 @@ function render(){
     html+='<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;padding:4px 8px;flex-wrap:wrap">';
     html+='<button onclick="App.uploadToServer()" style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:8px;border:2px solid #28a745;background:#28a745;color:white;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">Carica su Server</button>';
     html+='<button onclick="App.downloadFromServer()" style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:8px;border:2px solid #007bff;background:#007bff;color:white;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">Scarica dal Server</button>';
-    html+='<span style="font-size:9px;color:#aaa;margin-left:auto">v17</span>';
+    html+='<button onclick="App.clearCache()" style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:8px;border:2px solid #dc3545;background:white;color:#dc3545;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap">Pulisci Cache</button>';
+    html+='<span style="font-size:9px;color:#aaa;margin-left:auto">v18</span>';
     html+='</div>';
   }
 
@@ -1876,7 +1901,7 @@ function render(){
   if(classLocked){html+='</div>';}
 
   // Version indicator - always visible
-  html+='<div style="position:fixed;bottom:4px;right:6px;font-size:9px;color:#aaa;z-index:9999;pointer-events:none;font-weight:600" id="versionBadge">v17</div>';
+  html+='<div style="position:fixed;bottom:4px;right:6px;font-size:9px;color:#aaa;z-index:9999;pointer-events:none;font-weight:600" id="versionBadge">v18</div>';
 
   if(selectedChild>=0){html+=renderChildDetail(selectedChild);}
   if(showDietModal>=0){html+=renderDietModal(showDietModal);}
@@ -2212,7 +2237,7 @@ window.App={
     var classCount=regularClassCount();
     var totalKids=0;
     for(var k in classes){if(classes.hasOwnProperty(k)&&classes[k].children) totalKids+=classes[k].children.length;}
-    if(!confirm('CARICA DATI SUL SERVER\n\nClassi: '+classCount+'\nBambini totali: '+totalKids+'\n\nI dati di questo telefono verranno caricati sul server.\nLe classi di altri dispositivi verranno mantenute.\nContinuare?')) return;
+    if(!confirm('CARICA DATI SUL SERVER\n\nClassi: '+classCount+'\nBambini totali: '+totalKids+'\n\nI dati di questo telefono verranno caricati sul server.\nContinuare?')) return;
     
     var uid=currentUser.uid;
     _lastSaveId=Math.random().toString(36);
@@ -2235,31 +2260,51 @@ window.App={
     }catch(e){alert('Errore nella preparazione dei dati: '+e.message);return;}
     
     syncStatus='saving';renderSyncBar();
-    console.log('[UPLOAD] Uploading '+Object.keys(classes).length+' classes to server (set+merge)...');
+    console.log('[UPLOAD] Uploading '+Object.keys(classes).length+' classes to server...');
     
     // Timeout di sicurezza
     var uploadTimer=setTimeout(function(){
-      alert('Timeout: il caricamento non ha risposto in 20 secondi.\nControlla la connessione internet.');
+      console.error('[UPLOAD] TIMEOUT after 15s');
       syncStatus='error';renderSyncBar();
-    },20000);
+      alert('Timeout: il caricamento non ha risposto in 15 secondi.\n\nProva questi passi:\n1. Chiudi e riapri Safari\n2. Fai "Pulisci Cache" nel menu Account\n3. Riprova Carica su Server');
+    },15000);
     
+    // Try set() with merge:true first, then fall back to set() without merge
     db.collection('users').doc(uid).set(uploadData,{merge:true})
       .then(function(){
         clearTimeout(uploadTimer);
-        console.log('[UPLOAD] SUCCESS!');
+        console.log('[UPLOAD] SUCCESS (set+merge)!');
         syncStatus='synced';renderSyncBar();
-        alert('Dati caricati con successo sul server!\n\nLe tue classi sono state sincronizzate.\nGli altri dispositivi riceveranno automaticamente le modifiche.');
+        alert('Dati caricati con successo sul server!\n\nLe tue classi sono state sincronizzate.');
         setTimeout(function(){if(syncStatus==='synced'){syncStatus='idle';renderSyncBar();}},5000);
       })
       .catch(function(err){
         clearTimeout(uploadTimer);
-        console.error('[UPLOAD] FAILED:',err.code,err.message);
-        try{console.error('[UPLOAD] Failed data preview: ',JSON.stringify(uploadData).substring(0,500));}catch(e2){}
-        var errMsg=err.code||err.message||'Errore sconosciuto';
-        if(err.code==='invalid-argument') errMsg='Dati non validi - prova a riavviare l\'app (v17)';
-        else if(err.code==='permission-denied') errMsg='Permesso negato - controlla le regole Firebase';
-        alert('ERRORE caricamento: '+errMsg);
-        syncStatus='error';renderSyncBar();
+        console.error('[UPLOAD] set+merge FAILED:',err.code,err.message);
+        // If merge fails, try without merge (simpler operation)
+        console.log('[UPLOAD] Retrying with set() without merge...');
+        var uploadTimer2=setTimeout(function(){
+          syncStatus='error';renderSyncBar();
+          alert('Anche il secondo tentativo e andato in timeout.\nProva "Pulisci Cache" nel menu Account.');
+        },15000);
+        db.collection('users').doc(uid).set(uploadData)
+          .then(function(){
+            clearTimeout(uploadTimer2);
+            console.log('[UPLOAD] SUCCESS (set without merge)!');
+            syncStatus='synced';renderSyncBar();
+            alert('Dati caricati con successo sul server!\n\nLe tue classi sono state sincronizzate.');
+            setTimeout(function(){if(syncStatus==='synced'){syncStatus='idle';renderSyncBar();}},5000);
+          })
+          .catch(function(err2){
+            clearTimeout(uploadTimer2);
+            console.error('[UPLOAD] set without merge ALSO FAILED:',err2.code,err2.message);
+            try{console.error('[UPLOAD] Failed data size: ',JSON.stringify(uploadData).length);}catch(e2){}
+            var errMsg=err2.code||err2.message||'Errore sconosciuto';
+            if(err2.code==='invalid-argument') errMsg='Dati non validi (v18)';
+            else if(err2.code==='permission-denied') errMsg='Permesso negato';
+            alert('ERRORE caricamento: '+errMsg+'\n\nProva "Pulisci Cache" nel menu Account.');
+            syncStatus='error';renderSyncBar();
+          });
       });
   },
   // SCARICA DAL SERVER: legge i dati da Firestore e li usa
@@ -2423,6 +2468,29 @@ window.App={
   },
   runDiag:function(){runFirestoreDiagnostic();},
   fixRules:function(){fixFirebaseRules();},
+  clearCache:function(){
+    if(!confirm('PULISCI CACHE\n\nQuesto cancellera la cache locale di Firestore (IndexedDB).\nI tuoi dati NON verranno persi - sono salvati su localStorage e sul server.\n\nQuesto aiuta a risolvere i problemi di timeout.\n\nContinuare?')) return;
+    console.log('[CLEAR-CACHE] Starting cache clear...');
+    // 1. Save current data to localStorage first
+    saveCurrentClassData();
+    try{localStorage.setItem(getStorageKey(),JSON.stringify({classes:JSON.parse(JSON.stringify(classes)),currentClassId:currentClassId,schoolName:schoolName,currentDate:dateToInput(currentDate)}));}catch(e){}
+    savePinsToLocalStorage();
+    // 2. Clear IndexedDB
+    clearIndexedDBCache();
+    // 3. Clear Firestore internal caches
+    if(db){
+      try{db.clearPersistence();}catch(e){console.log('[CLEAR-CACHE] clearPersistence:',e);}
+      try{db.terminate().then(function(){
+        console.log('[CLEAR-CACHE] Firestore terminated, re-initializing...');
+        // Re-initialize Firestore
+        db=firebase.firestore();
+        // Don't re-enable persistence
+        // Re-start snapshot listener
+        if(currentUser) startSnapshotListener(currentUser.uid);
+      });}catch(e){console.log('[CLEAR-CACHE] terminate:',e);}
+    }
+    alert('Cache pulita!\n\nOra prova di nuovo "Carica su Server".\nSe ancora non funziona, chiudi e riapri Safari.');
+  },
   startEditClass:function(){editingClass=true;render();},
   finishEditClass:function(){var ci=document.getElementById('classInput');if(ci&&ci.value.trim()){var newName=ci.value.trim().toUpperCase();className=newName;if(currentClassId&&classes[currentClassId])classes[currentClassId].name=newName;}editingClass=false;saveState();render();},
   startEditSchool:function(){editingSchool=true;render();},
@@ -3549,7 +3617,7 @@ setInterval(function(){
 
 // Auto-update: just save version, no redirect (redirect causes cache issues)
 (function(){
-  var CURRENT_VERSION='v17';
+  var CURRENT_VERSION='v18';
   localStorage.setItem('rp_app_version',CURRENT_VERSION);
 })();
 
