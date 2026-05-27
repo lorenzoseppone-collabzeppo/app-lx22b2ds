@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
 <title>Registro di Classe</title>
-<meta name="version" content="2025-05-27-v16-sync-fix"/>
+<meta name="version" content="2025-05-27-v15d-fix-redirect"/>
 <meta name="description" content="Registro di Classe per la gestione della classe"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a1a2e'><path d='M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z'/></svg>"/>
 <style>
@@ -862,24 +862,10 @@ function doSaveToFirestore(){
   // Always save to localStorage first (synchronous, immediate backup)
   try{localStorage.setItem(getStorageKey(),JSON.stringify({classes:JSON.parse(JSON.stringify(classes)),currentClassId:currentClassId,schoolName:schoolName,currentDate:dateToInput(currentDate)}));}catch(e){}
   _lastSaveId=Math.random().toString(36);
-  
-  // CRITICAL FIX: Use update() with dot notation for each class
-  // This preserves classes from OTHER devices that we don't have locally
-  // Using .set() would overwrite the ENTIRE document, deleting other devices' classes!
-  var updateData={};
-  for(var cid in classes){
-    if(classes.hasOwnProperty(cid)){
-      updateData['classes.'+cid]=JSON.parse(JSON.stringify(classes[cid]));
-    }
-  }
-  updateData.currentClassId=currentClassId;
-  updateData.schoolName=schoolName;
-  updateData.updatedAt=new Date().toISOString();
-  updateData._saveId=_lastSaveId;
-  
+  var data={classes:JSON.parse(JSON.stringify(classes)),currentClassId:currentClassId,schoolName:schoolName,updatedAt:new Date().toISOString(),_saveId:_lastSaveId};
   var classCount=Object.keys(classes).length;
-  console.log('[SAVE] Saving to Firestore (update/merge): '+classCount+' classes');
-  for(var scid in classes){if(classes.hasOwnProperty(scid)){console.log('[SAVE] Class: '+(classes[scid].name||'?')+' - '+(classes[scid].children?classes[scid].children.length:0)+' bambini');}}
+  console.log('[SAVE] Saving to Firestore: '+classCount+' classes');
+  for(var cid in classes){if(classes.hasOwnProperty(cid)){console.log('[SAVE] Class: '+(classes[cid].name||'?')+' - '+(classes[cid].children?classes[cid].children.length:0)+' bambini');}}
   
   // Clear any previous timeout
   if(_saveTimeout){clearTimeout(_saveTimeout);}
@@ -894,43 +880,24 @@ function doSaveToFirestore(){
     }
   },15000);
   
-  // Try update() first - this preserves classes from other devices
-  db.collection('users').doc(currentUser.uid).update(updateData)
+  db.collection('users').doc(currentUser.uid).set(data)
     .then(function(){
       if(_saveTimeout){clearTimeout(_saveTimeout);_saveTimeout=null;}
-      console.log('[SAVE] Firestore update SUCCESS - '+classCount+' classes saved (other devices\' classes preserved)');
+      console.log('[SAVE] Firestore save SUCCESS - '+classCount+' classes saved');
       syncStatus='synced';renderSyncBar();savePinsToLocalStorage();
       setTimeout(function(){if(syncStatus==='synced'){syncStatus='idle';renderSyncBar();}},3000);
     })
     .catch(function(err){
       if(_saveTimeout){clearTimeout(_saveTimeout);_saveTimeout=null;}
-      // If document doesn't exist, create it with set()
-      if(err.code==='not-found'||err.code==='5'||(err.message&&err.message.indexOf('No document to update')>=0)){
-        console.log('[SAVE] Document not found, creating with set()...');
-        var createData={classes:JSON.parse(JSON.stringify(classes)),currentClassId:currentClassId,schoolName:schoolName,updatedAt:new Date().toISOString(),_saveId:_lastSaveId};
-        db.collection('users').doc(currentUser.uid).set(createData)
-          .then(function(){
-            if(_saveTimeout){clearTimeout(_saveTimeout);_saveTimeout=null;}
-            console.log('[SAVE] Firestore create SUCCESS');
-            syncStatus='synced';renderSyncBar();savePinsToLocalStorage();
-            setTimeout(function(){if(syncStatus==='synced'){syncStatus='idle';renderSyncBar();}},3000);
-          })
-          .catch(function(err2){
-            if(_saveTimeout){clearTimeout(_saveTimeout);_saveTimeout=null;}
-            console.error('[SAVE] Firestore create FAILED:',err2.code,err2.message);
-            syncStatus='error';renderSyncBar();
-          });
-      }else{
-        console.error('[SAVE] Firestore update FAILED:',err.code,err.message);
-        syncStatus='error';renderSyncBar();
-        var bar=document.getElementById('sync-bar');
-        if(bar){
-          var errMsg=err.code||err.message||'Errore';
-          if(err.code==='permission-denied') errMsg='Permesso negato';
-          else if(err.code==='unavailable') errMsg='Server non disponibile';
-          bar.className='sync-bar error';
-          bar.innerHTML='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> '+esc(errMsg)+' <span style="margin-left:4px;color:#721c24;cursor:pointer;text-decoration:underline;font-size:10px;font-weight:700" onclick="App.forceSync()">Riprova</span>';
-        }
+      console.error('[SAVE] Firestore save FAILED:',err.code,err.message);
+      syncStatus='error';renderSyncBar();
+      var bar=document.getElementById('sync-bar');
+      if(bar){
+        var errMsg=err.code||err.message||'Errore';
+        if(err.code==='permission-denied') errMsg='Permesso negato';
+        else if(err.code==='unavailable') errMsg='Server non disponibile';
+        bar.className='sync-bar error';
+        bar.innerHTML='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> '+esc(errMsg)+' <span style="margin-left:4px;color:#721c24;cursor:pointer;text-decoration:underline;font-size:10px;font-weight:700" onclick="App.forceSync()">Riprova</span>';
       }
     });
 }
@@ -1165,12 +1132,11 @@ function startSnapshotListener(uid){
   stopSnapshotListener(); // Clean up any existing listener
   console.log('[SNAPSHOT] Starting real-time listener for uid: '+uid.substring(0,8)+'...');
   
-  // Use includeMetadataChanges to detect when data transitions from cache to server
-  _snapshotListener = db.collection('users').doc(uid).onSnapshot({includeMetadataChanges:true}, function(doc){
+  _snapshotListener = db.collection('users').doc(uid).onSnapshot(function(doc){
     // Ignore if initial load not done yet
     if(!firestoreLoadDone) return;
     
-    // Ignore our own pending writes (local writes not yet confirmed by server)
+    // Ignore our own writes
     if(doc.metadata&&doc.metadata.hasPendingWrites){
       console.log('[SNAPSHOT] Ignoring own pending write');
       return;
@@ -1179,61 +1145,39 @@ function startSnapshotListener(uid){
     var data = doc.exists ? doc.data() : null;
     if(!data||!data.classes) return;
     
-    // Check if this is our own confirmed write (same _saveId)
+    // Check if this is our own write (same _saveId)
     if(data._saveId && data._saveId === _lastSaveId){
       console.log('[SNAPSHOT] Ignoring own confirmed write');
       return;
     }
     
-    var source = (doc.metadata&&doc.metadata.fromCache) ? 'CACHE' : 'SERVER';
     var serverClasses = data.classes;
     var localClasses = JSON.parse(JSON.stringify(classes));
     var serverCount = Object.keys(serverClasses).length;
     var localCount = Object.keys(localClasses).length;
-    console.log('[SNAPSHOT] Change from '+source+'! Server: '+serverCount+' classes, Local: '+localCount+' classes');
+    console.log('[SNAPSHOT] Remote change! Server: '+serverCount+' classes, Local: '+localCount+' classes');
     
-    // Log what the server has that we don't
-    for(var scid in serverClasses){
-      if(serverClasses.hasOwnProperty(scid)&&!localClasses.hasOwnProperty(scid)){
-        console.log('[SNAPSHOT] NEW class from server: '+(serverClasses[scid].name||scid));
-      }
-    }
-    
-    // Merge: start with server data (it has the latest from all devices), add local-only classes
+    // Merge: start with server data, add local-only classes
     var merged = JSON.parse(JSON.stringify(serverClasses));
     var localOnlyCount = 0;
-    var needSave = false;
     for(var mk in localClasses){
       if(localClasses.hasOwnProperty(mk)){
         if(!merged.hasOwnProperty(mk)){
           merged[mk] = localClasses[mk];
           localOnlyCount++;
-          needSave = true;
           console.log('[SNAPSHOT] Keeping local-only class: '+(localClasses[mk].name||mk));
         }else{
-          // For overlapping classes, keep version with more children or more recent data
+          // For overlapping classes, keep version with more children
           var lsKids = (localClasses[mk].children||[]).length;
           var fsKids = (merged[mk].children||[]).length;
           var lsMsgs = (localClasses[mk].messages||[]).length;
           var fsMsgs = (merged[mk].messages||[]).length;
-          // Also check dateData entries count
-          var lsDD = localClasses[mk].dateData ? Object.keys(localClasses[mk].dateData).length : 0;
-          var fsDD = merged[mk].dateData ? Object.keys(merged[mk].dateData).length : 0;
-          if(lsKids>fsKids||lsMsgs>fsMsgs||lsDD>fsDD){
+          if(lsKids>fsKids||lsMsgs>fsMsgs){
             merged[mk] = localClasses[mk];
-            needSave = true;
-            console.log('[SNAPSHOT] Local has more data for '+(localClasses[mk].name||mk)+' (kids:'+lsKids+'>'+fsKids+' msgs:'+lsMsgs+'>'+fsMsgs+' dates:'+lsDD+'>'+fsDD+')');
+            console.log('[SNAPSHOT] Local has more data for '+(localClasses[mk].name||mk));
           }
         }
       }
-    }
-    
-    // Check if anything actually changed (avoid unnecessary re-renders)
-    var mergedStr = JSON.stringify(merged);
-    var localStr = JSON.stringify(localClasses);
-    if(mergedStr === localStr && data.schoolName === schoolName){
-      console.log('[SNAPSHOT] No real changes, skipping re-render');
-      return;
     }
     
     // Apply merged data
@@ -1258,22 +1202,13 @@ function startSnapshotListener(uid){
     renderSyncBar();
     setTimeout(function(){if(syncStatus==='synced'){syncStatus='idle';renderSyncBar();}},3000);
     
-    // If we had local-only classes or local had more data, save back to server
-    // Use update() with dot notation to preserve other devices' classes
-    if(needSave){
-      console.log('[SNAPSHOT] Saving merged data with '+localOnlyCount+' local-only classes (using update)');
+    // If we had local-only classes, save the merged data to server
+    // (so other devices also get these classes)
+    if(localOnlyCount > 0){
+      console.log('[SNAPSHOT] Saving merged data with '+localOnlyCount+' local-only classes');
       _lastSaveId = Math.random().toString(36);
-      var saveUpdate = {};
-      for(var sid in classes){
-        if(classes.hasOwnProperty(sid)){
-          saveUpdate['classes.'+sid] = JSON.parse(JSON.stringify(classes[sid]));
-        }
-      }
-      saveUpdate.currentClassId = currentClassId;
-      saveUpdate.schoolName = schoolName;
-      saveUpdate.updatedAt = new Date().toISOString();
-      saveUpdate._saveId = _lastSaveId;
-      db.collection('users').doc(uid).update(saveUpdate).catch(function(e){
+      var saveData = {classes:JSON.parse(JSON.stringify(classes)),currentClassId:currentClassId,schoolName:schoolName,updatedAt:new Date().toISOString(),_saveId:_lastSaveId};
+      db.collection('users').doc(uid).set(saveData).catch(function(e){
         console.error('[SNAPSHOT] Save after merge failed:',e);
       });
     }
@@ -1288,87 +1223,6 @@ function stopSnapshotListener(){
     _snapshotListener = null;
     console.log('[SNAPSHOT] Listener stopped');
   }
-}
-
-// Delayed server refresh: after initial load from cache, fetch fresh data from server
-function delayedServerRefresh(uid){
-  if(!db||!uid) return;
-  setTimeout(function(){
-    console.log('[DELAYED-REFRESH] Checking server for latest data...');
-    db.collection('users').doc(uid).get().then(function(doc){
-      if(!doc.exists||!doc.data()||!doc.data().classes) return;
-      var serverClasses = doc.data().classes;
-      var localClasses = JSON.parse(JSON.stringify(classes));
-      var serverCount = Object.keys(serverClasses).length;
-      var localCount = Object.keys(localClasses).length;
-      console.log('[DELAYED-REFRESH] Server: '+serverCount+' classes, Local: '+localCount+' classes');
-      
-      // Check if server has classes we don't have
-      var hasNewClasses = false;
-      for(var dk in serverClasses){
-        if(serverClasses.hasOwnProperty(dk)&&!localClasses.hasOwnProperty(dk)){
-          hasNewClasses = true;
-          console.log('[DELAYED-REFRESH] New class from server: '+(serverClasses[dk].name||dk));
-        }
-      }
-      
-      if(!hasNewClasses){
-        console.log('[DELAYED-REFRESH] No new classes from server');
-        return;
-      }
-      
-      // Merge server data with local
-      var merged = JSON.parse(JSON.stringify(serverClasses));
-      var needSave = false;
-      for(var mk in localClasses){
-        if(localClasses.hasOwnProperty(mk)){
-          if(!merged.hasOwnProperty(mk)){
-            merged[mk] = localClasses[mk];
-            needSave = true;
-          }else{
-            var lsKids = (localClasses[mk].children||[]).length;
-            var fsKids = (merged[mk].children||[]).length;
-            if(lsKids>fsKids){
-              merged[mk] = localClasses[mk];
-              needSave = true;
-            }
-          }
-        }
-      }
-      
-      classes = merged;
-      if(doc.data().currentClassId && classes[doc.data().currentClassId]) currentClassId = doc.data().currentClassId;
-      if(doc.data().schoolName) schoolName = doc.data().schoolName;
-      restorePinsFromLocalStorage();
-      if(currentClassId && classes[currentClassId]) loadClassData(currentClassId);
-      ensureDefaultClass();
-      restorePinsFromLocalStorage();
-      var key = getCurrentDateKey();var dd2 = dateData[key];
-      if(dd2){presenze=dd2.presenze||{};pre=dd2.pre||{};post=dd2.post||{};}
-      else{presenze={};pre={};post={};}
-      if(currentClassId&&classes[currentClassId]&&!(classes[currentClassId].pin&&classes[currentClassId].pin.length>0)){unlockedClasses[currentClassId]=true;}
-      try{localStorage.setItem(getStorageKey(),JSON.stringify({classes:JSON.parse(JSON.stringify(classes)),currentClassId:currentClassId,schoolName:schoolName,currentDate:dateToInput(currentDate)}));}catch(e){}
-      savePinsToLocalStorage();
-      syncStatus='synced';updateClassLockState();render();
-      
-      if(needSave){
-        _lastSaveId = Math.random().toString(36);
-        var saveUpdate = {};
-        for(var sid in classes){
-          if(classes.hasOwnProperty(sid)){
-            saveUpdate['classes.'+sid] = JSON.parse(JSON.stringify(classes[sid]));
-          }
-        }
-        saveUpdate.currentClassId = currentClassId;
-        saveUpdate.schoolName = schoolName;
-        saveUpdate.updatedAt = new Date().toISOString();
-        saveUpdate._saveId = _lastSaveId;
-        db.collection('users').doc(uid).update(saveUpdate).catch(function(e){});
-      }
-    }).catch(function(err){
-      console.log('[DELAYED-REFRESH] Failed:',err.code||err.message);
-    });
-  }, 3000);
 }
 // ---- END REAL-TIME SYNC ----
 
@@ -1390,8 +1244,6 @@ function initFirebase(){
         }
         loadFromFirestore(u.uid, false);
         startSnapshotListener(u.uid);
-        // After 3 seconds, check server for any classes we might have missed from cache
-        delayedServerRefresh(u.uid);
       }else{
         stopSnapshotListener();
         firestoreLoadDone=false;
@@ -2111,19 +1963,13 @@ window.App={
     var classCount=regularClassCount();
     var totalKids=0;
     for(var k in classes){if(classes.hasOwnProperty(k)&&classes[k].children) totalKids+=classes[k].children.length;}
-    if(!confirm('CARICA DATI SUL SERVER\n\nClassi: '+classCount+'\nBambini totali: '+totalKids+'\n\nI dati di questo telefono verranno caricati sul server.\nLe classi di altri dispositivi verranno mantenute.\nContinuare?')) return;
+    if(!confirm('CARICA DATI SUL SERVER\n\nClassi: '+classCount+'\nBambini totali: '+totalKids+'\n\nI dati di questo telefono sovrascriveranno quelli sul server.\nContinuare?')) return;
     
     var uid=currentUser.uid;
     _lastSaveId=Math.random().toString(36);
-    // Use update() with dot notation to preserve classes from other devices
-    var uploadData={currentClassId:currentClassId,schoolName:schoolName,updatedAt:new Date().toISOString(),_saveId:_lastSaveId};
-    for(var uc in classes){
-      if(classes.hasOwnProperty(uc)){
-        uploadData['classes.'+uc]=JSON.parse(JSON.stringify(classes[uc]));
-      }
-    }
+    var data={classes:JSON.parse(JSON.stringify(classes)),currentClassId:currentClassId,schoolName:schoolName,updatedAt:new Date().toISOString(),_saveId:_lastSaveId};
     syncStatus='saving';renderSyncBar();
-    console.log('[UPLOAD] Uploading '+Object.keys(classes).length+' classes to server (update/merge)...');
+    console.log('[UPLOAD] Uploading '+Object.keys(classes).length+' classes to server...');
     
     // Timeout di sicurezza
     var uploadTimer=setTimeout(function(){
@@ -2131,12 +1977,12 @@ window.App={
       syncStatus='error';renderSyncBar();
     },20000);
     
-    db.collection('users').doc(uid).update(uploadData)
+    db.collection('users').doc(uid).set(data)
       .then(function(){
         clearTimeout(uploadTimer);
         console.log('[UPLOAD] SUCCESS!');
         syncStatus='synced';renderSyncBar();
-        alert('Dati caricati con successo sul server!\n\nLe tue classi sono state sincronizzate.\nGli altri dispositivi riceveranno automaticamente le modifiche.');
+        alert('Dati caricati con successo sul server!\n\nOra vai sull\'altro telefono e premi "Scarica dal server".');
         setTimeout(function(){if(syncStatus==='synced'){syncStatus='idle';renderSyncBar();}},5000);
       })
       .catch(function(err){
@@ -2265,17 +2111,10 @@ window.App={
         }
       }
       
-      // Step 3: Save merged data using update() with dot notation
-      // This preserves any classes that might have been added by other devices
-      // while we were reading/merging
+      // Step 3: Save merged data
       _lastSaveId=Math.random().toString(36);
-      var saveUpdate={currentClassId:currentClassId,schoolName:schoolName,updatedAt:new Date().toISOString(),_saveId:_lastSaveId};
-      for(var fcid in merged){
-        if(merged.hasOwnProperty(fcid)){
-          saveUpdate['classes.'+fcid]=JSON.parse(JSON.stringify(merged[fcid]));
-        }
-      }
-      db.collection('users').doc(uid).update(saveUpdate).then(function(){
+      var saveData={classes:merged,currentClassId:currentClassId,schoolName:schoolName,updatedAt:new Date().toISOString(),_saveId:_lastSaveId};
+      db.collection('users').doc(uid).set(saveData).then(function(){
         console.log('[FORCESYNC] Saved merged data ('+Object.keys(merged).length+' classes, '+addedFromLocal+' from local)');
         classes=merged;
         if(serverSchoolName) schoolName=serverSchoolName;
@@ -2380,25 +2219,10 @@ window.App={
       var firstKey=Object.keys(classes)[0];
       if(firstKey) loadClassData(firstKey);
     }
-    // Save to localStorage
+    // Save IMMEDIATELY to Firestore for class deletions
     saveCurrentClassData();
     try{localStorage.setItem(getStorageKey(),JSON.stringify({classes:JSON.parse(JSON.stringify(classes)),currentClassId:currentClassId,schoolName:schoolName,currentDate:dateToInput(currentDate)}));}catch(e){}
-    savePinsToLocalStorage();
-    // CRITICAL: Use update() with FieldValue.delete() to remove the class from server
-    // Without this, the deleted class would persist on the server and reappear on other devices
-    if(currentUser&&db){
-      var delUpdate={};
-      delUpdate['classes.'+classId]=firebase.firestore.FieldValue.delete();
-      delUpdate.currentClassId=currentClassId;
-      delUpdate.updatedAt=new Date().toISOString();
-      _lastSaveId=Math.random().toString(36);
-      delUpdate._saveId=_lastSaveId;
-      db.collection('users').doc(currentUser.uid).update(delUpdate).then(function(){
-        console.log('[DELETE] Class '+classId+' deleted from server');
-      }).catch(function(err){
-        console.error('[DELETE] Failed to delete class from server:',err);
-      });
-    }
+    saveToFirestoreNow();
     render();
   },
   switchClass:function(classId){

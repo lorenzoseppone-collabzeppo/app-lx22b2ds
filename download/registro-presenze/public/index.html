@@ -3,31 +3,39 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-<title>Registro Presenze - Coccinelle</title>
-<meta name="description" content="Registro Presenze per la gestione della classe"/>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a1a2e'><path d='M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5zm2 4h10v2H7v-2zm0 4h7v2H7v-2z'/></svg>"/>
+<title>Registro di Classe</title>
+<meta name="version" content="2025-05-26-v7-multi-class"/>
+<meta name="description" content="Registro di Classe per la gestione della classe"/>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a1a2e'><path d='M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z'/></svg>"/>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background-color:#f0eef5;background-image:radial-gradient(circle,#d5d0e0 1px,transparent 1px);background-size:20px 20px;color:#333;-webkit-font-smoothing:antialiased}
-.app{max-width:560px;margin:0 auto;padding:16px;min-height:100vh}
-.header{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding:12px 0;position:relative}
-.header-icon{width:48px;height:48px;background:#1a1a2e;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.header-icon svg{width:26px;height:26px;fill:white}
-.header-info{display:flex;flex-direction:column}
-.class-name{font-size:24px;font-weight:700;color:#1a1a2e;cursor:pointer;padding:2px 6px;border-radius:6px;border:2px solid transparent;transition:border-color 0.15s}
-.class-name:hover{border-color:#ccc}
-.class-name-input{font-size:24px;font-weight:700;color:#1a1a2e;border:2px solid #007bff;border-radius:6px;padding:2px 6px;outline:none;background:white;font-family:inherit;width:100%}
-.class-sub{font-size:14px;color:#888}
-.user-badge{display:flex;align-items:center;gap:8px;margin-left:auto;padding:6px 12px;background:white;border-radius:20px;box-shadow:0 1px 4px rgba(0,0,0,0.1);font-size:12px;max-width:180px}
+.app{max-width:900px;margin:0 auto;padding:16px;min-height:100vh}
+.header{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:16px;padding:20px 16px;background:linear-gradient(135deg,#1a1a2e,#2d2d5e);border-radius:16px;box-shadow:0 4px 16px rgba(0,0,0,0.15)}
+.header-icon{font-size:48px;line-height:1;flex-shrink:0}
+.header-info{display:flex;flex-direction:column;align-items:center;gap:4px;width:100%}
+.school-name{font-size:11px;font-weight:600;color:#ccc;text-transform:uppercase;letter-spacing:0.8px;cursor:pointer;padding:1px 6px;border-radius:4px;border:1.5px solid transparent;transition:border-color 0.15s;text-align:center}
+.school-name:hover{border-color:#888}
+.school-name-input{font-size:11px;font-weight:600;color:#333;text-transform:uppercase;letter-spacing:0.8px;border:1.5px solid #007bff;border-radius:4px;padding:1px 6px;outline:none;background:white;font-family:inherit;text-align:center;width:100%}
+.class-name{font-size:22px;font-weight:800;color:white;cursor:pointer;padding:2px 8px;border-radius:6px;border:2px solid transparent;transition:border-color 0.15s;text-align:center}
+.class-name:hover{border-color:#888}
+.class-name-input{font-size:22px;font-weight:800;color:#1a1a2e;border:2px solid #007bff;border-radius:6px;padding:2px 8px;outline:none;background:white;font-family:inherit;width:100%;text-align:center}
+.class-sub{font-size:13px;font-weight:600;color:#ffd700;letter-spacing:0.5px;text-align:center}
+.header-teachers{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;width:100%}
+.teacher-field{display:flex;align-items:center;gap:4px;font-size:11px;color:#bbb}
+.teacher-field span{font-weight:600;color:#999}
+.teacher-name{font-size:12px;font-weight:600;color:white;cursor:pointer;padding:2px 6px;border-radius:4px;border:1.5px solid transparent;transition:border-color 0.15s}
+.teacher-name:hover{border-color:#888}
+.teacher-name-input{font-size:12px;font-weight:600;color:#1a1a2e;border:1.5px solid #007bff;border-radius:4px;padding:2px 6px;outline:none;background:white;font-family:inherit;width:100px;text-align:center}
+.user-badge{display:flex;align-items:center;gap:8px;padding:6px 12px;background:rgba(255,255,255,0.15);border-radius:20px;font-size:12px;max-width:180px}
 .user-badge img{width:28px;height:28px;border-radius:50%}
-.user-badge span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500;color:#1a1a2e}
+.user-badge span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500;color:white}
 .auth-bar{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:500;margin-bottom:12px}
 .auth-bar.info{background:#fff3cd;color:#856404;border:1px solid #ffeeba}
 .auth-bar.success{background:#d4edda;color:#155724;border:1px solid #c3e6cb}
-.sync-bar{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:500;margin-bottom:12px}
-.sync-bar.synced{background:#d4edda;color:#155724;border:1px solid #c3e6cb}
-.sync-bar.syncing{background:#cce5ff;color:#004085;border:1px solid #b8daff}
-.sync-bar.error{background:#f8d7da;color:#721c24;border:1px solid #f5c6cb}
+.sync-bar{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:500;margin-bottom:12px;background:#e8f4fd;color:#0c5460;border:1px solid #bee5eb}
+.sync-bar.saving{background:#fff3cd;color:#856404;border-color:#ffeeba}
+.sync-bar.error{background:#f8d7da;color:#721c24;border-color:#f5c6cb}
 .btn-row{display:flex;flex-wrap:wrap;gap:8px;width:100%;margin-bottom:8px}
 .btn-row:last-child{margin-bottom:16px}
 .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;border:1px solid #ddd;background:white;font-size:13px;font-weight:500;color:#333;cursor:pointer;white-space:nowrap;font-family:inherit;transition:all 0.15s}
@@ -37,11 +45,32 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .btn-success-fill{background:#28a745;color:white;border-color:#28a745}
 .btn-full{width:100%;padding:8px 18px;margin-bottom:16px}
 .card{background:white;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
-.card-label{font-size:12px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px}
+.card-label{font-size:12px;font-weight:600;color:#dc3545;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px}
+.card-dark{background:#1a1a2e;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+.card-dark .card-label{color:#ffd700}
+.card-dark .date-text{color:white}
+.card-dark .date-full{color:rgba(255,255,255,0.6)}
+.card-dark .arrow-btn{border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);color:white}
+.card-dark .arrow-btn:active{background:rgba(255,255,255,0.2)}
+.card-dark .badge-green{background:rgba(40,167,69,0.2);color:#5dff8e}
+.card-dark .badge-green .dot{background:#5dff8e}
+.card-dark .badge-orange{background:rgba(230,126,0,0.2);color:#ffb74d}
+.card-dark .badge-orange .dot{background:#ffb74d}
+.card-dark .badge-blue{background:rgba(0,123,255,0.2);color:#64b5f6}
+.card-dark .badge-blue .dot{background:#64b5f6}
+.card-dark .search-box{border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.1)}
+.card-dark .search-box input{color:white}
+.card-dark .search-box input::placeholder{color:rgba(255,255,255,0.4)}
+.card-dark .search-box svg{stroke:rgba(255,255,255,0.5)}
+.card-dark textarea{background:rgba(255,255,255,0.1)!important;border-color:rgba(255,255,255,0.2)!important;color:white!important}
+.card-dark textarea::placeholder{color:rgba(255,255,255,0.4)!important}
+.card-dark textarea:disabled{opacity:0.5}
+.card-dark .btn{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2);color:white}
+.card-dark .btn:hover{background:rgba(255,255,255,0.2)}
 .date-nav{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:8px}
-.date-text{font-size:18px;font-weight:600;color:#1a1a2e}
+.date-text{font-size:18px;font-weight:600;color:#1a1a2e;cursor:pointer;padding:4px 8px;border-radius:6px;transition:background 0.15s}
 .arrow-btn{width:32px;height:32px;border-radius:50%;border:1px solid #ddd;background:white;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#888;transition:all 0.15s}
-.arrow-btn:active{background:#f0f0f0}
+.date-text:hover{background:#e8e4f0}
 .date-full{text-align:center;font-size:13px;color:#888;margin-bottom:10px}
 .badge-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 .badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:500}
@@ -49,38 +78,151 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .badge-green{background:#d4edda;color:#155724}.badge-green .dot{background:#28a745}
 .badge-orange{background:#fff3cd;color:#856404}.badge-orange .dot{background:#e67e00}
 .badge-blue{background:#cce5ff;color:#004085}.badge-blue .dot{background:#007bff}
-.search-box{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid #ddd;border-radius:8px;background:#fafafa;margin-bottom:10px}
+.search-box{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid #bbb;border-radius:8px;background:#e8e4f0;margin-bottom:10px}
 .search-box input{border:none;outline:none;background:transparent;font-size:14px;color:#333;width:100%;font-family:inherit}
 .search-box svg{flex-shrink:0}
-.roster{background:white;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08);margin-bottom:12px}
-.roster-header{display:grid;grid-template-columns:1fr auto auto auto;align-items:center;padding:10px 16px;background:#fafafa;border-bottom:1px solid #eee;gap:8px}
-.roster-header span{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.3px}
-.roster-col{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:54px}
-.roster-col label{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;cursor:pointer}
-.child-row{display:grid;grid-template-columns:1fr auto auto auto;align-items:center;padding:8px 16px;border-bottom:1px solid #f0f0f0;gap:8px;transition:background 0.1s}
+.roster{background:#1a1a2e;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08);margin-bottom:12px}
+.roster-header{display:grid;grid-template-columns:1fr 30px 42px 48px 48px 48px;align-items:center;padding:10px 10px;background:rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.1);gap:3px}
+.roster-header span{font-size:11px;font-weight:600;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.3px}
+.roster-col{display:flex;flex-direction:column;align-items:center;gap:4px}
+.roster-col label{font-size:11px;font-weight:700;text-transform:uppercase;cursor:pointer;letter-spacing:0.3px}
+.label-name{color:#5b9bd5}
+.label-age{color:#ffb74d}
+.label-diet{color:#ce93d8}
+.label-presenza{color:#5dff8e}
+.label-pre{color:#ffb74d}
+.label-post{color:#64b5f6}
+.child-row{display:grid;grid-template-columns:1fr 30px 42px 48px 48px 48px;align-items:center;padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.06);gap:3px;transition:background 0.1s}
 .child-row:last-child{border-bottom:none}
-.child-info{display:flex;align-items:center;gap:10px;min-width:0}
-.child-avatar{width:34px;height:34px;border-radius:50%;background:#1a1a2e;color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
-.child-name{font-size:14px;font-weight:500;color:#1a1a2e;cursor:pointer;padding:2px 6px;border-radius:4px;border:1.5px solid transparent;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.child-name:hover{border-color:#ccc}
-.child-name-input{font-size:14px;font-weight:500;border:1.5px solid #007bff;border-radius:4px;padding:2px 6px;outline:none;background:white;font-family:inherit;min-width:0;width:100%}
-.check-cell{display:flex;align-items:center;justify-content:center;min-width:54px}
-.check-cell input[type=checkbox]{width:20px;height:20px;accent-color:#28a745;cursor:pointer}
+.child-info{display:flex;align-items:center;min-width:0}
+.child-name-badge{display:flex;align-items:center;justify-content:center;padding:7px 6px;border-radius:8px;background:#1a1a2e;color:white;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;width:100%;letter-spacing:0.3px;line-height:1.1}
+.child-name-badge.male{background:#5b9bd5}
+.child-name-badge.female{background:#e87da0}
+.child-name-badge:active{transform:scale(0.97)}
+.age-circle{width:26px;height:26px;border-radius:50%;background:#1a1a2e;border:none;color:white;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;cursor:pointer;transition:all 0.15s}
+.age-circle:hover{background:#333}
+.age-circle.has-age{background:#1a1a2e;color:white}
+.age-cell{display:flex;align-items:center;justify-content:center}
+.child-row.male-row{background:rgba(91,155,213,0.15)}
+.child-row.female-row{background:rgba(232,125,160,0.15)}
+.child-name-input{font-size:13px;font-weight:500;border:1.5px solid #007bff;border-radius:4px;padding:2px 4px;outline:none;background:white;font-family:inherit;min-width:0;width:100%}
+.check-cell{display:flex;align-items:center;justify-content:center}
+.check-cell input[type=checkbox]{width:16px;height:16px;accent-color:#28a745;cursor:pointer}
 .select-all-check{width:16px!important;height:16px!important;accent-color:#28a745;cursor:pointer}
-.pre-btn,.post-btn{padding:5px 8px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;min-width:54px;text-align:center;font-family:inherit;transition:all 0.1s}
-.pre-btn{border:1.5px solid #ccc;background:white;color:#888}
+.pre-btn,.post-btn{padding:4px 4px;border-radius:6px;font-size:9px;font-weight:600;cursor:pointer;width:42px;text-align:center;font-family:inherit;transition:all 0.1s}
+.pre-btn{border:1.5px solid rgba(255,183,77,0.4);background:rgba(230,126,0,0.15);color:#ffb74d}
 .pre-btn.active{border-color:#e67e00;background:#e67e00;color:white}
-.post-btn{border:1.5px solid #ccc;background:white;color:#888}
+.post-btn{border:1.5px solid rgba(100,181,246,0.4);background:rgba(0,123,255,0.15);color:#64b5f6}
 .post-btn.active{border-color:#007bff;background:#007bff;color:white}
+.diet-btn{width:24px;height:24px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all 0.1s;padding:0;flex-shrink:0}
+.diet-cell{display:flex;align-items:center;justify-content:center}
+.diet-btn:hover{border-color:#e67e00;background:rgba(230,126,0,0.2)}
+.diet-btn.has-diet{border-color:#e67e00;background:rgba(230,126,0,0.3)}
+.diet-tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 7px;border-radius:8px;margin-left:2px;white-space:nowrap;max-width:80px;overflow:hidden;text-overflow:ellipsis}
+.diet-tag.normale{background:#e8f5e9;color:#2e7d32}
+.diet-tag.senza-glutine{background:#fff3e0;color:#e65100}
+.diet-tag.senza-lattosio{background:#e3f2fd;color:#1565c0}
+.diet-tag.vegetariana{background:#f3e5f5;color:#7b1fa2}
+.diet-tag.vegana{background:#e8f5e9;color:#1b5e20}
+.diet-tag.senza-uova{background:#fce4ec;color:#c62828}
+.diet-tag.senza-frutta-secca{background:#fff8e1;color:#f57f17}
+.diet-tag.senza-pesce{background:#e0f7fa;color:#00695c}
+.diet-tag.personalizzata{background:#f3e5f5;color:#6a1b9a}
+.diet-tag.default{background:#f5f5f5;color:#666}
+.diet-modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px}
+.diet-modal{background:white;border-radius:16px;padding:20px;max-width:360px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,0.2);max-height:80vh;overflow-y:auto}
+.diet-modal-title{font-size:18px;font-weight:700;color:#1a1a2e;margin-bottom:4px}
+.diet-modal-sub{font-size:13px;color:#888;margin-bottom:16px}
+.diet-option{display:flex;align-items:center;gap:10px;padding:10px 12px;border:2px solid #eee;border-radius:10px;margin-bottom:8px;cursor:pointer;transition:all 0.15s}
+.diet-option:hover{border-color:#ccc;background:#fafafa}
+.diet-option.selected{border-color:#007bff;background:#e8f4fd}
+.diet-option-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.diet-option-text{flex:1}
+.diet-option-name{font-size:14px;font-weight:600;color:#1a1a2e}
+.diet-option-desc{font-size:11px;color:#888}
+.diet-modal-close{width:100%;padding:10px;border:none;border-radius:8px;background:#1a1a2e;color:white;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px;font-family:inherit}
+.diet-modal-close:active{transform:scale(0.97)}
+.diet-custom-input{width:100%;padding:8px 12px;border:2px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;outline:none;margin-bottom:8px}
+.diet-custom-input:focus{border-color:#007bff}
+.child-detail-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px}
+.child-detail{background:white;border-radius:16px;padding:20px;max-width:400px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,0.2);max-height:85vh;overflow-y:auto}
+.child-detail-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.child-detail-avatar{width:48px;height:48px;border-radius:50%;background:#1a1a2e;color:white;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0;cursor:pointer}
+.child-detail-avatar.male{background:#5b9bd5}
+.child-detail-avatar.female{background:#e87da0}
+.gender-hint{font-size:10px;color:#888;margin-top:2px;font-style:italic}
+.child-detail-name{font-size:22px;font-weight:700;color:#1a1a2e}
+.child-detail-diet{font-size:15px;color:#555;margin-top:4px;font-weight:600}
+.child-detail-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px}
+.child-detail-stat{border-radius:12px;padding:14px 8px;text-align:center}
+.child-detail-stat.val{font-size:36px;font-weight:700;line-height:1}
+.child-detail-stat.lbl{font-size:13px;font-weight:700;margin-top:6px;text-transform:uppercase;letter-spacing:0.3px}
+.child-detail-sub{font-size:14px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px}
+.child-detail-day{display:flex;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0f0;gap:8px}
+.child-detail-day:last-child{border-bottom:none}
+.child-detail-day-date{font-size:14px;font-weight:700;color:#1a1a2e;width:58px;flex-shrink:0}
+.child-detail-day-name{font-size:13px;color:#666;width:36px;flex-shrink:0}
+.child-detail-day-badges{display:flex;gap:5px;flex-wrap:wrap}
+.child-detail-day-badge{font-size:12px;font-weight:700;padding:3px 10px;border-radius:10px}
+.child-detail-close{width:100%;padding:10px;border:none;border-radius:8px;background:#1a1a2e;color:white;font-size:14px;font-weight:600;cursor:pointer;margin-top:12px;font-family:inherit}
+.child-detail-close:active{transform:scale(0.97)}
+.deleghe-box{background:#f0f0f5;border-radius:12px;padding:14px;margin-top:14px}
+.deleghe-box-title{font-size:15px;font-weight:700;color:#444;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.deleghe-box-title svg{flex-shrink:0}
+.deleghe-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #e0e0e5}
+.deleghe-item:last-child{border-bottom:none}
+.deleghe-item-name{flex:1;font-size:15px;color:#333;font-weight:600}
+.deleghe-item-remove{width:22px;height:22px;border-radius:50%;border:none;background:#e0e0e5;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#888;font-size:14px;font-weight:600;font-family:inherit;transition:all 0.15s;padding:0}
+.deleghe-item-remove:hover{background:#dc3545;color:white}
+.deleghe-add{display:flex;gap:6px;margin-top:8px}
+.deleghe-add input{flex:1;padding:8px 12px;border:2px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;outline:none}
+.deleghe-add input:focus{border-color:#007bff}
+.deleghe-add button{padding:8px 14px;border:none;border-radius:8px;background:#1a1a2e;color:white;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all 0.15s}
+.deleghe-add button:hover{background:#2a2a4e}
+.deleghe-add button:active{transform:scale(0.97)}
+.deleghe-empty{font-size:14px;color:#999;font-style:italic;text-align:center;padding:6px 0}
+.contatto-call-btn{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:8px;background:#007bff;color:white;font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap;transition:all 0.15s;cursor:pointer}
+.contatto-call-btn:hover{background:#0056b3}
+.contatto-call-btn:active{transform:scale(0.97)}
+.contatto-add{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.contatto-add input{flex:1;min-width:80px;padding:8px 12px;border:2px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;outline:none}
+.contatto-add input:focus{border-color:#007bff}
+.contatto-add button{padding:8px 14px;border:none;border-radius:8px;background:#1a1a2e;color:white;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all 0.15s}
+.contatto-add button:hover{background:#2a2a4e}
+.contatto-add button:active{transform:scale(0.97)}
+.sort-bar{display:flex;align-items:center;gap:6px;padding:10px 14px;margin-bottom:10px;flex-wrap:wrap;background:#e8e4f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+.sort-label{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.3px;margin-right:2px}
+.sort-btn{padding:5px 10px;border-radius:8px;border:1.5px solid #ddd;background:white;font-size:11px;font-weight:600;color:#666;cursor:pointer;font-family:inherit;transition:all 0.15s;white-space:nowrap}
+.sort-btn:hover{border-color:#999;color:#333}
+.sort-btn.active{border-color:#1a1a2e;background:#1a1a2e;color:white}
+.sort-btn:active{transform:scale(0.97)}
+.class-tabs{display:flex;gap:6px;padding:10px 14px;margin-bottom:10px;flex-wrap:wrap;background:#e8e4f0;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.08);align-items:center}
+.class-tab{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;border:2px solid #ddd;background:white;font-size:13px;font-weight:600;color:#666;cursor:pointer;font-family:inherit;transition:all 0.15s;white-space:nowrap}
+.class-tab:hover{border-color:#999;color:#333}
+.class-tab.active{border-color:#1a1a2e;background:#1a1a2e;color:white}
+.class-tab:active{transform:scale(0.97)}
+.class-tab-del{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;border:none;background:rgba(0,0,0,0.08);color:#999;font-size:13px;font-weight:700;cursor:pointer;padding:0;margin-left:2px;transition:all 0.15s;line-height:1}
+.class-tab.active .class-tab-del{background:rgba(255,255,255,0.2);color:rgba(255,255,255,0.7)}
+.class-tab-del:hover{background:#dc3545!important;color:white!important}
+.class-tab-add{display:inline-flex;align-items:center;gap:4px;padding:7px 14px;border-radius:8px;border:2px dashed #28a745;background:#f0fff4;font-size:13px;font-weight:600;color:#28a745;cursor:pointer;font-family:inherit;transition:all 0.15s;white-space:nowrap}
+.class-tab-add:hover{border-color:#1a8c37;background:#d4f5d4}
+.class-tab-add:active{transform:scale(0.97)}
+.class-tabs-label{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:0.3px;margin-right:4px}
+.class-locked-overlay{position:relative;pointer-events:none;opacity:0.5}
+.class-locked-overlay .class-tabs,.class-locked-overlay .lock-bypass{pointer-events:auto;opacity:1}
+
+.edit-name-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border:1.5px solid #ccc;border-radius:8px;background:white;font-size:13px;font-weight:600;color:#555;cursor:pointer;font-family:inherit;transition:all 0.15s;white-space:nowrap}
+.edit-name-btn:hover{border-color:#007bff;color:#007bff;background:#f0f6ff}
+.edit-name-btn:active{transform:scale(0.97)}
+.child-detail-name-row{display:flex;align-items:center;gap:8px}
 .stat-card{background:white;border-radius:12px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,0.08);display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .stat-label{font-size:12px;color:#888;font-weight:500}
 .stat-sub{font-size:11px;color:#aaa}
 .stat-value{font-size:36px;font-weight:700;line-height:1}
 .google-icon{display:inline-flex;vertical-align:middle}
-@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
-.spinner{display:inline-block;width:12px;height:12px;border:2px solid #004085;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite}
-@media print{body{background:white!important;background-image:none!important}.btn,.btn-row,.auth-bar,.sync-bar,.search-box,.arrow-btn{display:none!important}.header-icon,.user-badge{display:none!important}.card,.roster,.stat-card{box-shadow:none!important;border:1px solid #eee}}
-@media(max-width:400px){.child-name{font-size:13px}.child-avatar{width:30px;height:30px;font-size:10px}.pre-btn,.post-btn{min-width:46px;font-size:10px;padding:4px 6px}.check-cell{min-width:46px}.roster-col{min-width:46px}}
+@media print{body{background:white!important;background-image:none!important}.btn,.btn-row,.auth-bar,.sync-bar,.search-box,.arrow-btn,.diet-btn{display:none!important}.header-icon,.user-badge{display:none!important}.card,.roster,.stat-card{box-shadow:none!important;border:1px solid #eee}}
+@media(min-width:768px){.app{max-width:900px;padding:24px}.header{padding:28px 32px}.header-icon{font-size:56px}.school-name{font-size:13px}.class-name{font-size:26px}.class-sub{font-size:15px}.teacher-name{font-size:14px}.teacher-field{font-size:13px}.child-name-badge{font-size:15px;padding:8px 14px}.age-circle{width:30px;height:30px;font-size:14px}.roster-header{grid-template-columns:1fr 36px 52px 56px 56px 56px;gap:6px;padding:12px 16px}.child-row{grid-template-columns:1fr 36px 52px 56px 56px 56px;gap:6px;padding:10px 16px}.pre-btn,.post-btn{width:48px;font-size:11px;padding:5px 6px}.diet-btn{width:28px;height:28px;font-size:14px}.check-cell input[type=checkbox]{width:20px;height:20px}.btn{padding:10px 18px;font-size:14px}.stat-value{font-size:42px}.card{padding:20px}}
+@media(max-width:400px){.roster-header{grid-template-columns:1fr 26px 36px 40px 40px 40px}.child-row{grid-template-columns:1fr 26px 36px 40px 40px 40px}.child-name-badge{font-size:12px;padding:5px 4px}.age-circle{width:22px;height:22px;font-size:8px}.pre-btn,.post-btn{width:34px;font-size:8px;padding:3px 3px}.diet-btn{width:20px;height:20px;font-size:10px}.check-cell input[type=checkbox]{width:14px;height:14px}}
 </style>
 </head>
 <body>
@@ -89,6 +231,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script>
 (function(){
 "use strict";
@@ -102,7 +246,20 @@ var FIREBASE_CONFIG = {
   appId: "1:291215184515:web:5930221368bc5a3d49c1b6"
 };
 
-var DEFAULT_CHILDREN = [
+var DIET_TYPES = [
+  {id:'nessuna', name:'Nessuna dieta', icon:'-', desc:'Nessuna restrizione alimentare', color:'#e0e0e0'},
+  {id:'normale', name:'Normale', icon:'\u2714', desc:'Dieta standard', color:'#4caf50'},
+  {id:'senza-glutine', name:'Senza glutine', icon:'\ud83c\udf3e', desc:'Intolleranza al glutine / Celiachia', color:'#ff9800'},
+  {id:'senza-lattosio', name:'Senza lattosio', icon:'\ud83e\udd5b', desc:'Intolleranza al lattosio', color:'#2196f3'},
+  {id:'vegetariana', name:'Vegetariana', icon:'\ud83e\udd6c', desc:'Dieta vegetariana', color:'#9c27b0'},
+  {id:'vegana', name:'Vegana', icon:'\ud83c\udf31', desc:'Dieta vegana', color:'#4caf50'},
+  {id:'senza-uova', name:'Senza uova', icon:'\ud83e\udd5a', desc:'Allergia alle uova', color:'#f44336'},
+  {id:'senza-frutta-secca', name:'Senza frutta secca', icon:'\u274c', desc:'Allergia alla frutta secca', color:'#ff9800'},
+  {id:'senza-pesce', name:'Senza pesce', icon:'\u274c', desc:'Allergia al pesce', color:'#009688'},
+  {id:'personalizzata', name:'Personalizzata', icon:'\u270f', desc:'Dieta personalizzata', color:'#9c27b0'}
+];
+
+var children = [
   'Sofia Rossi','Leonardo Bianchi','Aurora Romano','Tommaso Ferrari',
   'Giulia Esposito','Mattia Ricci','Alice Marino','Nicola Parisi',
   'Elisa Benedetti','Simone Rinaldi','Beatrice Costa','Davide Moretti',
@@ -113,141 +270,392 @@ var DEFAULT_CHILDREN = [
   'Luca Marchetti','Giorgia Ferretti'
 ];
 
-var children = DEFAULT_CHILDREN.slice();
 var presenze = {};
 var pre = {};
 var post = {};
-var dateIndex = 2;
+var childDiets = {};
+var childGender = {};
+var childDeleghe = {};
+var childContatti = {};
+var childLastModified = {};
+var childAge = {};
+var childNotes = {};
+var currentDate = new Date();
 var search = '';
-var className = 'Coccinelle';
+var sortMode = 'default';
+var className = 'Chioccioline';
+var schoolName = 'Scuola dell\'Infanzia di Bonirola';
+var teacher1 = '';
+var teacher2 = '';
+var editingSchool = false;
+var editingTeacher1 = false;
+var editingTeacher2 = false;
 var editingClass = false;
 var editingChild = -1;
 var editValue = '';
 var currentUser = null;
 var loginLoading = false;
-var syncStatus = 'none'; // 'none','synced','syncing','error'
 var db = null;
-var saveTimeout = null;
+var syncStatus = 'idle';
+var firestoreLoaded = false;
+var showDietModal = -1;
+var selectedChild = -1;
 
-var DATES = (function(){
-  var days = ['Domenica','Luned\u00ec','Marted\u00ec','Mercoled\u00ec','Gioved\u00ec','Venerd\u00ec','Sabato'];
-  var months = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
-  var ms = ['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
-  var arr = [];
-  var today = new Date();
-  for(var d = -2; d <= 2; d++){
-    var dt = new Date(today);
-    dt.setDate(dt.getDate() + d);
-    arr.push({
-      short: dt.getDate() + ' ' + ms[dt.getMonth()] + ' ' + dt.getFullYear(),
-      full: days[dt.getDay()] + ' ' + dt.getDate() + ' ' + months[dt.getMonth()] + ' ' + dt.getFullYear()
-    });
-  }
-  return arr;
-})();
+var dateData = {};
+var holidays = {};
+var dayNotes = {};
+var classes = {};
+var currentClassId = '';
+var unlockedClasses = {};
+var classLocked = false;
 
-// ===== SAVE/LOAD LOCAL =====
-function saveLocal(){
-  try{
-    localStorage.setItem('rp_data',JSON.stringify({
-      children:children, presenze:presenze, pre:pre, post:post,
-      dateIndex:dateIndex, className:className
-    }));
-  }catch(e){}
+var DAYS = ['Domenica','Luned\u00ec','Marted\u00ec','Mercoled\u00ec','Gioved\u00ec','Venerd\u00ec','Sabato'];
+var MONTHS = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+var MONTHS_SHORT = ['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
+
+function dateToKey(dt){
+  return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
 }
-function loadLocal(){
-  try{
-    var d=JSON.parse(localStorage.getItem('rp_data'));
-    if(d){
-      if(d.children) children=d.children;
-      if(d.presenze) presenze=d.presenze;
-      if(d.pre) pre=d.pre;
-      if(d.post) post=d.post;
-      if(typeof d.dateIndex==='number') dateIndex=d.dateIndex;
-      if(d.className) className=d.className;
-    }
-  }catch(e){}
+function dateToShort(dt){
+  return dt.getDate()+' '+MONTHS_SHORT[dt.getMonth()]+' '+dt.getFullYear();
+}
+function dateToFull(dt){
+  return DAYS[dt.getDay()]+' '+dt.getDate()+' '+MONTHS[dt.getMonth()]+' '+dt.getFullYear();
+}
+function dateToInput(dt){
+  return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0');
 }
 
-// ===== SAVE/LOAD FIRESTORE =====
-function saveCloud(){
-  if(!currentUser || !db) return;
-  syncStatus='syncing'; render();
-  var uid=currentUser.uid;
-  var data={
-    children:children, presenze:presenze, pre:pre, post:post,
-    dateIndex:dateIndex, className:className,
-    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-  };
-  db.collection('users').doc(uid).set(data,{merge:true})
-    .then(function(){syncStatus='synced';render();})
-    .catch(function(e){console.error('Firestore save error:',e);syncStatus='error';render();});
-}
-function loadCloud(uid){
-  if(!db) return;
-  syncStatus='syncing'; render();
-  db.collection('users').doc(uid).get()
-    .then(function(doc){
-      if(doc.exists){
-        var d=doc.data();
-        if(d.children) children=d.children;
-        if(d.presenze) presenze=d.presenze;
-        if(d.pre) pre=d.pre;
-        if(d.post) post=d.post;
-        if(typeof d.dateIndex==='number') dateIndex=d.dateIndex;
-        if(d.className) className=d.className;
-      }
-      syncStatus='synced';
-      saveLocal();
-      render();
-    })
-    .catch(function(e){
-      console.error('Firestore load error:',e);
-      syncStatus='error';
-      render();
-    });
-}
-
-// ===== COMBINED SAVE =====
-function saveState(){
-  saveLocal();
-  if(saveTimeout) clearTimeout(saveTimeout);
-  if(currentUser && db){
-    saveTimeout=setTimeout(saveCloud,500);
-  }
-}
-
-// ===== HELPERS =====
 function getInitials(name){
   var parts=name.trim().split(/\s+/);
   if(parts.length>=2) return parts[0][0].toUpperCase()+parts[parts.length-1][0].toUpperCase();
   return parts[0].substring(0,2).toUpperCase();
 }
+function nameReversed(name){
+  var parts=name.trim().split(/\s+/);
+  if(parts.length>=2) return parts[parts.length-1]+' '+parts[0];
+  return name;
+}
 function countKeys(obj){var c=0;for(var k in obj)if(obj.hasOwnProperty(k))c++;return c;}
 function hasKey(obj,k){return obj.hasOwnProperty(k);}
 function esc(s){if(!s)return '';return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-// ===== FIREBASE INIT =====
-function initFirebase(){
+function getDietType(typeId){
+  for(var i=0;i<DIET_TYPES.length;i++){
+    if(DIET_TYPES[i].id===typeId) return DIET_TYPES[i];
+  }
+  return DIET_TYPES[0];
+}
+function getDietLabel(idx){
+  if(!childDiets[idx]||childDiets[idx].type==='nessuna') return '';
+  return getDietType(childDiets[idx].type).name;
+}
+function getDietTagClass(typeId){
+  if(!typeId||typeId==='nessuna') return 'default';
+  return typeId;
+}
+
+function guessGender(name){
+  var firstName=name.trim().split(/\s+/)[0].toLowerCase();
+  var maleNames=['leonardo','tommaso','mattia','nicola','simone','davide','federico','gabriele','alessandro','lorenzo','pietro','marco','edoardo','filippo','luca'];
+  var femaleNames=['sofia','aurora','giulia','alice','elisa','beatrice','martina','chiara','ginevra','emma','viola','camilla','anna','bianca','giorgia'];
+  for(var i=0;i<maleNames.length;i++){if(firstName===maleNames[i]) return 'm';}
+  for(var j=0;j<femaleNames.length;j++){if(firstName===femaleNames[j]) return 'f';}
+  if(firstName.endsWith('a')||firstName.endsWith('e')) return 'f';
+  if(firstName.endsWith('o')||firstName.endsWith('i')) return 'm';
+  return 'm';
+}
+function getGender(idx){
+  if(childGender[idx]) return childGender[idx];
+  return guessGender(children[idx]);
+}
+function getGenderClass(idx){var g=getGender(idx);return g==='f'?'female':'male';}
+
+function getCurrentDateKey(){ return dateToKey(currentDate); }
+function isWeekend(){ var d=currentDate.getDay(); return d===0||d===6; }
+function isHoliday(){ var key=getCurrentDateKey(); return !!holidays[key]; }
+function isDayOff(){ return isWeekend()||isHoliday(); }
+
+function saveCurrentDateData(){
+  var key=getCurrentDateKey();
+  dateData[key]={presenze:JSON.parse(JSON.stringify(presenze)),pre:JSON.parse(JSON.stringify(pre)),post:JSON.parse(JSON.stringify(post))};
+}
+
+function switchToDate(dt){
+  saveCurrentDateData();
+  currentDate=new Date(dt);
+  var key=getCurrentDateKey();
+  var dd=dateData[key];
+  if(dd){presenze=JSON.parse(JSON.stringify(dd.presenze||{}));pre=JSON.parse(JSON.stringify(dd.pre||{}));post=JSON.parse(JSON.stringify(dd.post||{}));}
+  else{presenze={};pre={};post={};}
+}
+
+function generateClassId(){
+  return 'class_'+Date.now()+'_'+Math.random().toString(36).substring(2,7);
+}
+
+function saveCurrentClassData(){
+  saveCurrentDateData();
+  if(!currentClassId) return;
+  if(!classes[currentClassId]) classes[currentClassId]={};
+  classes[currentClassId].id=currentClassId;
+  // Sync: usa sempre il nome salvato nella classe se diverso da className globale
+  if(classes[currentClassId].name&&classes[currentClassId].name!==className){
+    className=classes[currentClassId].name;
+  }
+  classes[currentClassId].name=className;
+  classes[currentClassId].pin=classes[currentClassId].pin||'';
+  classes[currentClassId].children=JSON.parse(JSON.stringify(children));
+  classes[currentClassId].childDiets=JSON.parse(JSON.stringify(childDiets));
+  classes[currentClassId].childGender=JSON.parse(JSON.stringify(childGender));
+  classes[currentClassId].childDeleghe=JSON.parse(JSON.stringify(childDeleghe));
+  classes[currentClassId].childContatti=JSON.parse(JSON.stringify(childContatti));
+  classes[currentClassId].childLastModified=JSON.parse(JSON.stringify(childLastModified));
+  classes[currentClassId].childAge=JSON.parse(JSON.stringify(childAge));
+  classes[currentClassId].childNotes=JSON.parse(JSON.stringify(childNotes));
+  classes[currentClassId].dateData=JSON.parse(JSON.stringify(dateData));
+  classes[currentClassId].holidays=JSON.parse(JSON.stringify(holidays));
+  classes[currentClassId].dayNotes=JSON.parse(JSON.stringify(dayNotes));
+  classes[currentClassId].teacher1=teacher1;
+  classes[currentClassId].teacher2=teacher2;
+  classes[currentClassId].sortMode=sortMode;
+}
+
+function loadClassData(classId){
+  if(!classes[classId]) return;
+  currentClassId=classId;
+  var c=classes[classId];
+  children=c.children||[];
+  for(var li=0;li<children.length;li++){children[li]=children[li].toUpperCase();}
+  childDiets=c.childDiets||{};
+  childGender=c.childGender||{};
+  childDeleghe=c.childDeleghe||{};
+  childContatti=c.childContatti||{};
+  childLastModified=c.childLastModified||{};
+  childAge=c.childAge||{};
+  childNotes=c.childNotes||{};
+  dateData=c.dateData||{};
+  holidays=c.holidays||{};
+  dayNotes=c.dayNotes||{};
+  className=c.name||'Classe';
+  teacher1=c.teacher1||'';
+  teacher2=c.teacher2||'';
+  sortMode=c.sortMode||'default';
+  var key=getCurrentDateKey();
+  var dd=dateData[key];
+  if(dd){presenze=dd.presenze||{};pre=dd.pre||{};post=dd.post||{};}
+  else{presenze={};pre={};post={};}
+}
+
+function ensureDefaultClass(){
+  if(Object.keys(classes).length===0){
+    var defId=generateClassId();
+    classes[defId]={
+      id:defId,
+      name:className,
+      pin:'',
+      children:JSON.parse(JSON.stringify(children)),
+      childDiets:JSON.parse(JSON.stringify(childDiets)),
+      childGender:JSON.parse(JSON.stringify(childGender)),
+      childDeleghe:JSON.parse(JSON.stringify(childDeleghe)),
+      childContatti:JSON.parse(JSON.stringify(childContatti)),
+      childLastModified:JSON.parse(JSON.stringify(childLastModified)),
+      childAge:JSON.parse(JSON.stringify(childAge)),
+      childNotes:JSON.parse(JSON.stringify(childNotes)),
+      dateData:JSON.parse(JSON.stringify(dateData)),
+      holidays:JSON.parse(JSON.stringify(holidays)),
+      dayNotes:JSON.parse(JSON.stringify(dayNotes)),
+      teacher1:teacher1,
+      teacher2:teacher2,
+      sortMode:sortMode
+    };
+    currentClassId=defId;
+    loadClassData(defId);
+    unlockedClasses[defId]=true;
+  }
+  if(!currentClassId){
+    var firstKey=Object.keys(classes)[0];
+    if(firstKey) loadClassData(firstKey);
+  }
+  updateClassLockState();
+}
+
+function updateClassLockState(){
+  if(!currentClassId||!classes[currentClassId]){classLocked=false;return;}
+  var pin=classes[currentClassId].pin||'';
+  classLocked=pin&&pin.length>0&&!unlockedClasses[currentClassId];
+}
+
+function tryUnlockClass(classId){
+  if(!classes[classId]) return false;
+  var pin=classes[classId].pin||'';
+  if(!pin){unlockedClasses[classId]=true;return true;}
+  if(unlockedClasses[classId]) return true;
+  var entered=prompt('Inserisci il PIN per accedere alla classe "'+(classes[classId].name||'Classe')+'":');
+  if(entered===null) return false;
+  if(entered===pin){unlockedClasses[classId]=true;return true;}
+  alert('PIN errato!');
+  return false;
+}
+
+function getStorageKey(){
+  if(currentUser) return 'rp_data_'+currentUser.uid;
+  return 'rp_data';
+}
+
+function resetAllData(){
+  children=['SOFIA ROSSI','LEONARDO BIANCHI','AURORA ROMANO','TOMMASO FERRARI','GIULIA ESPOSITO','MATTIA RICCI','ALICE MARINO','NICOLA PARISI','ELISA BENEDETTI','SIMONE RINALDI','BEATRICE COSTA','DAVIDE MORETTI','MARTINA BARBIERI','FEDERICO RIZZO','CHIARA LOMBARDI','GABRIELE GALLO','GINEVRA CONTI','ALESSANDRO DE LUCA','LORENZO GRECO','EMMA BRUNO','PIETRO COLOMBO','VIOLA FONTANA','MARCO VILLA','CAMILLA RUSSO','EDOARDO MESSINA','ANNA SERRA','FILIPPO MAZZA','BIANCA PELLEGRINI','LUCA MARCHETTI','GIORGIA FERRETTI'];
+  dateData={};presenze={};pre={};post={};childDiets={};childGender={};childDeleghe={};childContatti={};childAge={};childNotes={};childLastModified={};
+  holidays={};dayNotes={};
+  className='Chioccioline';schoolName='Scuola dell\'Infanzia di Bonirola';teacher1='';teacher2='';
+  classes={};currentClassId='';unlockedClasses={};classLocked=false;
+  currentDate=new Date();
+  search='';selectedChild=-1;showDietModal=-1;
+}
+
+function saveState(){
+  saveCurrentClassData();
+  if(currentUser){
+    try{localStorage.setItem(getStorageKey(),JSON.stringify({classes:classes,currentClassId:currentClassId,schoolName:schoolName,currentDate:dateToInput(currentDate)}));}catch(e){}
+    saveToFirestore();
+  }
+}
+
+function loadState(){
+  if(!currentUser) return;
   try{
-    if(typeof firebase==='undefined'){render();return;}
-    firebase.initializeApp(FIREBASE_CONFIG);
-    db=firebase.firestore();
-    var auth=firebase.auth();
-    try{auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);}catch(e){
-      try{auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);}catch(e2){
-        try{auth.setPersistence(firebase.auth.Auth.Persistence.NONE);}catch(e3){}
+    var d=JSON.parse(localStorage.getItem(getStorageKey()));
+    if(d){
+      if(d.classes){
+        classes=d.classes;
+        currentClassId=d.currentClassId||'';
+        if(d.schoolName) schoolName=d.schoolName;
+        if(d.currentDate){ try{currentDate=new Date(d.currentDate+'T12:00:00');}catch(e){currentDate=new Date();} }
+        ensureDefaultClass();
+      }else{
+        // OLD FORMAT - migrate to classes
+        if(d.children){children=d.children;for(var li=0;li<children.length;li++){children[li]=children[li].toUpperCase();}}
+        if(d.dateData) dateData=d.dateData;
+        if(d.childDiets) childDiets=d.childDiets;
+        if(d.childGender) childGender=d.childGender;
+        if(d.childDeleghe) childDeleghe=d.childDeleghe;
+        if(d.childContatti) childContatti=d.childContatti;
+        if(d.childLastModified) childLastModified=d.childLastModified;
+        if(d.childAge) childAge=d.childAge;
+        if(d.childNotes) childNotes=d.childNotes;
+        if(d.sortMode) sortMode=d.sortMode;
+        if(!d.dateData&&(d.presenze||d.pre||d.post)){
+          var key=d.currentDate||dateToKey(new Date());
+          dateData[key]={presenze:d.presenze||{},pre:d.pre||{},post:d.post||{}};
+        }
+        if(d.currentDate){ try{currentDate=new Date(d.currentDate+'T12:00:00');}catch(e){currentDate=new Date();} }
+        if(d.className) className=d.className;
+        if(d.schoolName) schoolName=d.schoolName;
+        if(d.teacher1!==undefined) teacher1=d.teacher1;
+        if(d.teacher2!==undefined) teacher2=d.teacher2;
+        if(d.holidays) holidays=d.holidays;
+        if(d.dayNotes) dayNotes=d.dayNotes;
+        ensureDefaultClass();
       }
     }
-    auth.onAuthStateChanged(function(u){
-      currentUser=u;
-      loginLoading=false;
-      if(u){
-        loadCloud(u.uid);
+  }catch(e){}
+  var key=getCurrentDateKey();
+  var dd=dateData[key];
+  if(dd){presenze=dd.presenze||{};pre=dd.pre||{};post=dd.post||{};}
+}
+
+var firestoreSaveTimer=null;
+function saveToFirestore(){
+  if(!currentUser||!db) return;
+  if(firestoreSaveTimer) clearTimeout(firestoreSaveTimer);
+  syncStatus='saving';renderSyncBar();
+  firestoreSaveTimer=setTimeout(function(){doSaveToFirestore();},1000);
+}
+function doSaveToFirestore(){
+  if(!currentUser||!db) return;
+  var data={classes:classes,currentClassId:currentClassId,schoolName:schoolName,updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+  db.collection('users').doc(currentUser.uid).set(data)
+    .then(function(){syncStatus='synced';renderSyncBar();setTimeout(function(){if(syncStatus==='synced'){syncStatus='idle';renderSyncBar();}},3000);})
+    .catch(function(err){console.error('Firestore save error:',err);syncStatus='error';renderSyncBar();});
+}
+function loadFromFirestore(uid){
+  if(!db) return;
+  resetAllData();
+  syncStatus='saving';renderSyncBar();
+  db.collection('users').doc(uid).get()
+    .then(function(doc){
+      if(doc.exists){
+        var d=doc.data();
+        if(d.classes){
+          classes=d.classes;
+          currentClassId=d.currentClassId||'';
+          if(d.schoolName) schoolName=d.schoolName;
+          ensureDefaultClass();
+        }else{
+          // OLD FORMAT - migrate
+          if(d.children&&d.children.length>0){children=d.children;for(var ui=0;ui<children.length;ui++){children[ui]=children[ui].toUpperCase();}}
+          if(d.className) className=d.className;
+          if(d.schoolName) schoolName=d.schoolName;
+          if(d.teacher1!==undefined) teacher1=d.teacher1;
+          if(d.teacher2!==undefined) teacher2=d.teacher2;
+          if(d.holidays) holidays=d.holidays;
+          if(d.dayNotes) dayNotes=d.dayNotes;
+          if(d.dateData) dateData=d.dateData;
+          if(d.childDiets) childDiets=d.childDiets;
+          if(d.childGender) childGender=d.childGender;
+          if(d.childDeleghe) childDeleghe=d.childDeleghe;
+          if(d.childContatti) childContatti=d.childContatti;
+          if(d.childLastModified) childLastModified=d.childLastModified;
+          if(d.childAge) childAge=d.childAge;
+          if(d.childNotes) childNotes=d.childNotes;
+          if(d.sortMode) sortMode=d.sortMode;
+          ensureDefaultClass();
+        }
+        var key=getCurrentDateKey();var dd=dateData[key];
+        if(dd){presenze=dd.presenze||{};pre=dd.pre||{};post=dd.post||{};}
+        else{presenze={};pre={};post={};}
+        // Save in new format
+        try{localStorage.setItem(getStorageKey(),JSON.stringify({classes:classes,currentClassId:currentClassId,schoolName:schoolName,currentDate:dateToInput(currentDate)}));}catch(e){}
       }else{
-        syncStatus='none';
-        loadLocal();
-        render();
+        try{localStorage.removeItem(getStorageKey());}catch(e){}
+      }
+      firestoreLoaded=true;syncStatus='synced';updateClassLockState();render();
+      setTimeout(function(){if(syncStatus==='synced'){syncStatus='idle';renderSyncBar();}},3000);
+    })
+    .catch(function(err){console.error('Firestore load error:',err);firestoreLoaded=true;syncStatus='error';render();});
+}
+function renderSyncBar(){
+  var bar=document.getElementById('sync-bar');
+  if(!bar) return;
+  if(!currentUser){bar.style.display='none';return;}
+  bar.style.display='flex';bar.className='sync-bar';
+  if(syncStatus==='saving'){bar.classList.add('saving');bar.innerHTML='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4m-7.07-3.93l2.83-2.83m8.48-8.48l2.83-2.83M2 12h4m12 0h4m-3.93 7.07l-2.83-2.83M7.76 7.76L4.93 4.93"/></svg> Salvataggio in corso...';}
+  else if(syncStatus==='synced'){bar.innerHTML='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg> Dati sincronizzati';}
+  else if(syncStatus==='error'){bar.classList.add('error');bar.innerHTML='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> Errore di sincronizzazione';}
+  else{bar.style.display='none';}
+}
+
+function initFirebase(){
+  try{
+    if(typeof firebase==='undefined'){console.warn('Firebase SDK not loaded');render();return;}
+    firebase.initializeApp(FIREBASE_CONFIG);
+    var auth=firebase.auth();
+    db=firebase.firestore();
+    try{db.enablePersistence({synchronizeTabs:true});}catch(e){console.log('Firestore persistence:',e.message||e);}
+    try{auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);}catch(e){try{auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);}catch(e2){try{auth.setPersistence(firebase.auth.Auth.Persistence.NONE);}catch(e3){}}}
+    auth.onAuthStateChanged(function(u){
+      var previousUser=currentUser;
+      currentUser=u;loginLoading=false;
+      if(u){
+        if(previousUser&&previousUser.uid!==u.uid){
+          resetAllData();
+        }
+        loadFromFirestore(u.uid);
+      }else{
+        try{localStorage.removeItem('rp_data');}catch(e){}
+        try{if(previousUser){localStorage.removeItem('rp_data_'+previousUser.uid);}}catch(e2){}
+        resetAllData();
+        syncStatus='idle';render();
       }
     });
     try{auth.getRedirectResult();}catch(e){}
@@ -255,221 +663,1082 @@ function initFirebase(){
 }
 
 function handleLogin(){
-  if(typeof firebase==='undefined'){alert('Firebase non caricato');return;}
+  if(typeof firebase==='undefined'){alert('Firebase non caricato. Ricarica la pagina.');return;}
   var auth=firebase.auth();
   if(currentUser){
-    if(confirm('Vuoi disconnettere "'+(currentUser.displayName||currentUser.email)+'"?')){
-      auth.signOut();
-    }
+    if(confirm('Vuoi disconnettere l\'account "'+(currentUser.displayName||currentUser.email)+'"?\n\nI dati rimarranno salvati nel tuo account Google.')){saveCurrentDateData();doSaveToFirestore();auth.signOut().then(function(){try{localStorage.removeItem(getStorageKey());}catch(e){}resetAllData();render();});}
   }else{
     loginLoading=true;render();
     var provider=new firebase.auth.GoogleAuthProvider();
     auth.signInWithPopup(provider).catch(function(error){
-      loginLoading=false;render();
-      var msg='Errore durante il login.';
+      loginLoading=false;render();var msg='Errore durante il login.';
       if(error.code==='auth/popup-closed-by-user') return;
       else if(error.code==='auth/popup-blocked'){auth.signInWithRedirect(provider);return;}
-      else if(error.code==='auth/unauthorized-domain'){msg='Dominio non autorizzato.\n\nVai su Firebase Console > Authentication > Settings > Authorized domains e aggiungi:\n'+window.location.hostname;}
-      else if(error.code==='auth/operation-not-allowed'){msg='Login Google non abilitato.';}
+      else if(error.code==='auth/unauthorized-domain'){msg='Dominio "'+window.location.hostname+'" non autorizzato.\n\nVai su Firebase Console > Authentication > Settings > Authorized domains e aggiungi:\n'+window.location.hostname;}
+      else if(error.code==='auth/operation-not-allowed'){msg='Login Google non abilitato. Abilitalo in Firebase Console.';}
       else{msg='Errore: '+error.message;}
       alert(msg);
     });
   }
 }
 
-// ===== RENDER =====
+function renderDietModal(childIdx){
+  if(childIdx<0) return '';
+  var diet=childDiets[childIdx]||{type:'nessuna',note:''};
+  var childName=children[childIdx];
+  var html='<div class="diet-modal-overlay" onclick="if(event.target===this)App.closeDietModal()">';
+  html+='<div class="diet-modal">';
+  html+='<div class="diet-modal-title">Dieta</div>';
+  html+='<div class="diet-modal-sub">'+esc(childName)+'</div>';
+  for(var i=0;i<DIET_TYPES.length;i++){
+    var dt=DIET_TYPES[i];var sel=diet.type===dt.id?' selected':'';
+    html+='<div class="diet-option'+sel+'" onclick="App.selectDiet('+childIdx+',\''+dt.id+'\')">';
+    html+='<div class="diet-option-icon" style="background:'+dt.color+'22;color:'+dt.color+'">'+dt.icon+'</div>';
+    html+='<div class="diet-option-text"><div class="diet-option-name">'+esc(dt.name)+'</div><div class="diet-option-desc">'+esc(dt.desc)+'</div></div></div>';
+  }
+  if(diet.type==='personalizzata'){
+    html+='<input class="diet-custom-input" id="dietNote" placeholder="Specifica la dieta..." value="'+esc(diet.note||'')+'" oninput="App.updateDietNote('+childIdx+',this.value)"/>';
+  }
+  html+='<button class="diet-modal-close" onclick="App.closeDietModal()">Chiudi</button>';
+  html+='</div></div>';
+  return html;
+}
+
 function render(){
   var app=document.getElementById('app');
-  var tp=countKeys(presenze),tpr=countKeys(pre),tpo=countKeys(post);
+  var totalPresenze=countKeys(presenze);
+  var totalPre=countKeys(pre);
+  var totalPost=countKeys(post);
+  var html='';
 
-  var h='';
+  html+='<div class="header">';
+  html+='<div class="header-icon">\ud83c\udfeb</div>';
+  html+='<div class="header-info">';
+  if(editingSchool){html+='<input class="school-name-input" id="schoolInput" value="'+esc(schoolName)+'" onblur="App.finishEditSchool()" onkeydown="if(event.key===\'Enter\')App.finishEditSchool()"/>';}
+  else{html+='<div class="school-name" onclick="App.startEditSchool()" title="Clicca per modificare">'+esc(schoolName)+'</div>';}
+  var displayClassName=(currentClassId&&classes[currentClassId])?classes[currentClassId].name:className;
+  if(editingClass){html+='<input class="class-name-input" id="classInput" value="'+esc(displayClassName)+'" onblur="App.finishEditClass()" onkeydown="if(event.key===\'Enter\')App.finishEditClass()"/>';}
+  else{html+='<div class="class-name" onclick="App.startEditClass()" title="Clicca per modificare">'+esc(displayClassName)+'</div>';}
+  html+='<div class="class-sub">REGISTRO DI CLASSE</div>';
+  html+='<div class="header-teachers">';
+  html+='<div class="teacher-field"><span>Insegnante 1:</span>';
+  if(editingTeacher1){html+='<input class="teacher-name-input" id="teacher1Input" value="'+esc(teacher1)+'" onblur="App.finishEditTeacher1()" onkeydown="if(event.key===\'Enter\')App.finishEditTeacher1()"/>';}
+  else{html+='<div class="teacher-name" onclick="App.startEditTeacher1()" title="Clicca per modificare">'+esc(teacher1||'—')+'</div>';}
+  html+='</div>';
+  html+='<div class="teacher-field"><span>Insegnante 2:</span>';
+  if(editingTeacher2){html+='<input class="teacher-name-input" id="teacher2Input" value="'+esc(teacher2)+'" onblur="App.finishEditTeacher2()" onkeydown="if(event.key===\'Enter\')App.finishEditTeacher2()"/>';}
+  else{html+='<div class="teacher-name" onclick="App.startEditTeacher2()" title="Clicca per modificare">'+esc(teacher2||'—')+'</div>';}
+  html+='</div>';
+  html+='</div>';
+  html+='</div>';
+  if(currentUser){html+='<div class="user-badge">';if(currentUser.photoURL) html+='<img src="'+esc(currentUser.photoURL)+'" alt=""/>';html+='<span>'+esc(currentUser.displayName||currentUser.email)+'</span></div>';}
+  html+='</div>';
 
-  // Header
-  h+='<div class="header">';
-  h+='<div class="header-icon"><svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20a2 2 0 0 0 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5zm2 4h10v2H7v-2zm0 4h7v2H7v-2z"/></svg></div>';
-  h+='<div class="header-info">';
-  if(editingClass){
-    h+='<input class="class-name-input" id="classInput" value="'+esc(className)+'" onblur="App.finishEditClass()" onkeydown="if(event.key===\'Enter\')App.finishEditClass()"/>';
-  }else{
-    h+='<div class="class-name" onclick="App.startEditClass()" title="Clicca per modificare">'+esc(className)+'</div>';
-  }
-  h+='<div class="class-sub">Registro presenze</div>';
-  h+='</div>';
-  if(currentUser){
-    h+='<div class="user-badge">';
-    if(currentUser.photoURL) h+='<img src="'+esc(currentUser.photoURL)+'" alt=""/>';
-    h+='<span>'+esc(currentUser.displayName||currentUser.email)+'</span></div>';
-  }
-  h+='</div>';
+  if(currentUser){html+='<div class="auth-bar success"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg><span>Connesso come '+esc(currentUser.displayName||currentUser.email)+'</span></div>';}
+  else{html+='<div class="auth-bar info"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span>Effettua il login con Google per salvare i dati nel cloud</span></div>';}
 
-  // Auth bar
-  if(currentUser){
-    h+='<div class="auth-bar success"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg><span>Connesso: '+esc(currentUser.displayName||currentUser.email)+'</span></div>';
-  }else{
-    h+='<div class="auth-bar info"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span>Fai login con Google per salvare i dati online</span></div>';
-  }
+  html+='<div id="sync-bar" class="sync-bar" style="display:none"></div>';
 
-  // Sync bar
-  if(currentUser){
-    if(syncStatus==='synced'){
-      h+='<div class="sync-bar synced"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg><span>Dati sincronizzati sul cloud</span></div>';
-    }else if(syncStatus==='syncing'){
-      h+='<div class="sync-bar syncing"><span class="spinner"></span><span>Sincronizzazione...</span></div>';
-    }else if(syncStatus==='error'){
-      h+='<div class="sync-bar error"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg><span>Errore di sincronizzazione</span></div>';
+  // Class tabs
+  html+='<div class="class-tabs">';
+  var classKeys=Object.keys(classes);
+  var CLASS_COLORS=['#1a1a2e','#5b9bd5','#28a745','#e67e00','#9c27b0','#dc3545','#17a2b8','#6c757d'];
+  html+='<span class="class-tabs-label">Classi ('+classKeys.length+'):</span>';
+  for(var cki=0;cki<classKeys.length;cki++){
+    var cId=classKeys[cki];
+    var cName=classes[cId].name||'Classe';
+    var cPin=classes[cId].pin||'';
+    var isActive=cId===currentClassId;
+    var isUnlocked=unlockedClasses[cId]||!cPin;
+    var tabColor=CLASS_COLORS[cki%CLASS_COLORS.length];
+    html+='<div class="class-tab'+(isActive?' active':'')+'" style="'+(isActive?'border-color:'+tabColor+';background:'+tabColor+';color:white':'border-color:'+tabColor+';color:'+tabColor)+'" onclick="App.switchClass(\''+cId+'\')">';
+    html+=esc(cName)+' <span style="font-size:11px;opacity:0.6">('+((classes[cId].children||[]).length)+')</span>';
+    if(cPin){html+='<span style="font-size:10px;opacity:0.7" title="Classe protetta da PIN">'+(isUnlocked?'\ud83d\udd13':'\ud83d\udd12')+'</span>';}
+    if(classKeys.length>1){
+      html+='<button class="class-tab-del" onclick="event.stopPropagation();App.deleteClass(\''+cId+'\')" title="Elimina classe '+esc(cName)+'">\u00d7</button>';
     }
+    html+='</div>';
+  }
+  html+='<div class="class-tab-add" onclick="App.addClass()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Aggiungi Classe</div>';
+  if(currentUser&&currentClassId){html+='<div class="class-tab" style="border-color:#ffc107;background:#fff8e1;color:#856404;font-size:11px" onclick="App.managePin()" title="Gestisci PIN classe">\ud83d\udd12 PIN</div>';}
+  html+='</div>';
+
+  // Locked class banner
+  if(classLocked){
+    html+='<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;margin-bottom:12px;background:#f8d7da;border:2px solid #dc3545;border-radius:12px">';
+    html+='<span style="font-size:24px">\ud83d\udd12</span>';
+    html+='<div style="flex:1"><div style="font-size:15px;font-weight:700;color:#721c24">Classe bloccata</div><div style="font-size:12px;color:#a83636;margin-top:2px">Inserisci il PIN per sbloccare e fare modifiche</div></div>';
+    html+='<button class="btn" style="background:#dc3545;color:white;border-color:#dc3545;font-weight:700" onclick="App.unlockClass()">\ud83d\udd13 Sblocca</button>';
+    html+='</div>';
   }
 
-  // Buttons
-  h+='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">';
-  h+='<div class="btn-row">';
-  h+='<button class="btn" onclick="App.login()"><span class="google-icon"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg></span>'+(loginLoading?'...':(currentUser?'Logout':'Login'))+'</button>';
-  h+='<button class="btn" onclick="App.goToday()">Oggi</button>';
-  h+='<button class="btn" onclick="App.resetDay()">Azzera giorno</button>';
-  h+='<button class="btn btn-danger" onclick="App.resetMonth()">Azzera mese</button>';
-  h+='</div>';
-  h+='<div class="btn-row">';
-  h+='<button class="btn btn-danger-fill" onclick="App.exportPDF()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> PDF</button>';
-  h+='<button class="btn" onclick="App.importData()">Importa</button>';
-  h+='<button class="btn" onclick="App.backupData()">Backup</button>';
-  h+='<button class="btn" onclick="App.viewMonth()">Mese</button>';
-  h+='</div>';
-  h+='<button class="btn btn-success-fill btn-full" onclick="App.share()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> Condividi</button>';
-  h+='</div>';
+  // Wrap locked content
+  if(classLocked){html+='<div class="class-locked-overlay">';}
 
-  // Date
-  h+='<div class="card"><div class="card-label">DATA</div>';
-  h+='<div class="date-nav">';
-  h+='<button class="arrow-btn" onclick="App.prevDate()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>';
-  h+='<span class="date-text">'+esc(DATES[dateIndex].short)+'</span>';
-  h+='<button class="arrow-btn" onclick="App.nextDate()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>';
-  h+='</div>';
-  h+='<div class="date-full">'+esc(DATES[dateIndex].full)+'</div>';
-  h+='<div class="badge-row">';
-  h+='<span class="badge badge-green"><span class="dot"></span>'+tp+' presenze</span>';
-  h+='<span class="badge badge-orange"><span class="dot"></span>'+tpr+' pre</span>';
-  h+='<span class="badge badge-blue"><span class="dot"></span>'+tpo+' post</span>';
-  h+='</div></div>';
+  html+='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">';
+  html+='<div class="btn-row">';
+  html+='<button class="btn" onclick="App.login()"><span class="google-icon"><svg viewBox="0 0 24 24" width="16" height="16"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg></span>'+(loginLoading?'...':(currentUser?'Logout':'Login'))+'</button>';
+  html+='<button class="btn" onclick="App.goToday()">Oggi</button>';
+  html+='</div><div class="btn-row">';
+  html+='<button class="btn" '+(classLocked?'disabled style="opacity:0.4;cursor:not-allowed"':'')+' onclick="App.resetDay()">Azzera giorno</button>';
+  html+='</div><div class="btn-row">';
+  html+='<button class="btn" onclick="App.backupData()">Backup</button>';
+  html+='<button class="btn" onclick="App.importData()">Importa</button>';
+  html+='<button class="btn btn-danger" '+(classLocked?'disabled style="opacity:0.4;cursor:not-allowed"':'')+' onclick="App.resetMonth()">Azzera mese</button>';
+  html+='<button class="btn" onclick="App.viewMonth()">Mese</button>';
+  html+='<button class="btn btn-danger-fill" onclick="App.exportPDF()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> PDF</button>';
+  html+='<button class="btn" style="background:#e67e00;color:white;border-color:#e67e00" onclick="App.exportPDFPrePost()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> PDF PRE/POST</button>';
+  html+='</div>';
+  html+='<button class="btn btn-success-fill btn-full" onclick="App.share()"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> Condividi</button>';
+  html+='</div>';
 
-  // Search
-  h+='<div class="card"><div class="card-label">RICERCA BAMBINO</div>';
-  h+='<div class="search-box"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" placeholder="Cerca per nome o cognome..." value="'+esc(search)+'" oninput="App.setSearch(this.value)"/></div>';
-  h+='</div>';
+  html+='<div class="card-dark"><div class="card-label">DATA</div><div class="date-nav">';
+  html+='<button class="arrow-btn" onclick="App.prevDate()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></button>';
+  html+='<span class="date-text" onclick="App.pickDate()" style="cursor:pointer" title="Clicca per scegliere la data">'+esc(dateToShort(currentDate))+'</span>';
+  html+='<button class="arrow-btn" onclick="App.nextDate()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg></button>';
+  html+='</div><div class="date-full">'+esc(dateToFull(currentDate))+'</div>';
+  html+='<input type="date" id="datePicker" value="'+dateToInput(currentDate)+'" min="2020-01-01" max="2099-12-31" onchange="App.setDate(this.value)" style="opacity:0;position:absolute;pointer-events:none"/>';
+  // Weekend/Holiday indicator
+  var dayOff=isDayOff();
+  if(isWeekend()){html+='<div style="text-align:center;padding:6px 10px;background:#f8d7da;color:#721c24;border-radius:8px;font-size:12px;font-weight:600;margin:6px 0">Weekend \u2014 Non scolastico</div>';}
+  else if(isHoliday()){html+='<div style="text-align:center;padding:6px 10px;background:#fff3cd;color:#856404;border-radius:8px;font-size:12px;font-weight:600;margin:6px 0">\ud83c\udf1f Festivo \u2014 '+esc(holidays[getCurrentDateKey()]||'')+'</div>';}
+  // Holiday toggle button (only on weekdays, only if unlocked)
+  if(!isWeekend()&&!classLocked){
+    if(isHoliday()){html+='<button class="btn" style="width:100%;margin:4px 0" onclick="App.removeHoliday()">Rimuovi festivo</button>';}
+    else{html+='<button class="btn" style="width:100%;margin:4px 0" onclick="App.markHoliday()">Segna come festivo</button>';}
+  }
+  html+='<div class="badge-row">';
+  html+='<span class="badge badge-green"><span class="dot"></span>'+totalPresenze+' presenze</span>';
+  html+='<span class="badge badge-orange"><span class="dot"></span>'+totalPre+' pre</span>';
+  html+='<span class="badge badge-blue"><span class="dot"></span>'+totalPost+' post</span>';
+  html+='</div>';
+  // Daily notes
+  var todayNote=dayNotes[getCurrentDateKey()]||'';
+  var noteDisabled=dayOff||!currentUser||classLocked;
+  var notePlaceholder=!currentUser?'Effettua il login per salvare le note':classLocked?'Sblocca la classe per scrivere note':'Note del giorno...';
+  html+='<div style="margin-top:8px">';
+  if(!currentUser){html+='<div style="font-size:10px;color:#dc3545;font-weight:600;margin-bottom:3px;text-align:center">⚠ Le note si salvano solo col login</div>';}
+  html+='<textarea id="dayNoteInput" placeholder="'+notePlaceholder+'" style="width:100%;min-height:36px;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:12px;font-family:inherit;resize:vertical;outline:none;color:#333;background:'+(noteDisabled?'#f5f5f5':'white')+'" oninput="App.updateDayNote(this.value)" '+(noteDisabled?'disabled':'')+'>'+esc(todayNote)+'</textarea></div>';
+  html+='</div>';
 
-  // Roster
-  h+='<div class="roster"><div class="roster-header">';
-  h+='<span>BAMBINO</span>';
-  h+='<div class="roster-col"><label>Presenza</label><input type="checkbox" class="select-all-check" '+(tp===children.length&&children.length>0?'checked':'')+' onchange="App.selectAllPresenza(this.checked)"/></div>';
-  h+='<div class="roster-col"><label>Pre</label><input type="checkbox" class="select-all-check" '+(tpr===children.length&&children.length>0?'checked':'')+' onchange="App.selectAllPre(this.checked)"/></div>';
-  h+='<div class="roster-col"><label>Post</label><input type="checkbox" class="select-all-check" '+(tpo===children.length&&children.length>0?'checked':'')+' onchange="App.selectAllPost(this.checked)"/></div>';
-  h+='</div>';
+  html+='<div class="card-dark"><div class="card-label">RICERCA BAMBINO</div>';
+  html+='<div class="search-box"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="searchInput" placeholder="Cerca per nome o cognome..." value="'+esc(search)+'" oninput="App.setSearchLive(this.value)"/>';
+  html+='<button id="searchClearBtn" style="background:none;border:none;cursor:pointer;padding:2px;margin-left:4px'+(search?'':';display:none')+'" onclick="App.clearSearchLive()" title="Cancella ricerca"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
+  html+='</div>';
+  html+='<div id="searchNoResult" style="padding:8px 12px;font-size:13px;color:#888;display:none">Nessun bambino trovato</div>';
+  html+='</div>';
+
+  // Sort buttons
+  html+='<div class="sort-bar">';
+  html+='<span class="sort-label">Ordina:</span>';
+  html+='<button class="sort-btn '+(sortMode==='default'?'active':'')+'" onclick="App.setSort(\'default\')" title="Ordine originale">Default</button>';
+  html+='<button class="sort-btn '+(sortMode==='alpha'?'active':'')+'" onclick="App.setSort(\'alpha\')" title="Ordine alfabetico">A-Z</button>';
+  html+='<button class="sort-btn '+(sortMode==='gender'?'active':'')+'" onclick="App.setSort(\'gender\')" title="Femmine poi Maschi">👧👦</button>';
+  html+='<button class="sort-btn '+(sortMode==='recent'?'active':'')+'" onclick="App.setSort(\'recent\')" title="Modificati di recente">Recenti</button>';
+  html+='<button class="sort-btn '+(sortMode==='age-asc'?'active':'')+'" onclick="App.setSort(\'age-asc\')" title="Età bassa→alta">🎂↑</button>';
+  html+='<button class="sort-btn '+(sortMode==='age-desc'?'active':'')+'" onclick="App.setSort(\'age-desc\')" title="Età alta→bassa">🎂↓</button>';
+  html+='</div>';
+
+  var dayOff=isDayOff();
+  var locked=classLocked;
+  var noEdit=dayOff||locked;
+  html+='<div class="roster"><div class="roster-header">';
+  html+='<span style="color:#5b9bd5">COGNOME E NOME</span>';
+  html+='<div class="roster-col"><label class="label-age">Età</label></div>';
+  html+='<div class="roster-col"><label class="label-diet">Dieta</label></div>';
+  html+='<div class="roster-col"><label class="label-presenza">Presenza</label>'+(noEdit?'':'<input type="checkbox" class="select-all-check" '+(totalPresenze===children.length&&children.length>0?'checked':'')+' onchange="App.selectAllPresenza(this.checked)"/>')+'</div>';
+  html+='<div class="roster-col"><label class="label-pre">Pre</label>'+(noEdit?'':'<input type="checkbox" class="select-all-check" '+(totalPre===children.length&&children.length>0?'checked':'')+' onchange="App.selectAllPre(this.checked)"/>')+'</div>';
+  html+='<div class="roster-col"><label class="label-post">Post</label>'+(noEdit?'':'<input type="checkbox" class="select-all-check" '+(totalPost===children.length&&children.length>0?'checked':'')+' onchange="App.selectAllPost(this.checked)"/>')+'</div>';
+  html+='</div>';
+  if(dayOff){html+='<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.5);font-size:13px;font-style:italic">'+(isWeekend()?'Weekend \u2014 nessuna presenza':'Giorno festivo \u2014 nessuna presenza')+'</div>';}
+  else if(locked){html+='<div style="text-align:center;padding:20px;color:#dc3545;font-size:13px;font-weight:600">\ud83d\udd12 Classe bloccata \u2014 Inserisci il PIN per modificare le presenze</div>';}
 
   var filtered=getFilteredChildren();
+
   for(var fi=0;fi<filtered.length;fi++){
-    var idx=filtered[fi].i, name=filtered[fi].name;
-    h+='<div class="child-row"><div class="child-info"><div class="child-avatar">'+getInitials(name)+'</div>';
-    if(editingChild===idx){
-      h+='<input class="child-name-input" id="childInput" value="'+esc(editValue)+'" onblur="App.finishEditChild()" onkeydown="if(event.key===\'Enter\')App.finishEditChild();if(event.key===\'Escape\')App.cancelEditChild()"/>';
-    }else{
-      h+='<span class="child-name" onclick="App.startEditChild('+idx+')" title="Clicca per modificare">'+esc(name)+'</span>';
+    var idx=filtered[fi].i;var name=filtered[fi].name;
+    var hasDiet=childDiets[idx]&&childDiets[idx].type&&childDiets[idx].type!=='nessuna';
+    var dietLabel=getDietLabel(idx);
+    var dietTagClass=hasDiet?getDietTagClass(childDiets[idx].type):'';
+    var gClass=getGenderClass(idx);
+    html+='<div class="child-row '+gClass+'-row" data-name="'+esc(name.toLowerCase())+'"><div class="child-info">';
+    if(editingChild===idx){html+='<input class="child-name-input" id="childInput" value="'+esc(editValue)+'" onblur="App.finishEditChild()" onkeydown="if(event.key===\'Enter\')App.finishEditChild();if(event.key===\'Escape\')App.cancelEditChild()"/>';}
+    else{
+      var noteIndicator=childNotes[idx]?' <span style="font-size:10px;opacity:0.8">\ud83d\udcdd</span>':'';
+      html+='<div class="child-name-badge '+gClass+'" onclick="App.showChildDetail('+idx+')" title="Clicca per vedere il riepilogo">'+esc(nameReversed(name))+noteIndicator+'</div>';
     }
-    h+='</div>';
-    h+='<div class="check-cell"><input type="checkbox" '+(hasKey(presenze,idx)?'checked':'')+' onchange="App.togglePresenza('+idx+')"/></div>';
-    h+='<button class="pre-btn '+(hasKey(pre,idx)?'active':'')+'" onclick="App.togglePre('+idx+')">PRE</button>';
-    h+='<button class="post-btn '+(hasKey(post,idx)?'active':'')+'" onclick="App.togglePost('+idx+')">POST</button>';
-    h+='</div>';
+    html+='</div>';
+    var age=childAge[idx]||'';
+    html+='<div class="age-cell"><div class="age-circle '+(age?'has-age':'')+'" '+(locked?'':'onclick="App.editAge('+idx+')"')+' title="Clicca per inserire età">'+(age?esc(String(age)):'-')+'</div></div>';
+    html+='<div class="diet-cell"><button class="diet-btn '+(hasDiet?'has-diet':'')+'" '+(locked?'disabled style="opacity:0.5;cursor:not-allowed"':'onclick="App.openDietModal('+idx+')"')+' title="Dieta">\ud83c\udf7d</button></div>';
+    if(noEdit){
+      html+='<div class="check-cell"><input type="checkbox" disabled style="opacity:0.3;accent-color:#28a745"/></div>';
+      html+='<div class="check-cell"><button class="pre-btn" disabled style="opacity:0.3;cursor:not-allowed">PRE</button></div>';
+      html+='<div class="check-cell"><button class="post-btn" disabled style="opacity:0.3;cursor:not-allowed">POST</button></div>';
+    }else{
+      html+='<div class="check-cell"><input type="checkbox" '+(hasKey(presenze,idx)?'checked':'')+' onchange="App.togglePresenza('+idx+')"/></div>';
+      html+='<div class="check-cell"><button class="pre-btn '+(hasKey(pre,idx)?'active':'')+'" onclick="App.togglePre('+idx+')">PRE</button></div>';
+      html+='<div class="check-cell"><button class="post-btn '+(hasKey(post,idx)?'active':'')+'" onclick="App.togglePost('+idx+')">POST</button></div>';
+    }
+    html+='</div>';
   }
-  h+='</div>';
+  html+='</div>';
+  // Add child button
+  if(!locked){html+='<button class="btn" style="width:100%;margin-top:8px;justify-content:center;border:2px dashed #28a745;color:#28a745;font-weight:700;background:rgba(40,167,69,0.1)" onclick="App.addChild()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Aggiungi Bambino</button>';}
+  html+='</div>';
 
-  // Stats
-  h+='<div class="stat-card"><div><div class="stat-label">Totale presenze</div><div class="stat-sub">'+esc(DATES[dateIndex].full)+'</div></div><div class="stat-value" style="color:#28a745">'+tp+'</div></div>';
-  h+='<div class="stat-card"><div><div class="stat-label">Totale pre</div><div class="stat-sub">Ingressi Anticipati</div></div><div class="stat-value" style="color:#e67e00">'+tpr+'</div></div>';
-  h+='<div class="stat-card"><div><div class="stat-label">Totale post</div><div class="stat-sub">Uscite Posticipate</div></div><div class="stat-value" style="color:#007bff">'+tpo+'</div></div>';
+  html+='<div class="stat-card"><div><div class="stat-label">Totale presenze</div><div class="stat-sub">'+esc(dateToFull(currentDate))+'</div></div><div class="stat-value" style="color:#28a745">'+totalPresenze+'</div></div>';
+  html+='<div class="stat-card"><div><div class="stat-label">Totale pre</div><div class="stat-sub">Ingressi Anticipati</div></div><div class="stat-value" style="color:#e67e00">'+totalPre+'</div></div>';
+  html+='<div class="stat-card"><div><div class="stat-label">Totale post</div><div class="stat-sub">Uscite Posticipate</div></div><div class="stat-value" style="color:#007bff">'+totalPost+'</div></div>';
 
-  app.innerHTML=h;
+  // Close locked overlay
+  if(classLocked){html+='</div>';}
+
+  if(selectedChild>=0){html+=renderChildDetail(selectedChild);}
+  if(showDietModal>=0){html+=renderDietModal(showDietModal);}
+
+  app.innerHTML=html;
 
   if(editingClass){var ci=document.getElementById('classInput');if(ci){ci.focus();ci.setSelectionRange(ci.value.length,ci.value.length);}}
   if(editingChild>=0){var chi=document.getElementById('childInput');if(chi){chi.focus();chi.setSelectionRange(chi.value.length,chi.value.length);}}
+  renderSyncBar();
 }
 
 function getFilteredChildren(){
-  var result=[];
-  for(var i=0;i<children.length;i++){
-    if(!search||children[i].toLowerCase().indexOf(search.toLowerCase())>=0){
-      result.push({name:children[i],i:i});
-    }
+  var result=[];for(var i=0;i<children.length;i++){if(!search||children[i].toLowerCase().indexOf(search.toLowerCase())>=0){result.push({name:children[i],i:i});}}
+  if(sortMode==='alpha'){
+    result.sort(function(a,b){return nameReversed(a.name).toLowerCase().localeCompare(nameReversed(b.name).toLowerCase());});
+  }else if(sortMode==='gender'){
+    result.sort(function(a,b){var ga=getGender(a.i),gb=getGender(b.i);if(ga!==gb) return ga==='f'?-1:1;return nameReversed(a.name).toLowerCase().localeCompare(nameReversed(b.name).toLowerCase());});
+  }else if(sortMode==='recent'){
+    result.sort(function(a,b){var ta=childLastModified[a.i]||0,tb=childLastModified[b.i]||0;return tb-ta;});
+  }else if(sortMode==='age-asc'){
+    result.sort(function(a,b){var aa=parseFloat(childAge[a.i])||0,bb=parseFloat(childAge[b.i])||0;return aa-bb;});
+  }else if(sortMode==='age-desc'){
+    result.sort(function(a,b){var aa=parseFloat(childAge[a.i])||0,bb=parseFloat(childAge[b.i])||0;return bb-aa;});
   }
   return result;
 }
 
-// ===== APP =====
+function getChildMonthlyStats(idx){
+  saveCurrentDateData();
+  var cm=currentDate.getMonth();
+  var cy=currentDate.getFullYear();
+  var daysInMonth=new Date(cy,cm+1,0).getDate();
+  var currentDay=currentDate.getDate();
+  var mP=0,mPre=0,mPost=0;
+  var dayList=[];
+  for(var d=1;d<=Math.min(daysInMonth,currentDay);d++){
+    var dKey=cy+'-'+String(cm+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    var dd=dateData[dKey];
+    var pFlag=false,preFlag=false,postFlag=false;
+    if(dd){
+      if(dd.presenze&&dd.presenze[idx]) pFlag=true;
+      if(dd.pre&&dd.pre[idx]) preFlag=true;
+      if(dd.post&&dd.post[idx]) postFlag=true;
+    }
+    if(pFlag) mP++;
+    if(preFlag) mPre++;
+    if(postFlag) mPost++;
+    if(pFlag||preFlag||postFlag){
+      dayList.push({day:d,key:dKey,p:pFlag,pre:preFlag,post:postFlag});
+    }
+  }
+  return {presenze:mP,pre:mPre,post:mPost,days:dayList,totalDays:Math.min(daysInMonth,currentDay)};
+}
+
+function renderChildDetail(idx){
+  if(idx<0||idx>=children.length) return '';
+  var childName=children[idx];
+  var stats=getChildMonthlyStats(idx);
+  var cm=currentDate.getMonth();
+  var cy=currentDate.getFullYear();
+  var monthLabel=MONTHS[cm]+' '+cy;
+  var dietInfo=getDietLabel(idx);
+  var hasDiet=childDiets[idx]&&childDiets[idx].type&&childDiets[idx].type!=='nessuna';
+  var daysShort=['dom','lun','mar','mer','gio','ven','sab'];
+  var locked=classLocked;
+
+  var html='<div class="child-detail-overlay" onclick="if(event.target===this)App.closeChildDetail()">';
+  html+='<div class="child-detail">';
+  html+='<div class="child-detail-header">';
+  var gClassD=getGenderClass(idx);
+  html+='<div class="child-detail-avatar '+gClassD+'" '+(locked?'':'onclick="App.toggleGender('+idx+')" ')+'title="'+(locked?'':'Clicca per cambiare genere')+'">'+getInitials(childName)+'</div>';
+  html+='<div style="flex:1;min-width:0"><div class="child-detail-name-row"><span class="child-detail-name">'+esc(childName)+'</span>';
+  var gLabel=getGender(idx)==='f'?'Femmina':'Maschio';
+  if(!locked){html+='<button class="edit-name-btn" onclick="App.toggleGender('+idx+')" title="Cambia genere">'+(getGender(idx)==='f'?'👧':'👦')+' '+gLabel+'</button>';html+='<button class="edit-name-btn" onclick="App.editChildFromDetail('+idx+')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Modifica</button>';}else{html+='<span style="font-size:12px;color:#888">'+(getGender(idx)==='f'?'👧':'👦')+' '+gLabel+'</span>';}
+  html+='</div>';
+  if(hasDiet){html+='<div class="child-detail-diet">🍽 '+esc(dietInfo)+(childDiets[idx].note?' - '+esc(childDiets[idx].note):'')+'</div>';}
+  var badgeAge=childAge[idx]||'';
+  html+='<div class="child-detail-diet" style="'+(locked?'':'cursor:pointer')+'" '+(locked?'':'onclick="App.editAge('+idx+')" ')+''+(locked?'':'title="Clicca per modificare età"')+'>🎂 '+(badgeAge?esc(badgeAge)+' anni':'Aggiungi età')+'</div>';
+  html+='</div></div>';
+
+  html+='<div class="child-detail-stats">';
+  var schoolDaysSoFar=0;
+  var daysInMonth=new Date(cy,cm+1,0).getDate();
+  var currentDay2=currentDate.getDate();
+  for(var sd=1;sd<=Math.min(daysInMonth,currentDay2);sd++){
+    var sdDate=new Date(cy,cm,sd);var sdDay=sdDate.getDay();
+    if(sdDay!==0&&sdDay!==6){var sdKey=cy+'-'+String(cm+1).padStart(2,'0')+'-'+String(sd).padStart(2,'0');if(!holidays[sdKey]) schoolDaysSoFar++;}
+  }
+  if(schoolDaysSoFar===0) schoolDaysSoFar=1;
+  var pctP=Math.round(stats.presenze/schoolDaysSoFar*100);
+  var pctPre=Math.round(stats.pre/schoolDaysSoFar*100);
+  var pctPost=Math.round(stats.post/schoolDaysSoFar*100);
+  html+='<div class="child-detail-stat" style="background:#d4edda"><div class="val" style="color:#28a745">'+stats.presenze+'</div><div class="lbl" style="color:#155724">Presenze</div><div style="font-size:13px;font-weight:700;color:#28a745;margin-top:2px">'+pctP+'%</div></div>';
+  html+='<div class="child-detail-stat" style="background:#fff3cd"><div class="val" style="color:#e67e00">'+stats.pre+'</div><div class="lbl" style="color:#856404">Pre</div><div style="font-size:13px;font-weight:700;color:#e67e00;margin-top:2px">'+pctPre+'%</div></div>';
+  html+='<div class="child-detail-stat" style="background:#cce5ff"><div class="val" style="color:#007bff">'+stats.post+'</div><div class="lbl" style="color:#004085">Post</div><div style="font-size:13px;font-weight:700;color:#007bff;margin-top:2px">'+pctPost+'%</div></div>';
+  html+='</div>';
+
+  html+='<div style="text-align:center;font-size:11px;color:#888;margin-bottom:14px">'+esc(monthLabel)+' · su '+schoolDaysSoFar+' giorni scolastici</div>';
+
+  if(stats.days.length>0){
+    html+='<div class="child-detail-sub">Giorni con registrazione</div>';
+    for(var di=0;di<stats.days.length;di++){
+      var day=stats.days[di];
+      var dayDate=new Date(cy,cm,day.day);
+      var dayName=daysShort[dayDate.getDay()];
+      html+='<div class="child-detail-day">';
+      html+='<span class="child-detail-day-date">'+day.day+' '+MONTHS_SHORT[cm]+'</span>';
+      html+='<span class="child-detail-day-name">'+dayName+'</span>';
+      html+='<div class="child-detail-day-badges">';
+      if(day.p){html+='<span class="child-detail-day-badge" style="background:#d4edda;color:#155724">Presente</span>';}
+      else{html+='<span class="child-detail-day-badge" style="background:#f8d7da;color:#721c24">Assente</span>';}
+      if(day.pre){html+='<span class="child-detail-day-badge" style="background:#fff3cd;color:#856404">Pre</span>';}
+      if(day.post){html+='<span class="child-detail-day-badge" style="background:#cce5ff;color:#004085">Post</span>';}
+      html+='</div></div>';
+    }
+  }else{
+    html+='<div style="text-align:center;padding:20px;color:#aaa;font-size:13px">Nessuna registrazione per questo mese</div>';
+  }
+
+  // Deleghe box
+  var deleghe=childDeleghe[idx]||[];
+  html+='<div class="deleghe-box">';
+  html+='<div class="deleghe-box-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Deleghe</div>';
+  if(deleghe.length>0){
+    for(var di2=0;di2<deleghe.length;di2++){
+      html+='<div class="deleghe-item">';
+      html+='<span class="deleghe-item-name">'+esc(deleghe[di2])+'</span>';
+      if(!locked){html+='<button class="deleghe-item-remove" onclick="App.removeDelega('+idx+','+di2+')" title="Rimuovi">\u00d7</button>';}
+      html+='</div>';
+    }
+  }else{
+    html+='<div class="deleghe-empty">Nessuna delega aggiunta</div>';
+  }
+  if(!locked){html+='<div class="deleghe-add">';html+='<input type="text" id="delegaInput" placeholder="Nome delegato..." onkeydown="if(event.key===\'Enter\')App.addDelega('+idx+')"/>';html+='<button onclick="App.addDelega('+idx+')">Aggiungi</button>';html+='</div>';}
+  html+='</div>';
+
+  // Contatti box
+  var contatti=childContatti[idx]||[];
+  html+='<div class="deleghe-box" style="background:#e8f4fd">';
+  html+='<div class="deleghe-box-title" style="color:#004085"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#004085" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg> Contatti</div>';
+  if(contatti.length>0){
+    for(var ci=0;ci<contatti.length;ci++){
+      html+='<div class="deleghe-item">';
+      html+='<span class="deleghe-item-name">'+esc(contatti[ci].nome||'')+'</span>';
+      html+='<a class="contatto-call-btn" href="tel:'+esc(contatti[ci].telefono||'')+'" title="Chiama '+esc(contatti[ci].nome||'')+'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg> '+esc(contatti[ci].telefono||'')+'</a>';
+      if(!locked){html+='<button class="deleghe-item-remove" onclick="App.removeContatto('+idx+','+ci+')" title="Rimuovi">\u00d7</button>';}
+      html+='</div>';
+    }
+  }else{
+    html+='<div class="deleghe-empty">Nessun contatto aggiunto</div>';
+  }
+  if(!locked){html+='<div class="contatto-add">';html+='<input type="text" id="contattoNome" placeholder="Nome (es. Mamma)..." onkeydown="if(event.key===\'Enter\')App.addContatto('+idx+')"/>';html+='<input type="tel" id="contattoTelefono" placeholder="Numero..." onkeydown="if(event.key===\'Enter\')App.addContatto('+idx+')"/>';html+='<button onclick="App.addContatto('+idx+')">Aggiungi</button>';html+='</div>';}
+  html+='</div>';
+
+  // Note per bambino
+  var childNote=childNotes[idx]||'';
+  var childNoteDisabled=!currentUser||locked;
+  var childNotePlaceholder=!currentUser?'Effettua il login per salvare le note':locked?'Sblocca la classe per scrivere note':'Scrivi una nota per questo bambino...';
+  html+='<div class="deleghe-box" style="background:#fff8e1">';
+  html+='<div class="deleghe-box-title" style="color:#f57f17"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#f57f17" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Note</div>';
+  if(!currentUser){html+='<div style="font-size:10px;color:#dc3545;font-weight:600;margin-bottom:6px;text-align:center">⚠ Le note si salvano solo col login</div>';}
+  html+='<textarea id="childNoteInput" placeholder="'+childNotePlaceholder+'" style="width:100%;min-height:48px;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;outline:none;color:#333;background:'+(childNoteDisabled?'#f5f5f5':'white')+'" oninput="App.updateChildNote('+idx+',this.value)" '+(childNoteDisabled?'disabled':'')+'>'+esc(childNote)+'</textarea>';
+  html+='</div>';
+
+  if(!locked){html+='<button class="btn btn-danger" style="width:100%;margin-top:8px;justify-content:center" onclick="App.removeChild('+idx+')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Rimuovi Bambino</button>';}
+  html+='<button class="child-detail-close" onclick="App.closeChildDetail()">Chiudi</button>';
+  html+='</div></div>';
+  return html;
+}
+
 window.App={
   login:handleLogin,
   startEditClass:function(){editingClass=true;render();},
-  finishEditClass:function(){var ci=document.getElementById('classInput');if(ci&&ci.value.trim())className=ci.value.trim();editingClass=false;saveState();render();},
+  finishEditClass:function(){var ci=document.getElementById('classInput');if(ci&&ci.value.trim()){var newName=ci.value.trim().toUpperCase();className=newName;if(currentClassId&&classes[currentClassId])classes[currentClassId].name=newName;}editingClass=false;saveState();render();},
+  startEditSchool:function(){editingSchool=true;render();},
+  finishEditSchool:function(){var si=document.getElementById('schoolInput');if(si&&si.value.trim())schoolName=si.value.trim();editingSchool=false;saveState();render();},
+  startEditTeacher1:function(){editingTeacher1=true;render();},
+  finishEditTeacher1:function(){var ti=document.getElementById('teacher1Input');if(ti)teacher1=ti.value.trim();editingTeacher1=false;saveState();render();},
+  startEditTeacher2:function(){editingTeacher2=true;render();},
+  finishEditTeacher2:function(){var ti=document.getElementById('teacher2Input');if(ti)teacher2=ti.value.trim();editingTeacher2=false;saveState();render();},
   startEditChild:function(i){editingChild=i;editValue=children[i];render();},
-  finishEditChild:function(){var ci=document.getElementById('childInput');if(ci&&ci.value.trim()&&editingChild>=0){children[editingChild]=ci.value.trim();}editingChild=-1;editValue='';saveState();render();},
+  finishEditChild:function(){var ci=document.getElementById('childInput');if(ci&&ci.value.trim()&&editingChild>=0){children[editingChild]=ci.value.trim().toUpperCase();childLastModified[editingChild]=Date.now();}editingChild=-1;editValue='';saveState();render();},
   cancelEditChild:function(){editingChild=-1;editValue='';render();},
+  showChildDetail:function(i){selectedChild=i;render();},
+  closeChildDetail:function(){selectedChild=-1;render();},
+  editChildFromDetail:function(i){selectedChild=-1;editingChild=i;editValue=children[i];render();},
+  addClass:function(){
+    if(!currentUser){alert('Effettua il login per aggiungere una classe.');return;}
+    var name=prompt('Nome della nuova classe\n(es. Farfalle, Cuori, Stelle):');
+    if(!name||!name.trim()) return;
+    name=name.trim().toUpperCase();
+    var pin=prompt('Crea un PIN per questa classe (4-6 cifre):\nIl PIN sarà richiesto per accedere a questa classe.');
+    if(pin===null) return;
+    if(!pin.trim()||!/^\d{4,6}$/.test(pin.trim())){alert('Il PIN è obbligatorio e deve essere di 4-6 cifre.');return;}
+    saveCurrentClassData();
+    var newId=generateClassId();
+    classes[newId]={
+      id:newId,
+      name:name,
+      pin:pin.trim(),
+      children:[],
+      childDiets:{},childGender:{},childDeleghe:{},childContatti:{},
+      childLastModified:{},childAge:{},childNotes:{},
+      dateData:{},holidays:{},dayNotes:{},
+      teacher1:'',teacher2:'',sortMode:'default'
+    };
+    unlockedClasses[newId]=true;
+    currentClassId=newId;
+    loadClassData(newId);
+    updateClassLockState();
+    saveState();render();
+  },
+  deleteClass:function(classId){
+    if(!classes[classId]) return;
+    if(Object.keys(classes).length<=1){alert('Non puoi eliminare l\'unica classe.');return;}
+    var cName=classes[classId].name||'Classe';
+    var cPin=classes[classId].pin||'';
+    if(cPin){
+      var entered=prompt('Inserisci il PIN per eliminare la classe "'+cName+'":');
+      if(entered===null) return;
+      if(entered!==cPin){alert('PIN errato. Impossibile eliminare la classe.');return;}
+    }else{
+      if(!confirm('Vuoi eliminare la classe "'+cName+'"?\nTutti i dati della classe verranno persi.')) return;
+    }
+    delete classes[classId];
+    if(currentClassId===classId){
+      var firstKey=Object.keys(classes)[0];
+      if(firstKey) loadClassData(firstKey);
+    }
+    saveState();render();
+  },
+  switchClass:function(classId){
+    if(classId===currentClassId) return;
+    if(!tryUnlockClass(classId)) return;
+    // Ri-blocca la classe corrente quando si cambia: ogni accesso richiede il PIN
+    if(currentClassId&&classes[currentClassId]&&classes[currentClassId].pin){
+      delete unlockedClasses[currentClassId];
+    }
+    saveCurrentClassData();
+    loadClassData(classId);
+    search='';selectedChild=-1;showDietModal=-1;
+    updateClassLockState();
+    saveState();render();
+  },
+  unlockClass:function(){
+    if(!currentClassId||!classes[currentClassId]) return;
+    if(tryUnlockClass(currentClassId)){updateClassLockState();render();}
+  },
+  managePin:function(){
+    if(!currentClassId||!classes[currentClassId]) return;
+    if(classLocked){alert('Sblocca prima la classe per gestire il PIN.');return;}
+    var cName=classes[currentClassId].name||'Classe';
+    var currentPin=classes[currentClassId].pin||'';
+    var msg=currentPin?'La classe "'+cName+'" ha un PIN impostato.\n\nInserisci il nuovo PIN per cambiarlo (4-6 cifre),\no lascia vuoto per rimuoverlo:':'La classe "'+cName+'" non ha un PIN.\n\nInserisci un PIN (4-6 cifre) per proteggere l\'accesso alla classe:';
+    var newPin=prompt(msg);
+    if(newPin===null) return;
+    if(newPin.trim()&&!/^\d{4,6}$/.test(newPin.trim())){alert('Il PIN deve essere di 4-6 cifre.');return;}
+    classes[currentClassId].pin=newPin.trim();
+    if(!newPin.trim()){unlockedClasses[currentClassId]=true;}
+    updateClassLockState();
+    saveState();render();
+    alert(newPin.trim()?'PIN impostato con successo! La classe ora richiede il PIN per l\'accesso.':'PIN rimosso. La classe ora e accessibile liberamente.');
+  },
+  addChild:function(){
+    var name=prompt('Nome del nuovo bambino\n(es. Rossi Luca):');
+    if(!name||!name.trim()) return;
+    var nameUpper=name.trim().toUpperCase();
+    children.push(nameUpper);
+    // Initialize gender auto-detect
+    var g=guessGender(name.trim());
+    childGender[children.length-1]=g;
+    childLastModified[children.length-1]=Date.now();
+    saveState();render();
+  },
+  removeChild:function(i){
+    if(!confirm('Rimuovere '+children[i]+' dalla lista?\n\nI dati di presenze, deleghe, contatti e note verranno persi.')) return;
+    var len=children.length;
+    children.splice(i,1);
+    // Shift all index-based data down
+    var keys=['childDiets','childGender','childDeleghe','childContatti','childLastModified','childAge','childNotes'];
+    for(var ki=0;ki<keys.length;ki++){
+      var obj=window[keys[ki]];
+      if(!obj) continue;
+      // Build new object with shifted indices
+      var newObj={};
+      for(var k in obj){
+        if(!obj.hasOwnProperty(k)) continue;
+        var idx=parseInt(k);
+        if(idx===i) continue; // skip removed
+        if(idx>i) newObj[idx-1]=obj[k];
+        else newObj[idx]=obj[k];
+      }
+      window[keys[ki]]=newObj;
+    }
+    // Fix presenze/pre/post for current date
+    var dateKeys=['presenze','pre','post'];
+    for(var di=0;di<dateKeys.length;di++){
+      var dObj=window[dateKeys[di]];
+      if(!dObj) continue;
+      var newDObj={};
+      for(var dk in dObj){
+        if(!dObj.hasOwnProperty(dk)) continue;
+        var didx=parseInt(dk);
+        if(didx===i) continue;
+        if(didx>i) newDObj[didx-1]=dObj[dk];
+        else newDObj[didx]=dObj[dk];
+      }
+      window[dateKeys[di]]=newDObj;
+    }
+    // Fix dateData presenze/pre/post indices
+    for(var ddk in dateData){
+      if(!dateData.hasOwnProperty(ddk)) continue;
+      var dd=dateData[ddk];
+      for(var dci=0;dci<3;dci++){
+        var dck=['presenze','pre','post'][dci];
+        if(!dd[dck]) continue;
+        var ndd={};
+        for(var ix in dd[dck]){
+          if(!dd[dck].hasOwnProperty(ix)) continue;
+          var nix=parseInt(ix);
+          if(nix===i) continue;
+          if(nix>i) ndd[nix-1]=dd[dck][ix];
+          else ndd[nix]=dd[dck][ix];
+        }
+        dd[dck]=ndd;
+      }
+    }
+    selectedChild=-1;showDietModal=-1;
+    saveState();render();
+  },
+  toggleGender:function(i){var g=getGender(i);childGender[i]=(g==='m'?'f':'m');saveState();render();},
+  addDelega:function(i){var inp=document.getElementById('delegaInput');if(inp&&inp.value.trim()){if(!childDeleghe[i])childDeleghe[i]=[];childDeleghe[i].push(inp.value.trim());saveState();render();}},
+  removeDelega:function(i,di){if(childDeleghe[i]){childDeleghe[i].splice(di,1);if(childDeleghe[i].length===0)delete childDeleghe[i];saveState();render();}},
+  addContatto:function(i){var nomeInp=document.getElementById('contattoNome');var telInp=document.getElementById('contattoTelefono');if(nomeInp&&telInp&&nomeInp.value.trim()&&telInp.value.trim()){if(!childContatti[i])childContatti[i]=[];childContatti[i].push({nome:nomeInp.value.trim(),telefono:telInp.value.trim()});saveState();render();}},
+  removeContatto:function(i,ci){if(childContatti[i]){childContatti[i].splice(ci,1);if(childContatti[i].length===0)delete childContatti[i];saveState();render();}},
+  updateChildNote:function(i,val){if(val.trim()){childNotes[i]=val.trim();}else{delete childNotes[i];}saveState();},
+  setSearch:function(v){search=v;render();},
+  clearSearch:function(){search='';render();},
+  setSearchLive:function(v){
+    search=v;
+    var clearBtn=document.getElementById('searchClearBtn');
+    var noResult=document.getElementById('searchNoResult');
+    if(clearBtn) clearBtn.style.display=v?'':'none';
+    var rows=document.querySelectorAll('.child-row');
+    var found=0;
+    var q=v.toLowerCase();
+    for(var i=0;i<rows.length;i++){
+      var name=(rows[i].getAttribute('data-name')||'').toLowerCase();
+      if(!q||name.indexOf(q)>=0){rows[i].style.display='';found++;}
+      else{rows[i].style.display='none';}
+    }
+    if(noResult) noResult.style.display=(v&&found===0)?'block':'none';
+  },
+  clearSearchLive:function(){
+    search='';
+    var inp=document.getElementById('searchInput');
+    if(inp) inp.value='';
+    var clearBtn=document.getElementById('searchClearBtn');
+    var noResult=document.getElementById('searchNoResult');
+    if(clearBtn) clearBtn.style.display='none';
+    if(noResult) noResult.style.display='none';
+    var rows=document.querySelectorAll('.child-row');
+    for(var i=0;i<rows.length;i++){rows[i].style.display='';}
+  },
+  setSort:function(mode){sortMode=mode;saveState();render();},
+  editAge:function(i){var val=prompt('Inserisci età di '+children[i]+':',childAge[i]||'');if(val!==null){if(val.trim()===''){delete childAge[i];}else{childAge[i]=val.trim();}saveState();render();}},
+  markHoliday:function(){var name=prompt('Nome festività (es. Natale, Pasqua...):','');if(name!==null){holidays[getCurrentDateKey()]=name.trim();saveState();render();}},
+  removeHoliday:function(){delete holidays[getCurrentDateKey()];saveState();render();},
+  updateDayNote:function(val){dayNotes[getCurrentDateKey()]=val;saveState();},
   togglePresenza:function(i){if(hasKey(presenze,i))delete presenze[i];else presenze[i]=true;saveState();render();},
   togglePre:function(i){if(hasKey(pre,i))delete pre[i];else pre[i]=true;saveState();render();},
   togglePost:function(i){if(hasKey(post,i))delete post[i];else post[i]=true;saveState();render();},
-  selectAllPresenza:function(c){presenze={};if(c)for(var i=0;i<children.length;i++)presenze[i]=true;saveState();render();},
-  selectAllPre:function(c){pre={};if(c)for(var i=0;i<children.length;i++)pre[i]=true;saveState();render();},
-  selectAllPost:function(c){post={};if(c)for(var i=0;i<children.length;i++)post[i]=true;saveState();render();},
-  prevDate:function(){dateIndex=Math.max(0,dateIndex-1);presenze={};pre={};post={};saveState();render();},
-  nextDate:function(){dateIndex=Math.min(DATES.length-1,dateIndex+1);presenze={};pre={};post={};saveState();render();},
-  setSearch:function(v){search=v;render();},
-  goToday:function(){dateIndex=2;presenze={};pre={};post={};saveState();render();},
+  prevDate:function(){var dt=new Date(currentDate);dt.setDate(dt.getDate()-1);switchToDate(dt);saveState();render();},
+  nextDate:function(){var dt=new Date(currentDate);dt.setDate(dt.getDate()+1);switchToDate(dt);saveState();render();},
+  goToday:function(){switchToDate(new Date());saveState();render();},
+  pickDate:function(){var dp=document.getElementById('datePicker');if(dp){try{dp.showPicker();}catch(e){dp.click();}}},
+  setDate:function(val){if(val){var parts=val.split('-');var dt=new Date(parseInt(parts[0]),parseInt(parts[1])-1,parseInt(parts[2]));switchToDate(dt);saveState();render();}},
+  selectAllPresenza:function(checked){presenze={};if(checked)for(var i=0;i<children.length;i++)presenze[i]=true;saveState();render();},
+  selectAllPre:function(checked){pre={};if(checked)for(var i=0;i<children.length;i++)pre[i]=true;saveState();render();},
+  selectAllPost:function(checked){post={};if(checked)for(var i=0;i<children.length;i++)post[i]=true;saveState();render();},
   resetDay:function(){if(confirm('Azzerare le presenze del giorno?')){presenze={};pre={};post={};saveState();render();}},
-  resetMonth:function(){if(confirm('Azzerare TUTTO il mese?')){presenze={};pre={};post={};saveState();render();}},
-  exportPDF:function(){window.print();},
+  resetMonth:function(){if(confirm('Azzerare TUTTO il mese? Questa azione non pu\u00f2 essere annullata.')){dateData={};presenze={};pre={};post={};saveState();render();}},
+  exportPDF:function(){
+    saveCurrentDateData();
+    var jsPDF=window.jspdf.jsPDF;
+    var doc=new jsPDF('p','mm','a4');
+    var pageW=doc.internal.pageSize.getWidth();
+    var pageH=doc.internal.pageSize.getHeight();
+    var dateKey=getCurrentDateKey();
+
+    // Calculate monthly totals per child
+    var cm=currentDate.getMonth();
+    var cy=currentDate.getFullYear();
+    var daysInMonth=new Date(cy,cm+1,0).getDate();
+    var monthLabel=MONTHS[cm]+' '+cy;
+
+    // Initialize counters per child
+    var mPresenze=[];var mPre=[];var mPost=[];
+    for(var mi=0;mi<children.length;mi++){mPresenze[mi]=0;mPre[mi]=0;mPost[mi]=0;}
+
+    // Count across all days of the month
+    var totalDaysWithPresenza=0;
+    for(var d=1;d<=daysInMonth;d++){
+      var dKey=cy+'-'+String(cm+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+      var dd=dateData[dKey];
+      if(dd){
+        var hasAny=false;
+        for(var ci=0;ci<children.length;ci++){
+          if(dd.presenze&&dd.presenze[ci]){mPresenze[ci]++;hasAny=true;}
+          if(dd.pre&&dd.pre[ci]){mPre[ci]++;}
+          if(dd.post&&dd.post[ci]){mPost[ci]++;}
+        }
+        if(hasAny) totalDaysWithPresenza++;
+      }
+    }
+
+    // Also include current date data (might not be saved to dateData yet)
+    if(presenze){for(var ci2=0;ci2<children.length;ci2++){if(presenze[ci2])mPresenze[ci2]++;}}
+    if(pre){for(var ci3=0;ci3<children.length;ci3++){if(pre[ci3])mPre[ci3]++;}}
+    if(post){for(var ci4=0;ci4<children.length;ci4++){if(post[ci4])mPost[ci4]++;}}
+
+    // Header
+    doc.setFillColor(26,26,46);
+    doc.rect(0,0,pageW,32,'F');
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(18);
+    doc.setFont('helvetica','bold');
+    doc.text(schoolName+' - '+className+' - REGISTRO DI CLASSE',pageW/2,14,{align:'center'});
+    doc.setFontSize(11);
+    doc.setFont('helvetica','normal');
+    doc.text('Riepilogo Mese: '+monthLabel,pageW/2,24,{align:'center'});
+    var teacherLine='';
+    if(teacher1||teacher2){teacherLine='Insegnanti: '+(teacher1||'—')+' / '+(teacher2||'—');}
+    if(teacherLine){doc.setFontSize(9);doc.text(teacherLine,pageW/2,29,{align:'center'});}
+
+    doc.setTextColor(0,0,0);
+    var y=teacherLine?46:40;
+
+    // Summary badges - totali mese
+    var totP=0,totPre=0,totPost=0;
+    for(var ti=0;ti<children.length;ti++){totP+=mPresenze[ti];totPre+=mPre[ti];totPost+=mPost[ti];}
+
+    doc.setFillColor(212,237,218);
+    doc.roundedRect(14,y,52,14,2,2,'F');
+    doc.setFontSize(10);
+    doc.setFont('helvetica','bold');
+    doc.setTextColor(21,87,36);
+    doc.text(totP+' Presenze',40,y+9,{align:'center'});
+
+    doc.setFillColor(255,243,205);
+    doc.roundedRect(72,y,44,14,2,2,'F');
+    doc.setTextColor(133,100,4);
+    doc.text(totPre+' Pre',94,y+9,{align:'center'});
+
+    doc.setFillColor(204,229,255);
+    doc.roundedRect(122,y,44,14,2,2,'F');
+    doc.setTextColor(0,64,133);
+    doc.text(totPost+' Post',144,y+9,{align:'center'});
+
+    y+=22;
+
+    // Table data - conteggi mensili per bambino
+    var tableBody=[];
+    for(var pi=0;pi<children.length;pi++){
+      var dietInfo=getDietLabel(pi);
+      if(childDiets[pi]&&childDiets[pi].note) dietInfo+=(dietInfo?' - ':'')+childDiets[pi].note;
+      var delegheList=childDeleghe[pi]||[];
+      var delegheStr=delegheList.length>0?delegheList.join(', '):'-';
+      var contattiList=childContatti[pi]||[];
+      var contattiStr=contattiList.length>0?contattiList.map(function(c){return c.nome+': '+c.telefono;}).join(', '):'-';
+      var ageStr=childAge[pi]||'-';
+      var noteStr=childNotes[pi]||'-';
+      tableBody.push([pi+1,children[pi],ageStr,String(mPresenze[pi]),String(mPre[pi]),String(mPost[pi]),dietInfo||'-',delegheStr,contattiStr,noteStr]);
+    }
+
+    doc.autoTable({
+      startY:y,
+      head:[['#','Bambino','Età','Presenze','Pre','Post','Dieta','Deleghe','Contatti','Note']],
+      body:tableBody,
+      theme:'grid',
+      headStyles:{fillColor:[26,26,46],textColor:[255,255,255],fontStyle:'bold',fontSize:6,halign:'center'},
+      columnStyles:{
+        0:{cellWidth:6,halign:'center',fontStyle:'bold'},
+        1:{cellWidth:30},
+        2:{cellWidth:8,halign:'center'},
+        3:{cellWidth:13,halign:'center'},
+        4:{cellWidth:10,halign:'center'},
+        5:{cellWidth:10,halign:'center'},
+        6:{cellWidth:24},
+        7:{cellWidth:24},
+        8:{cellWidth:26},
+        9:{cellWidth:26}
+      },
+      bodyStyles:{fontSize:6},
+      alternateRowStyles:{fillColor:[245,245,250]},
+      didParseCell:function(data){
+        if(data.section==='body'){
+          var numVal=parseInt(data.cell.raw);
+          if(data.column.index===3){
+            if(numVal>0){data.cell.styles.textColor=[40,167,69];data.cell.styles.fontStyle='bold';}
+            else{data.cell.styles.textColor=[180,180,180];}
+          }
+          if(data.column.index===4){
+            if(numVal>0){data.cell.styles.textColor=[230,126,0];data.cell.styles.fontStyle='bold';}
+            else{data.cell.styles.textColor=[180,180,180];}
+          }
+          if(data.column.index===5){
+            if(numVal>0){data.cell.styles.textColor=[0,123,255];data.cell.styles.fontStyle='bold';}
+            else{data.cell.styles.textColor=[180,180,180];}
+          }
+          if(data.column.index===2){
+            var ageRaw=data.cell.raw;
+            if(ageRaw&&ageRaw!=='-'){data.cell.styles.textColor=[133,100,4];data.cell.styles.fontStyle='bold';}
+            else{data.cell.styles.textColor=[180,180,180];}
+          }
+          if(data.column.index===7){
+            var raw=data.cell.raw;
+            if(raw&&raw!=='-'){data.cell.styles.textColor=[120,60,150];data.cell.styles.fontStyle='bold';}
+            else{data.cell.styles.textColor=[180,180,180];}
+          }
+          if(data.column.index===8){
+            var raw2=data.cell.raw;
+            if(raw2&&raw2!=='-'){data.cell.styles.textColor=[0,64,133];data.cell.styles.fontStyle='bold';}
+            else{data.cell.styles.textColor=[180,180,180];}
+          }
+          if(data.column.index===9){
+            var raw3=data.cell.raw;
+            if(raw3&&raw3!=='-'){data.cell.styles.textColor=[180,120,0];data.cell.styles.fontStyle='bold';}
+            else{data.cell.styles.textColor=[180,180,180];}
+          }
+        }
+      }
+    });
+
+    // Footer
+    var finalY=doc.lastAutoTable.finalY+10;
+    if(finalY>pageH-20) finalY=pageH-20;
+    doc.setDrawColor(200,200,200);
+    doc.line(14,finalY,pageW-14,finalY);
+    doc.setFontSize(8);
+    doc.setTextColor(150,150,150);
+    doc.setFont('helvetica','normal');
+    doc.text('Generato il '+(new Date().toLocaleDateString('it-IT'))+' - Riepilogo mensile '+monthLabel,pageW/2,finalY+6,{align:'center'});
+
+    // Save
+    var fileName='Riepilogo_'+className.replace(/\s+/g,'_')+'_'+MONTHS[cm]+'_'+cy+'.pdf';
+    doc.save(fileName);
+  },
+  exportPDFPrePost:function(){
+    saveCurrentDateData();
+    var jsPDF=window.jspdf.jsPDF;
+    var doc=new jsPDF('p','mm','a4');
+    var pageW=doc.internal.pageSize.getWidth();
+    var pageH=doc.internal.pageSize.getHeight();
+    var cm=currentDate.getMonth();
+    var cy=currentDate.getFullYear();
+    var daysInMonth=new Date(cy,cm+1,0).getDate();
+    var monthLabel=MONTHS[cm]+' '+cy;
+    var dateKey=getCurrentDateKey();
+
+    // Count pre/post per child across the whole month
+    var mPre=[];var mPost=[];var preDays=[];var postDays=[];
+    for(var mi=0;mi<children.length;mi++){mPre[mi]=0;mPost[mi]=0;preDays[mi]=[];postDays[mi]=[];}
+
+    for(var d=1;d<=daysInMonth;d++){
+      var dKey=cy+'-'+String(cm+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+      var dd=dateData[dKey];
+      if(dd){
+        for(var ci=0;ci<children.length;ci++){
+          if(dd.pre&&dd.pre[ci]){mPre[ci]++;preDays[ci].push(d);}
+          if(dd.post&&dd.post[ci]){mPost[ci]++;postDays[ci].push(d);}
+        }
+      }
+    }
+    // Also include current date (might not be in dateData yet)
+    for(var ci2=0;ci2<children.length;ci2++){
+      if(hasKey(pre,ci2)){mPre[ci2]++;preDays[ci2].push(currentDate.getDate());}
+      if(hasKey(post,ci2)){mPost[ci2]++;postDays[ci2].push(currentDate.getDate());}
+    }
+
+    // Count totals
+    var totBambiniPre=0;var totBambiniPost=0;var totBambiniPrePost=0;
+    for(var ti=0;ti<children.length;ti++){
+      if(mPre[ti]>0) totBambiniPre++;
+      if(mPost[ti]>0) totBambiniPost++;
+      if(mPre[ti]>0||mPost[ti]>0) totBambiniPrePost++;
+    }
+
+    // Header - orange theme
+    doc.setFillColor(230,126,0);
+    doc.rect(0,0,pageW,28,'F');
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(16);
+    doc.setFont('helvetica','bold');
+    doc.text(schoolName+' - '+className,pageW/2,10,{align:'center'});
+    doc.setFontSize(13);
+    doc.text('ELENCO PRE / POST - '+monthLabel.toUpperCase(),pageW/2,19,{align:'center'});
+    doc.setFontSize(8);
+    doc.setFont('helvetica','normal');
+    var teacherLine='';
+    if(teacher1||teacher2){teacherLine='Insegnanti: '+(teacher1||'—')+' / '+(teacher2||'—');}
+    if(teacherLine){doc.text(teacherLine,pageW/2,25,{align:'center'});}
+
+    doc.setTextColor(0,0,0);
+    var y=teacherLine?38:34;
+
+    // Warning box
+    doc.setFillColor(255,243,205);
+    doc.roundedRect(14,y,pageW-28,14,2,2,'F');
+    doc.setDrawColor(230,126,0);
+    doc.roundedRect(14,y,pageW-28,14,2,2,'S');
+    doc.setFontSize(9);
+    doc.setFont('helvetica','bold');
+    doc.setTextColor(133,100,4);
+    doc.text('ATTENZIONE: Anche 1 solo Pre o Post nel mese comporta il pagamento della retta aggiuntiva',pageW/2,y+9,{align:'center'});
+
+    y+=20;
+
+    // Summary badges
+    doc.setFillColor(255,243,205);
+    doc.roundedRect(14,y,55,14,2,2,'F');
+    doc.setFontSize(10);doc.setFont('helvetica','bold');doc.setTextColor(133,100,4);
+    doc.text(totBambiniPre+' con Pre',41.5,y+9,{align:'center'});
+
+    doc.setFillColor(204,229,255);
+    doc.roundedRect(75,y,55,14,2,2,'F');
+    doc.setTextColor(0,64,133);
+    doc.text(totBambiniPost+' con Post',102.5,y+9,{align:'center'});
+
+    doc.setFillColor(255,230,230);
+    doc.roundedRect(136,y,55,14,2,2,'F');
+    doc.setTextColor(180,40,40);
+    doc.text(totBambiniPrePost+' da pagare',163.5,y+9,{align:'center'});
+
+    y+=22;
+
+    // Table - children who must pay (at least 1 Pre or Post)
+    var payBody=[];
+    var noBody=[];
+    for(var pi=0;pi<children.length;pi++){
+      var hasAny=mPre[pi]>0||mPost[pi]>0;
+      var ageStr=childAge[pi]||'-';
+      var preStr=mPre[pi]>0?String(mPre[pi])+' volta'+(mPre[pi]>1?'e':''):'0';
+      var postStr=mPost[pi]>0?String(mPost[pi])+' volta'+(mPost[pi]>1?'e':''):'0';
+      var preDaysStr=preDays[pi].length>0?preDays[pi].join(', '):'-';
+      var postDaysStr=postDays[pi].length>0?postDays[pi].join(', '):'-';
+      var row=[pi+1,children[pi],ageStr,preStr,preDaysStr,postStr,postDaysStr,hasAny?'SI':'NO'];
+      if(hasAny) payBody.push(row);
+      else noBody.push(row);
+    }
+
+    // Section: BAMBINI CHE DEVONO PAGARE
+    if(payBody.length>0){
+      doc.setFontSize(11);doc.setFont('helvetica','bold');doc.setTextColor(180,40,40);
+      doc.text('BAMBINI CHE DEVONO PAGARE LA RETTA AGGIUNTIVA ('+payBody.length+')',14,y);
+      y+=4;
+
+      doc.autoTable({
+        startY:y,
+        head:[['#','Bambino','Eta','Pre','Giorni Pre','Post','Giorni Post','Paga']],
+        body:payBody,
+        theme:'grid',
+        headStyles:{fillColor:[230,126,0],textColor:[255,255,255],fontStyle:'bold',fontSize:7,halign:'center'},
+        columnStyles:{
+          0:{cellWidth:7,halign:'center',fontStyle:'bold'},
+          1:{cellWidth:32},
+          2:{cellWidth:9,halign:'center'},
+          3:{cellWidth:14,halign:'center'},
+          4:{cellWidth:28,halign:'center'},
+          5:{cellWidth:14,halign:'center'},
+          6:{cellWidth:28,halign:'center'},
+          7:{cellWidth:14,halign:'center',fontStyle:'bold'}
+        },
+        bodyStyles:{fontSize:7},
+        alternateRowStyles:{fillColor:[255,248,240]},
+        didParseCell:function(data){
+          if(data.section==='body'){
+            // Highlight Paga column
+            if(data.column.index===7){
+              var raw=data.cell.raw;
+              if(raw==='SI'){data.cell.styles.textColor=[180,40,40];data.cell.styles.fontStyle='bold';data.cell.styles.fillColor=[255,220,220];}
+            }
+            // Highlight Pre count
+            if(data.column.index===3){
+              var numMatch=String(data.cell.raw).match(/^\d+/);
+              if(numMatch&&parseInt(numMatch[0])>0){data.cell.styles.textColor=[180,100,0];data.cell.styles.fontStyle='bold';}
+              else{data.cell.styles.textColor=[180,180,180];}
+            }
+            // Highlight Post count
+            if(data.column.index===5){
+              var numMatch2=String(data.cell.raw).match(/^\d+/);
+              if(numMatch2&&parseInt(numMatch2[0])>0){data.cell.styles.textColor=[0,80,180];data.cell.styles.fontStyle='bold';}
+              else{data.cell.styles.textColor=[180,180,180];}
+            }
+            // Age
+            if(data.column.index===2){
+              var ageRaw=data.cell.raw;
+              if(ageRaw&&ageRaw!=='-'){data.cell.styles.textColor=[133,100,4];data.cell.styles.fontStyle='bold';}
+            }
+            // Giorni Pre
+            if(data.column.index===4){
+              if(data.cell.raw&&data.cell.raw!=='-'){data.cell.styles.textColor=[180,100,0];data.cell.styles.fontSize=6.5;}
+            }
+            // Giorni Post
+            if(data.column.index===6){
+              if(data.cell.raw&&data.cell.raw!=='-'){data.cell.styles.textColor=[0,80,180];data.cell.styles.fontSize=6.5;}
+            }
+          }
+        }
+      });
+      y=doc.lastAutoTable.finalY+8;
+    }
+
+    // Check if we need a new page for the second section
+    if(y>pageH-40){
+      doc.addPage();
+      y=20;
+    }
+
+    // Section: BAMBINI SENZA PRE/POST
+    if(noBody.length>0){
+      doc.setFontSize(11);doc.setFont('helvetica','bold');doc.setTextColor(40,130,40);
+      doc.text('BAMBINI SENZA PRE/POST - Non pagano retta aggiuntiva ('+noBody.length+')',14,y);
+      y+=4;
+
+      doc.autoTable({
+        startY:y,
+        head:[['#','Bambino','Eta','Pre','Post','Paga']],
+        body:noBody.map(function(r){return [r[0],r[1],r[2],r[3],r[5],r[7]];}),
+        theme:'grid',
+        headStyles:{fillColor:[40,130,40],textColor:[255,255,255],fontStyle:'bold',fontSize:7,halign:'center'},
+        columnStyles:{
+          0:{cellWidth:7,halign:'center',fontStyle:'bold'},
+          1:{cellWidth:50},
+          2:{cellWidth:10,halign:'center'},
+          3:{cellWidth:18,halign:'center'},
+          4:{cellWidth:18,halign:'center'},
+          5:{cellWidth:18,halign:'center',fontStyle:'bold'}
+        },
+        bodyStyles:{fontSize:7},
+        alternateRowStyles:{fillColor:[232,245,233]},
+        didParseCell:function(data){
+          if(data.section==='body'){
+            if(data.column.index===5){
+              var raw2=data.cell.raw;
+              if(raw2==='NO'){data.cell.styles.textColor=[40,130,40];data.cell.styles.fontStyle='bold';}
+            }
+            if(data.column.index===2){
+              var ageRaw2=data.cell.raw;
+              if(ageRaw2&&ageRaw2!=='-'){data.cell.styles.textColor=[133,100,4];data.cell.styles.fontStyle='bold';}
+            }
+          }
+        }
+      });
+      y=doc.lastAutoTable.finalY+8;
+    }
+
+    // Footer
+    if(y>pageH-16) y=pageH-16;
+    doc.setDrawColor(200,200,200);
+    doc.line(14,y,pageW-14,y);
+    doc.setFontSize(8);doc.setTextColor(150,150,150);doc.setFont('helvetica','normal');
+    doc.text('Generato il '+(new Date().toLocaleDateString('it-IT'))+' - Elenco Pre/Post '+monthLabel,pageW/2,y+6,{align:'center'});
+
+    var fileName='PrePost_'+className.replace(/\s+/g,'_')+'_'+MONTHS[cm]+'_'+cy+'.pdf';
+    doc.save(fileName);
+  },
+  openDietModal:function(idx){showDietModal=idx;render();},
+  closeDietModal:function(){showDietModal=-1;render();},
+  selectDiet:function(idx,typeId){
+    if(!childDiets[idx]) childDiets[idx]={};
+    childDiets[idx].type=typeId;
+    if(typeId!=='personalizzata') childDiets[idx].note='';
+    saveState();render();
+    if(typeId==='personalizzata'){var noteInput=document.getElementById('dietNote');if(noteInput)noteInput.focus();}
+  },
+  updateDietNote:function(idx,note){
+    if(!childDiets[idx]) childDiets[idx]={type:'personalizzata'};
+    childDiets[idx].note=note;
+    if(firestoreSaveTimer) clearTimeout(firestoreSaveTimer);
+    syncStatus='saving';renderSyncBar();
+    firestoreSaveTimer=setTimeout(function(){saveCurrentClassData();doSaveToFirestore();try{localStorage.setItem(getStorageKey(),JSON.stringify({classes:classes,currentClassId:currentClassId,schoolName:schoolName,currentDate:dateToInput(currentDate)}));}catch(e){}},1500);
+  },
   importData:function(){
     var input=document.createElement('input');input.type='file';input.accept='.json';
     input.onchange=function(e){
-      var file=e.target.files[0];if(!file)return;
-      var reader=new FileReader();
+      var file=e.target.files[0];if(!file)return;var reader=new FileReader();
       reader.onload=function(ev){
         try{
           var d=JSON.parse(ev.target.result);
-          if(d.children)children=d.children;
-          if(d.presenze)presenze=d.presenze;
-          if(d.pre)pre=d.pre;
-          if(d.post)post=d.post;
-          if(d.className)className=d.className;
-          saveState();render();alert('Dati importati!');
+          if(d.classes){
+            classes=d.classes;currentClassId=d.currentClassId||'';
+            if(d.schoolName) schoolName=d.schoolName;
+            ensureDefaultClass();
+          }else{
+            if(d.children)children=d.children;for(var ii=0;ii<children.length;ii++){children[ii]=children[ii].toUpperCase();}
+            if(d.dateData)dateData=d.dateData;else if(d.presenze||d.pre||d.post){var key=getCurrentDateKey();dateData[key]={presenze:d.presenze||{},pre:d.pre||{},post:d.post||{}};}
+            if(d.childDiets)childDiets=d.childDiets;
+            if(d.className)className=d.className;
+            if(d.childGender)childGender=d.childGender;
+            if(d.childDeleghe)childDeleghe=d.childDeleghe;
+            if(d.childContatti)childContatti=d.childContatti;
+            if(d.childAge)childAge=d.childAge;
+            if(d.childNotes)childNotes=d.childNotes;
+            ensureDefaultClass();
+          }
+          var ckey=getCurrentDateKey();var dd=dateData[ckey];if(dd){presenze=dd.presenze||{};pre=dd.pre||{};post=dd.post||{};}else{presenze={};pre={};post={};}
+          saveState();render();alert('Dati importati con successo!');
         }catch(err){alert('File non valido.');}
       };reader.readAsText(file);
     };input.click();
   },
   backupData:function(){
-    var data=JSON.stringify({children:children,presenze:presenze,pre:pre,post:post,className:className,dateExport:new Date().toISOString()},null,2);
-    var blob=new Blob([data],{type:'application/json'});
-    var a=document.createElement('a');a.href=URL.createObjectURL(blob);
-    a.download='registro-presenze-backup-'+new Date().toISOString().slice(0,10)+'.json';
-    a.click();URL.revokeObjectURL(a.href);
+    saveCurrentClassData();
+    var data=JSON.stringify({classes:classes,currentClassId:currentClassId,schoolName:schoolName,className:className,dateExport:new Date().toISOString()},null,2);
+    var blob=new Blob([data],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);
+    a.download='registro-presenze-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(a.href);
   },
   viewMonth:function(){
-    var s='--- RIEPILOGO ---\nClasse: '+className+'\nData: '+DATES[dateIndex].full+'\n\n';
-    for(var i=0;i<children.length;i++){
-      s+=children[i]+': P='+(presenze[i]?'Si':'No')+' Pre='+(pre[i]?'Si':'No')+' Post='+(post[i]?'Si':'No')+'\n';
+    saveCurrentDateData();
+    var summary='--- RIEPILOGO ---\nClasse: '+className+'\n\n';
+    var hasAnyDiet=false;
+    for(var di2=0;di2<children.length;di2++){
+      if(childDiets[di2]&&childDiets[di2].type&&childDiets[di2].type!=='nessuna'){
+        if(!hasAnyDiet){summary+='--- DIETE ---\n';hasAnyDiet=true;}
+        summary+=children[di2]+': '+getDietType(childDiets[di2].type).name+(childDiets[di2].note?' ('+childDiets[di2].note+')':'')+'\n';
+      }
     }
-    s+='\nTotale: '+countKeys(presenze)+' presenze, '+countKeys(pre)+' pre, '+countKeys(post)+' post su '+children.length+' bambini';
-    alert(s);
+    if(hasAnyDiet) summary+='\n';
+    var datesWithData=[];for(var k in dateData){if(dateData.hasOwnProperty(k)&&(countKeys(dateData[k].presenze)>0||countKeys(dateData[k].pre)>0||countKeys(dateData[k].post)>0)){datesWithData.push(k);}}
+    datesWithData.sort();
+    if(datesWithData.length===0){summary+='Nessun dato salvato per altre date.\n\n';}
+    else{for(var di=0;di<datesWithData.length;di++){var dk=datesWithData[di];var dd2=dateData[dk];summary+='--- '+dk+' ---\n';for(var ci2=0;ci2<children.length;ci2++){if(dd2.presenze[ci2]||dd2.pre[ci2]||dd2.post[ci2]){summary+=children[ci2]+': P='+((dd2.presenze[ci2])?'Si':'No')+' Pre='+((dd2.pre[ci2])?'Si':'No')+' Post='+((dd2.post[ci2])?'Si':'No')+'\n';}}summary+='Totale: '+countKeys(dd2.presenze)+' presenze, '+countKeys(dd2.pre)+' pre, '+countKeys(dd2.post)+' post\n\n';}}
+    summary+='--- OGGI ('+dateToFull(currentDate)+') ---\n';
+    for(var i=0;i<children.length;i++){summary+=children[i]+': P='+((presenze[i])?'Si':'No')+' Pre='+((pre[i])?'Si':'No')+' Post='+((post[i])?'Si':'No')+'\n';}
+    summary+='\nTotale: '+countKeys(presenze)+' presenze, '+countKeys(pre)+' pre, '+countKeys(post)+' post su '+children.length+' bambini';
+    alert(summary);
   },
   share:function(){
-    if(navigator.share){
-      navigator.share({title:'Registro Presenze - '+className,url:window.location.href}).catch(function(){});
-    }else{
-      var ta=document.createElement('textarea');ta.value=window.location.href;
-      document.body.appendChild(ta);ta.select();document.execCommand('copy');
-      document.body.removeChild(ta);alert('Link copiato!');
-    }
+    if(navigator.share){navigator.share({title:'Registro di Classe - '+className,url:window.location.href}).catch(function(){});}
+    else{var ta=document.createElement('textarea');ta.value=window.location.href;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);alert('Link copiato negli appunti!');}
   }
 };
 
-// ===== INIT =====
-loadLocal();
 initFirebase();
+ensureDefaultClass();
 render();
 
 })();
