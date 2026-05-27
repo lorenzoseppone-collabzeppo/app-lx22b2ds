@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
 <title>Registro di Classe</title>
-<meta name="version" content="2025-05-28-v20-redirect-login"/>
+<meta name="version" content="2025-05-28-v21-auth-fix"/>
 <meta name="description" content="Registro di Classe per la gestione della classe"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a1a2e'><path d='M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z'/></svg>"/>
 <style>
@@ -1609,10 +1609,44 @@ function initFirebase(){
     console.log('[FIREBASE] Persistence DISABLED for iOS Safari compatibility');
     // Use LOCAL persistence so redirect login survives page reload
     try{auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);}catch(e){console.log('[FIREBASE] Auth persistence:',e);}
+    
+    // Check if we're returning from a redirect login
+    var returningFromRedirect=false;
+    try{if(localStorage.getItem('rp_login_redirect')==='1'){returningFromRedirect=true;localStorage.removeItem('rp_login_redirect');console.log('[FIREBASE] Returning from redirect login...');}}catch(e){}
+    
+    // Handle redirect result - this resolves when coming back from Google login
+    try{
+      auth.getRedirectResult().then(function(result){
+        if(result&&result.user){
+          console.log('[LOGIN] Redirect login OK:',result.user.displayName||result.user.email);
+          loginLoading=false;
+          // onAuthStateChanged will handle the rest
+        }else if(returningFromRedirect){
+          // Redirect returned but no user - might have been cancelled
+          console.log('[LOGIN] Redirect returned but no user');
+          loginLoading=false;
+        }
+      }).catch(function(error){
+        console.error('[LOGIN] Redirect result error:',error.code,error.message);
+        loginLoading=false;
+        var msg='';
+        if(error.code==='auth/unauthorized-domain'){
+          msg='Dominio non autorizzato!\n\nDevi aggiungere "'+window.location.hostname+'" in Firebase Console:\n1. Vai su console.firebase.google.com\n2. Seleziona il progetto "presenze-pre-post"\n3. Authentication > Settings > Authorized domains\n4. Aggiungi: '+window.location.hostname;
+        }else if(error.code==='auth/operation-not-allowed'){
+          msg='Login Google non abilitato in Firebase Console.';
+        }else{
+          msg='Errore login: '+(error.code||error.message);
+        }
+        alert(msg);
+        render();
+      });
+    }catch(e){console.error('[FIREBASE] getRedirectResult error:',e);}
+    
     auth.onAuthStateChanged(function(u){
       var previousUser=currentUser;
       currentUser=u;loginLoading=false;
       if(u){
+        console.log('[AUTH] User logged in:',u.displayName||u.email,'uid:',u.uid.substring(0,8));
         if(previousUser&&previousUser.uid!==u.uid){
           resetAllData();
           firestoreLoadDone=false;
@@ -1631,23 +1665,6 @@ function initFirebase(){
         syncStatus='idle';render();
       }
     });
-    // Handle redirect result for iOS (signInWithRedirect comes back here)
-    try{
-      auth.getRedirectResult().then(function(result){
-        if(result&&result.user){
-          console.log('[LOGIN] Redirect login successful:',result.user.displayName||result.user.email);
-        }
-      }).catch(function(error){
-        console.error('[LOGIN] Redirect result error:',error.code,error.message);
-        loginLoading=false;
-        var msg='Errore durante il login.';
-        if(error.code==='auth/unauthorized-domain'){msg='Dominio non autorizzato. Aggiungi "'+window.location.hostname+'" in Firebase Console.';}
-        else if(error.code==='auth/operation-not-allowed'){msg='Login Google non abilitato.';}
-        else{msg='Errore login: '+(error.code||error.message);}
-        alert(msg);
-        render();
-      });
-    }catch(e){}
   }catch(e){console.error('Firebase init error:',e);render();}
 }
 
@@ -1658,42 +1675,50 @@ function handleLogin(){
     if(confirm('Vuoi disconnettere l\'account "'+(currentUser.displayName||currentUser.email)+'"?\n\nI dati rimarranno salvati nel tuo account Google.')){
       var uid=currentUser.uid;
       try{saveCurrentClassData();}catch(e){}
-      // Salva in localStorage SUBITO come backup (sincrono, affidabile)
       try{localStorage.setItem('rp_data_'+uid,JSON.stringify({classes:JSON.parse(JSON.stringify(classes)),currentClassId:currentClassId,schoolName:schoolName,currentDate:dateToInput(currentDate)}));}catch(e){}
-      // Prova a salvare su Firestore (fire and forget - non bloccare il logout)
       try{
         if(db&&uid){
           var logoutClasses=prepareClassesForSave();
           db.collection('users').doc(uid).set({classes:logoutClasses,currentClassId:currentClassId||'',schoolName:schoolName||'',updatedAt:new Date().toISOString()},{merge:true}).catch(function(err){console.error('[LOGOUT] Firestore save failed:',err);});
         }
       }catch(e){console.error('[LOGOUT] Firestore error:',e);}
-      // Fai logout SUBITO - non aspettare Firestore
       try{auth.signOut();}catch(e){}
       setTimeout(function(){window.location.reload();},500);
     }
   }else{
     loginLoading=true;render();
     var provider=new firebase.auth.GoogleAuthProvider();
-    // Use redirect instead of popup on iOS Safari - popup is unreliable
-    // Popup causes "auth/cancelled-popup-request" on iOS Safari
-    var isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
-    if(isIOS){
-      console.log('[LOGIN] Using signInWithRedirect (iOS detected)');
-      auth.signInWithRedirect(provider);
+    // On ALL mobile devices, use redirect (popup is unreliable on Safari/Chrome iOS)
+    var isMobile=/iPad|iPhone|iPod|Android/i.test(navigator.userAgent);
+    var isSafari=/Safari\//i.test(navigator.userAgent)&&!/Chrome\//i.test(navigator.userAgent);
+    
+    if(isMobile||isSafari){
+      console.log('[LOGIN] Using signInWithRedirect (mobile/Safari detected)');
+      // Save a flag so we know redirect is in progress
+      try{localStorage.setItem('rp_login_redirect','1');}catch(e){}
+      auth.signInWithRedirect(provider).catch(function(error){
+        console.error('[LOGIN] Redirect error:',error);
+        loginLoading=false;
+        try{localStorage.removeItem('rp_login_redirect');}catch(e){}
+        alert('Errore login: '+(error.code||error.message||'Errore'));
+        render();
+      });
     }else{
       console.log('[LOGIN] Using signInWithPopup');
-      auth.signInWithPopup(provider).catch(function(error){
-        loginLoading=false;render();var msg='Errore durante il login.';
+      auth.signInWithPopup(provider).then(function(result){
+        console.log('[LOGIN] Popup success:',result.user.displayName);
+      }).catch(function(error){
+        loginLoading=false;render();
         if(error.code==='auth/popup-closed-by-user') return;
-        else if(error.code==='auth/popup-blocked'||error.code==='auth/cancelled-popup-request'){
+        if(error.code==='auth/popup-blocked'||error.code==='auth/cancelled-popup-request'){
           // Fallback to redirect
-          console.log('[LOGIN] Popup failed, falling back to redirect...');
+          console.log('[LOGIN] Popup failed, trying redirect...');
+          try{localStorage.setItem('rp_login_redirect','1');}catch(e){}
           auth.signInWithRedirect(provider);
           return;
         }
-        else if(error.code==='auth/unauthorized-domain'){msg='Dominio "'+window.location.hostname+'" non autorizzato.\n\nVai su Firebase Console > Authentication > Settings > Authorized domains e aggiungi:\n'+window.location.hostname;}
-        else if(error.code==='auth/operation-not-allowed'){msg='Login Google non abilitato. Abilitalo in Firebase Console.';}
-        else{msg='Errore: '+error.message;}
+        var msg='Errore login: '+(error.code||error.message);
+        if(error.code==='auth/unauthorized-domain'){msg='Dominio non autorizzato. Aggiungi "'+window.location.hostname+'" in Firebase Console > Authentication > Settings > Authorized domains.';}
         alert(msg);
       });
     }
@@ -1788,7 +1813,7 @@ function render(){
     html+='<button onclick="App.uploadToServer()" style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:8px;border:2px solid #28a745;background:#28a745;color:white;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">Carica su Server</button>';
     html+='<button onclick="App.downloadFromServer()" style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:8px;border:2px solid #007bff;background:#007bff;color:white;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">Scarica dal Server</button>';
     html+='<button onclick="App.clearCache()" style="display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:8px;border:2px solid #dc3545;background:white;color:#dc3545;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap">Pulisci Cache</button>';
-    html+='<span style="font-size:9px;color:#aaa;margin-left:auto">v20</span>';
+    html+='<span style="font-size:9px;color:#aaa;margin-left:auto">v21</span>';
     html+='</div>';
   }
 
@@ -2064,7 +2089,7 @@ function render(){
   if(classLocked){html+='</div>';}
 
   // Version indicator - always visible
-  html+='<div style="position:fixed;bottom:4px;right:6px;font-size:9px;color:#aaa;z-index:9999;pointer-events:none;font-weight:600" id="versionBadge">v20</div>';
+  html+='<div style="position:fixed;bottom:4px;right:6px;font-size:9px;color:#aaa;z-index:9999;pointer-events:none;font-weight:600" id="versionBadge">v21</div>';
 
   if(selectedChild>=0){html+=renderChildDetail(selectedChild);}
   if(showDietModal>=0){html+=renderDietModal(showDietModal);}
@@ -2342,49 +2367,75 @@ function fixFirebaseRules(){
   if(!confirmed) return;
   
   currentUser.getIdToken().then(function(idToken){
-    console.log('[FIX] Got ID token, updating Firestore rules...');
+    console.log('[FIX] Got ID token, updating Firestore rules and authorized domains...');
     
-    // The new rules that allow authenticated users to read/write their own data
+    // Step 1: Add current domain to authorized domains
+    var currentDomain=window.location.hostname;
+    console.log('[FIX] Current domain: '+currentDomain);
+    
+    // Get current project config
+    var configXhr=new XMLHttpRequest();
+    configXhr.open('GET','https://firebaseappcheck.googleapis.com/v1/projects/presenze-pre-post/apps',true);
+    configXhr.setRequestHeader('Authorization','Bearer '+idToken);
+    configXhr.onload=function(){
+      console.log('[FIX] Config response:',configXhr.status);
+    };
+    configXhr.send();
+    
+    // Step 2: Also try the Identity Toolkit API to add domain
+    var domainXhr=new XMLHttpRequest();
+    domainXhr.open('PATCH','https://identitytoolkit.googleapis.com/admin/v2/projects/presenze-pre-post/config?updateMask=authorizedDomains',true);
+    domainXhr.setRequestHeader('Authorization','Bearer '+idToken);
+    domainXhr.setRequestHeader('Content-Type','application/json');
+    domainXhr.onload=function(){
+      console.log('[FIX] Domain update response:',domainXhr.status);
+      if(domainXhr.status===200){
+        console.log('[FIX] Domain added successfully');
+      }else{
+        console.log('[FIX] Domain update failed:',domainXhr.status,domainXhr.responseText.substring(0,200));
+      }
+    };
+    // We need to include existing domains + our new one
+    var existingDomains=['localhost','presenze-pre-post.firebaseapp.com','presenze-pre-post.web.app'];
+    if(existingDomains.indexOf(currentDomain)<0) existingDomains.push(currentDomain);
+    domainXhr.send(JSON.stringify({authorizedDomains:existingDomains}));
+    
+    // Step 3: Update Firestore rules
     var rulesSource = {
       source: {
         files: [{
           name: 'firestore.rules',
-          content: "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    // Allow authenticated users to read/write their own data\n    match /registro_presenze/{userId} {\n      allow read, write: if request.auth != null && request.auth.uid == userId;\n    }\n    // Also allow rp_data_ prefixed docs for migration compatibility\n    match /registro_presenze/{docId} {\n      allow read, write: if request.auth != null && docId == request.auth.uid;\n    }\n    // Allow users collection for migration\n    match /users/{userId} {\n      allow read: if request.auth != null && request.auth.uid == userId;\n    }\n  }\n}"
+          content: "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /users/{userId} {\n      allow read, write: if request.auth != null && request.auth.uid == userId;\n    }\n    match /registro_presenze/{userId} {\n      allow read, write: if request.auth != null && request.auth.uid == userId;\n    }\n  }\n}"
         }]
       }
     };
     
-    // Try to update rules via Firebase Rules API
     var xhr = new XMLHttpRequest();
     xhr.open('POST', 'https://firebaserules.googleapis.com/v1/projects/presenze-pre-post/rulesets', true);
     xhr.setRequestHeader('Authorization', 'Bearer ' + idToken);
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.onload = function() {
-      console.log('[FIX] Rules API response:', xhr.status, xhr.responseText);
       if(xhr.status === 200) {
         var resp = JSON.parse(xhr.responseText);
         var rulesetName = resp.name;
-        // Now release the ruleset
         var releaseXhr = new XMLHttpRequest();
         releaseXhr.open('PATCH', 'https://firebaserules.googleapis.com/v1/projects/presenze-pre-post/releases/cloud.firestore', true);
         releaseXhr.setRequestHeader('Authorization', 'Bearer ' + idToken);
         releaseXhr.setRequestHeader('Content-Type', 'application/json');
         releaseXhr.onload = function() {
           if(releaseXhr.status === 200) {
-            alert('Regole Firebase aggiornate con successo!\n\nOra prova a sincronizzare di nuovo.');
+            alert('Regole Firebase aggiornate!\n\nOra prova a sincronizzare di nuovo.');
             App.forceSync();
           } else {
-            alert('Errore nel rilascio delle regole: ' + releaseXhr.status + '\n' + releaseXhr.responseText.substring(0, 300));
+            alert('Errore nel rilascio delle regole: ' + releaseXhr.status);
           }
         };
         releaseXhr.send(JSON.stringify({rulesetName: rulesetName}));
       } else {
-        alert('Impossibile aggiornare le regole Firebase automaticamente.\n\nStato: ' + xhr.status + '\n\nDevi aggiornare le regole manualmente:\n1. Vai su console.firebase.google.com\n2. Seleziona il progetto "presenze-pre-post"\n3. Vai su Firestore Database > Regole\n4. Sostituisci con:\n\nrules_version = \'2\';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /registro_presenze/{userId} {\n      allow read, write: if request.auth != null && request.auth.uid == userId;\n    }\n  }\n}\n\n5. Clicca "Pubblica"');
+        alert('Impossibile aggiornare le regole automaticamente.\n\nDevi aggiornare manualmente su console.firebase.google.com');
       }
     };
-    xhr.onerror = function() {
-      alert('Errore di connessione. Riprova.');
-    };
+    xhr.onerror = function() {alert('Errore di connessione.');};
     xhr.send(JSON.stringify(rulesSource));
   }).catch(function(err){
     alert('Errore nel ottenere il token: ' + err.message);
@@ -3788,7 +3839,7 @@ setInterval(function(){
 
 // Auto-update: just save version, no redirect (redirect causes cache issues)
 (function(){
-  var CURRENT_VERSION='v20';
+  var CURRENT_VERSION='v21';
   localStorage.setItem('rp_app_version',CURRENT_VERSION);
 })();
 
