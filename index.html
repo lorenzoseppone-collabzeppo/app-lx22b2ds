@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
 <title>Registro di Classe</title>
-<meta name="version" content="2025-05-28-v25-json-string-sync"/>
+<meta name="version" content="2025-05-28-v25b-fix-download-mask"/>
 <meta name="description" content="Registro di Classe per la gestione della classe"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a1a2e'><path d='M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z'/></svg>"/>
 <style>
@@ -1690,7 +1690,8 @@ function downloadJsonViaRestAPI(uid, callback){
   console.log('[REST-API-READ] Starting JSON string download...');
   
   currentUser.getIdToken(true).then(function(token){
-    var url='https://firestore.googleapis.com/v1/projects/presenze-pre-post/databases/(default)/documents/users/'+uid+'?mask.fieldPaths=dataJson&mask.fieldPaths=_saveId&mask.fieldPaths=updatedAt';
+    // No field mask - we need to see ALL fields including old 'classes' format
+    var url='https://firestore.googleapis.com/v1/projects/presenze-pre-post/databases/(default)/documents/users/'+uid;
     
     var xhr=new XMLHttpRequest();
     xhr.open('GET',url,true);
@@ -1700,6 +1701,7 @@ function downloadJsonViaRestAPI(uid, callback){
       if(xhr.status===200||xhr.status===201){
         try{
           var response=JSON.parse(xhr.responseText);
+          // v25 FORMAT: dataJson string
           if(response.fields&&response.fields.dataJson&&response.fields.dataJson.stringValue){
             var dataJson=response.fields.dataJson.stringValue;
             console.log('[REST-API-READ] Got JSON string ('+dataJson.length+' bytes)');
@@ -1707,17 +1709,21 @@ function downloadJsonViaRestAPI(uid, callback){
               var data=JSON.parse(dataJson);
               console.log('[REST-API-READ] Parsed! Classes: '+(data.classes?Object.keys(data.classes).length:0));
               callback(true,data);
+              return; // Don't fall through
             }catch(e){
               console.error('[REST-API-READ] JSON parse error:',e);
-              callback(false,null);
+              // Fall through to try old format
             }
-          }else if(response.fields&&response.fields.classes){
-            // OLD FORMAT: document has classes field but no dataJson
+          }
+          // OLD FORMAT: classes field (no dataJson)
+          if(response.fields&&response.fields.classes){
             console.log('[REST-API-READ] Old format detected, parsing classes...');
             var data=parseFirestoreFields(response.fields);
             console.log('[REST-API-READ] Got old-format data with '+(data.classes?Object.keys(data.classes).length:0)+' classes');
             callback(true,data);
-          }else{
+            return;
+          }
+          if(!response.fields||(!response.fields.dataJson&&!response.fields.classes)){
             console.log('[REST-API-READ] No dataJson or classes in response');
             callback(false,null);
           }
