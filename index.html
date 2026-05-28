@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
 <title>Registro di Classe</title>
-<meta name="version" content="2025-05-28-v38-smooth-takeoff"/>
+<meta name="version" content="2025-05-28-v39-takeoff-right"/>
 <meta name="description" content="Registro di Classe per la gestione della classe"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a1a2e'><path d='M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z'/></svg>"/>
 <style>
@@ -4264,18 +4264,22 @@ fetchWeather();
       var h=window.innerHeight;
       var startX=curX;
       var startY=curY;
-      var takeoffDur=2500;
-      var flyDur=7500;
-      var landDur=2000;
+      var takeoffDur=3000;
+      var flyDur=10000;
+      var landDur=2500;
       var totalDuration=takeoffDur+flyDur+landDur;
       var startTime=performance.now();
       var restPos=getRestPos();
 
-      var p0={x:startX,y:startY};
-      var p1={x:Math.random()*w*0.6+w*0.1,y:Math.random()*h*0.3};
-      var p2={x:Math.random()*w*0.6+w*0.2,y:Math.random()*h*0.5+h*0.2};
-      var p3={x:Math.random()*w*0.6+w*0.1,y:Math.random()*h*0.3+h*0.1};
-      var p4={x:restPos.x,y:restPos.y};
+      var driftX=Math.min(w*0.3,120);
+      var driftY=-12;
+
+      var p0={x:startX+driftX,y:startY+driftY};
+      var p1={x:Math.random()*w*0.4+w*0.5,y:Math.random()*h*0.3+h*0.05};
+      var p2={x:Math.random()*w*0.3+w*0.05,y:Math.random()*h*0.3+h*0.15};
+      var p3={x:Math.random()*w*0.4+w*0.3,y:Math.random()*h*0.3+h*0.25};
+      var p4={x:Math.random()*w*0.3+w*0.1,y:Math.random()*h*0.2+h*0.1};
+      var p5={x:restPos.x,y:restPos.y};
 
       function easeInOut(t){return t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;}
       function easeOut(t){return 1-Math.pow(1-t,3);}
@@ -4308,32 +4312,33 @@ fetchWeather();
         if(isTakeoff){
           var tt=Math.min(elapsed/takeoffDur,1);
           var et=easeIn(tt);
-          var waveX=Math.sin(tt*Math.PI*4)*15*et;
-          var waveY=Math.cos(tt*Math.PI*3)*10*et;
-          var liftY=-25*et;
+          var moveX=driftX*et;
+          var moveY=driftY*et;
+          var waveX=Math.sin(tt*Math.PI*3)*8*et;
+          var waveY=Math.cos(tt*Math.PI*2)*5*et;
 
-          bfly.style.left=(startX+waveX)+'px';
-          bfly.style.top=(startY+liftY+waveY)+'px';
+          bfly.style.left=(startX+moveX+waveX)+'px';
+          bfly.style.top=(startY+moveY+waveY)+'px';
 
-          var curRot=-3*(1-et);
+          var curRot=-3*(1-et)+5*et;
           bfly.style.transform='rotate('+curRot+'deg)';
 
           if(svgEl){
-            var flutterSpeed=0.004+0.004*et;
-            var flutterAmp=0.15+0.55*et;
+            var flutterSpeed=0.003+0.005*et;
+            var flutterAmp=0.1+0.6*et;
             var flutter=Math.sin(now*flutterSpeed);
             svgEl.style.transform='scaleX('+(1-flutterAmp*Math.abs(flutter))+')';
             svgEl.style.transformOrigin='center center';
-            if(et>0.2){colorAngle=(colorAngle+1.5*et)%360;svgEl.style.filter='hue-rotate('+colorAngle+'deg)';}
+            if(et>0.3){colorAngle=(colorAngle+1.5*et)%360;svgEl.style.filter='hue-rotate('+colorAngle+'deg)';}
           }
 
         } else if(!isLanding){
           var ft=(elapsed-takeoffDur)/flyDur;
           var et=easeInOut(ft);
-          var pts=[p0,p1,p2,p3,p4];
+          var pts=[p0,p1,p2,p3,p4,p5];
           var pos=bezierPoint(et,pts);
-          var waveX=Math.sin(ft*Math.PI*6)*15;
-          var waveY=Math.cos(ft*Math.PI*4)*20;
+          var waveX=Math.sin(ft*Math.PI*7)*12;
+          var waveY=Math.cos(ft*Math.PI*5)*15;
 
           bfly.style.left=(pos.x+waveX)+'px';
           bfly.style.top=(pos.y+waveY)+'px';
