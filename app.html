@@ -2210,7 +2210,6 @@ function render(){
   else{
     html+='<div class="auth-bar info"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span>Effettua il login con Google per salvare i dati nel cloud</span></div>';
     if(loginLoading){html+='<div style="padding:6px 12px;margin-bottom:8px;background:#fff3cd;border:1px solid #ffeeba;border-radius:8px;font-size:12px;color:#856404">Login in corso... Se non compare la finestra di Google, ricarica la pagina e riprova.</div>';}
-    else{html+='<div style="padding:6px 12px;margin-bottom:8px;background:#e8f4fd;border:1px solid #bee5eb;border-radius:8px;font-size:10px;color:#0c5460">Dominio: '+esc(window.location.hostname)+' — Deve essere in Firebase Console > Authentication > Settings > Authorized domains</div>';}
   }
 
   html+='<div id="sync-bar" class="sync-bar" style="display:none"></div>';
