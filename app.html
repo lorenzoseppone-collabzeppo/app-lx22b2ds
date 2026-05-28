@@ -395,6 +395,62 @@ var clockTimer = null;
 var _lastSaveId = null;
 var _snapshotListener = null;
 var _mobilePollTimer = null;
+var _pinAutoLockTimer = null;
+var PIN_AUTOLOCK_MS = 180000; // 3 minuti
+
+// --- Auto-blocco PIN dopo inattività ---
+function resetPinAutoLockTimer(){
+  if(_pinAutoLockTimer){clearTimeout(_pinAutoLockTimer);}
+  // Controlla se ci sono classi sbloccate con PIN
+  var hasUnlocked=false;
+  for(var cId in unlockedClasses){
+    if(unlockedClasses.hasOwnProperty(cId)&&unlockedClasses[cId]){
+      var pin=classes[cId]?classes[cId].pin:'';
+      if(pin&&pin.length>0){hasUnlocked=true;break;}
+    }
+  }
+  if(hasUnlocked){
+    _pinAutoLockTimer=setTimeout(function(){
+      lockAllPins();
+    },PIN_AUTOLOCK_MS);
+  }
+}
+
+function lockAllPins(){
+  var hadUnlocked=false;
+  for(var cId in unlockedClasses){
+    if(unlockedClasses.hasOwnProperty(cId)&&unlockedClasses[cId]){
+      var pin=classes[cId]?classes[cId].pin:'';
+      if(pin&&pin.length>0){hadUnlocked=true;break;}
+    }
+  }
+  if(!hadUnlocked) return;
+  unlockedClasses={};
+  classLocked=false;
+  updateClassLockState();
+  render();
+  // Mostra avviso visivo
+  var bar=document.getElementById('sync-bar');
+  if(bar){
+    bar.style.display='flex';
+    bar.style.background='#fff3cd';
+    bar.style.color='#856404';
+    bar.innerHTML='\uD83D\uDD12 Classi bloccate per inattivit\u00e0 (3 min) \u2014 Inserisci il PIN per continuare';
+    setTimeout(function(){if(bar)bar.style.display='none';},5000);
+  }
+  console.log('[PIN] Auto-blocco: tutte le classi sono state bloccate per inattivit\u00e0');
+}
+
+// Resetta il timer su qualsiasi attività utente
+function setupPinAutoLockListeners(){
+  var events=['touchstart','touchmove','mousedown','keydown','scroll','click'];
+  for(var i=0;i<events.length;i++){
+    document.addEventListener(events[i],function(){
+      resetPinAutoLockTimer();
+    },{passive:true});
+  }
+}
+// --- Fine auto-blocco PIN ---
 
 
 function regularClassCount(){var c=0;for(var k in classes){if(classes.hasOwnProperty(k)&&k!==COORDINATRICE_ID)c++;}return c;}
@@ -794,7 +850,7 @@ function tryUnlockClass(classId){
   if(unlockedClasses[classId]) return true;
   var entered=prompt('Inserisci il PIN per accedere alla classe "'+(classes[classId].name||'Classe')+'":');
   if(entered===null) return false;
-  if(entered===pin){unlockedClasses[classId]=true;return true;}
+  if(entered===pin){unlockedClasses[classId]=true;resetPinAutoLockTimer();return true;}
   alert('PIN errato!');
   return false;
 }
@@ -3205,6 +3261,7 @@ window.App={
     classes[currentClassId].pin=pinValue;
     // Sblocca per questa sessione
     unlockedClasses[currentClassId]=true;
+    resetPinAutoLockTimer();
     // Salva PIN su localStorage dedicato (SINCRONO - backup principale)
     savePinsToLocalStorage();
     // Salva immediatamente su Firestore (operazione critica)
@@ -3228,6 +3285,7 @@ window.App={
     classes[COORDINATRICE_ID].pin=pinValue;
     // Sblocca per questa sessione
     unlockedClasses[COORDINATRICE_ID]=true;
+    resetPinAutoLockTimer();
     // Salva PIN su localStorage dedicato (SINCRONO - backup principale)
     savePinsToLocalStorage();
     // Salva immediatamente su Firestore (operazione critica)
@@ -3249,6 +3307,7 @@ window.App={
       if(!/^\d{4,6}$/.test(newPin.trim())){alert('Il PIN deve essere di 4-6 cifre.');return;}
       classes[COORDINATRICE_ID].pin=newPin.trim();
       unlockedClasses[COORDINATRICE_ID]=true;
+      resetPinAutoLockTimer();
       savePinsToLocalStorage();
       saveCurrentClassData();
       try{localStorage.setItem(getStorageKey(),JSON.stringify({classes:JSON.parse(JSON.stringify(classes)),currentClassId:currentClassId,schoolName:schoolName,currentDate:dateToInput(currentDate)}));}catch(e){}
@@ -3272,6 +3331,7 @@ window.App={
     var pinValue=newPin2.trim();
     classes[COORDINATRICE_ID].pin=pinValue;
     unlockedClasses[COORDINATRICE_ID]=true;
+    resetPinAutoLockTimer();
     savePinsToLocalStorage();
     saveCurrentClassData();
     try{localStorage.setItem(getStorageKey(),JSON.stringify({classes:JSON.parse(JSON.stringify(classes)),currentClassId:currentClassId,schoolName:schoolName,currentDate:dateToInput(currentDate)}));}catch(e){}
@@ -3292,6 +3352,7 @@ window.App={
       if(!/^\d{4,6}$/.test(newPin.trim())){alert('Il PIN deve essere di 4-6 cifre.');return;}
       classes[currentClassId].pin=newPin.trim();
       unlockedClasses[currentClassId]=true;
+      resetPinAutoLockTimer();
       savePinsToLocalStorage();
       saveCurrentClassData();
       try{localStorage.setItem(getStorageKey(),JSON.stringify({classes:JSON.parse(JSON.stringify(classes)),currentClassId:currentClassId,schoolName:schoolName,currentDate:dateToInput(currentDate)}));}catch(e){}
@@ -3315,6 +3376,7 @@ window.App={
     var pinValue=newPin2.trim();
     classes[currentClassId].pin=pinValue;
     unlockedClasses[currentClassId]=true;
+    resetPinAutoLockTimer();
     savePinsToLocalStorage();
     saveCurrentClassData();
     try{localStorage.setItem(getStorageKey(),JSON.stringify({classes:JSON.parse(JSON.stringify(classes)),currentClassId:currentClassId,schoolName:schoolName,currentDate:dateToInput(currentDate)}));}catch(e){}
@@ -4193,6 +4255,7 @@ ensureDefaultClass();
   var saved=localStorage.getItem('rp_theme')||'light';
   document.documentElement.setAttribute('data-theme',saved);
 })();
+setupPinAutoLockListeners();
 render();
 startClock();
 fetchWeather();
