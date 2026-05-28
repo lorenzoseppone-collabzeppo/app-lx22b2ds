@@ -1024,7 +1024,6 @@ function doSaveToFirestore(){
   var cleanedClasses=prepareClassesForSave();
   var saveData={
     classes:cleanedClasses,
-    currentClassId:currentClassId||'',
     schoolName:schoolName||'',
     updatedAt:new Date().toISOString(),
     _saveId:_lastSaveId
@@ -1277,7 +1276,18 @@ function handleFirestoreJsonData(data, uid, localData){
   
   // MERGE: unisci classi da Firestore e localStorage
   classes=JSON.parse(JSON.stringify(d.classes));
-  currentClassId=d.currentClassId||'';
+  // currentClassId è solo LOCALE - non si sincronizza tra dispositivi
+  if(localData&&localData.currentClassId&&classes[localData.currentClassId]){
+    currentClassId=localData.currentClassId;
+    console.log('[LOAD] Using LOCAL currentClassId: '+currentClassId+' ('+classes[currentClassId].name+')');
+  }else if(d.currentClassId&&classes[d.currentClassId]){
+    // Fallback: se non c'è dato locale, usa quello remoto (primo avvio)
+    currentClassId=d.currentClassId;
+    console.log('[LOAD] Using REMOTE currentClassId (no local): '+currentClassId);
+  }else{
+    currentClassId='';
+    console.log('[LOAD] No currentClassId found');
+  }
   if(d.schoolName) schoolName=d.schoolName;
   
   if(localData&&localData.classes){
@@ -1298,9 +1308,6 @@ function handleFirestoreJsonData(data, uid, localData){
           classes[uk]=localData.classes[uk];
         }
       }
-    }
-    if(!classes[currentClassId]&&localData.currentClassId&&classes[localData.currentClassId]){
-      currentClassId=localData.currentClassId;
     }
   }
   
@@ -1378,7 +1385,7 @@ function startSnapshotListener(uid){
         }
         classes=merged;
         if(data.schoolName) schoolName=data.schoolName;
-        if(data.currentClassId&&classes[data.currentClassId]) currentClassId=data.currentClassId;
+        // currentClassId è solo LOCALE - non sovrascrivere con dato remoto
         restorePinsFromLocalStorage();
         if(currentClassId&&classes[currentClassId]) loadClassData(currentClassId);
         ensureDefaultClass();
@@ -1446,7 +1453,7 @@ function startSnapshotListener(uid){
     if(mergedStr === localStr && data.schoolName === schoolName) return;
     
     classes = merged;
-    if(data.currentClassId && classes[data.currentClassId]) currentClassId = data.currentClassId;
+    // currentClassId è solo LOCALE - non sovrascrivere con dato remoto
     if(data.schoolName) schoolName = data.schoolName;
     restorePinsFromLocalStorage();
     if(currentClassId && classes[currentClassId]) loadClassData(currentClassId);
@@ -1471,7 +1478,7 @@ function startSnapshotListener(uid){
       _lastSaveId = Math.random().toString(36);
       var snapshotSaveData = prepareClassesForSave();
       var snapshotDocData = {
-        dataJson: JSON.stringify({classes:snapshotSaveData,currentClassId:currentClassId||'',schoolName:schoolName||'',updatedAt:new Date().toISOString(),_saveId:_lastSaveId}),
+        dataJson: JSON.stringify({classes:snapshotSaveData,schoolName:schoolName||'',updatedAt:new Date().toISOString(),_saveId:_lastSaveId}),
         _saveId: _lastSaveId,
         updatedAt: new Date().toISOString()
       };
@@ -1544,7 +1551,7 @@ function delayedServerRefresh(uid){
       }
       
       classes = merged;
-      if(doc.data().currentClassId && classes[doc.data().currentClassId]) currentClassId = doc.data().currentClassId;
+      // currentClassId è solo LOCALE - non sovrascrivere con dato remoto
       if(doc.data().schoolName) schoolName = doc.data().schoolName;
       restorePinsFromLocalStorage();
       if(currentClassId && classes[currentClassId]) loadClassData(currentClassId);
@@ -1562,7 +1569,6 @@ function delayedServerRefresh(uid){
         _lastSaveId = Math.random().toString(36);
         var delayedSaveData = {
           classes: prepareClassesForSave(),
-          currentClassId: currentClassId||'',
           schoolName: schoolName||'',
           updatedAt: new Date().toISOString(),
           _saveId: _lastSaveId
@@ -1695,7 +1701,6 @@ function uploadViaRestAPI(uid, data, callback){
         fields.classes.mapValue.fields[classId]={mapValue:{fields:convertToFirestoreFields(classObj)}};
       }
     }
-    fields.currentClassId={stringValue:data.currentClassId||''};
     fields.schoolName={stringValue:data.schoolName||''};
     fields.updatedAt={stringValue:data.updatedAt||''};
     fields._saveId={stringValue:data._saveId||''};
@@ -1703,7 +1708,7 @@ function uploadViaRestAPI(uid, data, callback){
     var bodyStr=JSON.stringify({fields:fields});
     console.log('[REST-API-OLD] Request body size: '+bodyStr.length+' bytes');
     
-    var url='https://firestore.googleapis.com/v1/projects/presenze-pre-post/databases/(default)/documents/users/'+uid+'?updateMask.fieldPaths=classes&updateMask.fieldPaths=currentClassId&updateMask.fieldPaths=schoolName&updateMask.fieldPaths=updatedAt&updateMask.fieldPaths=_saveId';
+    var url='https://firestore.googleapis.com/v1/projects/presenze-pre-post/databases/(default)/documents/users/'+uid+'?updateMask.fieldPaths=classes&updateMask.fieldPaths=schoolName&updateMask.fieldPaths=updatedAt&updateMask.fieldPaths=_saveId';
     
     var xhr=new XMLHttpRequest();
     xhr.open('PATCH',url,true);
@@ -2088,7 +2093,7 @@ function handleLogin(){
       try{
         if(db&&uid){
           var logoutClasses=prepareClassesForSave();
-          db.collection('users').doc(uid).set({classes:logoutClasses,currentClassId:currentClassId||'',schoolName:schoolName||'',updatedAt:new Date().toISOString()},{merge:true}).catch(function(err){console.error('[LOGOUT] Firestore save failed:',err);});
+          db.collection('users').doc(uid).set({classes:logoutClasses,schoolName:schoolName||'',updatedAt:new Date().toISOString()},{merge:true}).catch(function(err){console.error('[LOGOUT] Firestore save failed:',err);});
         }
       }catch(e){console.error('[LOGOUT] Firestore error:',e);}
       try{auth.signOut();}catch(e){}
@@ -2859,7 +2864,6 @@ window.App={
     var cleanedClasses=prepareClassesForSave();
     var uploadData={
       classes:cleanedClasses,
-      currentClassId:currentClassId||'',
       schoolName:schoolName||'',
       updatedAt:new Date().toISOString(),
       _saveId:_lastSaveId
@@ -2979,7 +2983,7 @@ window.App={
         }
       }
       classes=merged;
-      if(data.currentClassId) currentClassId=data.currentClassId;
+      // currentClassId è solo LOCALE - non sovrascrivere con dato remoto
       if(data.schoolName) schoolName=data.schoolName;
       restorePinsFromLocalStorage();
       if(currentClassId&&classes[currentClassId]){loadClassData(currentClassId);}
@@ -3062,7 +3066,6 @@ window.App={
       if(mergedForSave[COORDINATRICE_ID]) delete mergedForSave[COORDINATRICE_ID].childSourceMap;
       var savePayload={
         classes:cleanForFirestore(mergedForSave,'merged'),
-        currentClassId:currentClassId||'',
         schoolName:schoolName||'',
         updatedAt:new Date().toISOString(),
         _saveId:_lastSaveId
@@ -3219,7 +3222,6 @@ window.App={
     if(currentUser&&db){
       var delUpdate={};
       delUpdate['classes.'+classId]=firebase.firestore.FieldValue.delete();
-      delUpdate.currentClassId=currentClassId;
       delUpdate.updatedAt=new Date().toISOString();
       _lastSaveId=Math.random().toString(36);
       delUpdate._saveId=_lastSaveId;
@@ -4495,7 +4497,6 @@ setInterval(function(){
   var cleanedClasses=prepareClassesForSave();
   var periodicData={
     classes:cleanedClasses,
-    currentClassId:currentClassId||'',
     schoolName:schoolName||'',
     updatedAt:new Date().toISOString(),
     _saveId:_lastSaveId
