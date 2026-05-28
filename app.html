@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
 <title>Registro di Classe</title>
-<meta name="version" content="2025-05-28-v32-realistic-monarch"/>
+<meta name="version" content="2025-05-28-v33-smooth-fly"/>
 <meta name="description" content="Registro di Classe per la gestione della classe"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a1a2e'><path d='M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z'/></svg>"/>
 <style>
@@ -292,15 +292,15 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .theme-toggle:active{transform:scale(0.95)}
 .theme-toggle-icon{font-size:16px;line-height:1;transition:transform 0.3s}
 .theme-toggle-label{font-size:11px;font-weight:600;color:white;white-space:nowrap}
-.bfly{position:fixed;pointer-events:none;z-index:9999;transition:opacity 0.5s}
+.bfly{position:fixed;pointer-events:none;z-index:9999;transition:opacity 0.5s;background:transparent!important}
 .bfly.resting{opacity:0.9}
 .bfly.flying{opacity:1}
 [data-theme="dark"] .bfly.resting{opacity:0.8}
 [data-theme="dark"] .bfly.flying{opacity:0.95}
-.bfly svg{filter:drop-shadow(0 2px 8px rgba(0,0,0,0.25))}
-@keyframes bflyRest{0%,100%{transform:rotate(-8deg) translateY(0)}50%{transform:rotate(-5deg) translateY(-3px)}}
-@keyframes bflyFlutter{0%,100%{transform:scaleX(1)}50%{transform:scaleX(0.12)}}
-@keyframes colorShift{0%{filter:hue-rotate(0deg) saturate(1.3)}25%{filter:hue-rotate(60deg) saturate(1.5)}50%{filter:hue-rotate(120deg) saturate(1.3)}75%{filter:hue-rotate(200deg) saturate(1.5)}100%{filter:hue-rotate(360deg) saturate(1.3)}}
+.bfly svg{display:block;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.15))}
+@keyframes bflyRest{0%,100%{transform:rotate(-5deg) translateY(0)}50%{transform:rotate(-3deg) translateY(-2px)}}
+@keyframes bflyFlutter{0%,100%{transform:scaleX(1)}50%{transform:scaleX(0.3)}}
+@keyframes colorShift{0%{filter:drop-shadow(0 2px 4px rgba(0,0,0,0.15)) hue-rotate(0deg)}33%{filter:drop-shadow(0 2px 4px rgba(0,0,0,0.15)) hue-rotate(90deg)}66%{filter:drop-shadow(0 2px 4px rgba(0,0,0,0.15)) hue-rotate(200deg)}100%{filter:drop-shadow(0 2px 4px rgba(0,0,0,0.15)) hue-rotate(360deg)}}
 </style>
 </head>
 <body>
@@ -4202,41 +4202,37 @@ fetchWeather();
   var bfly=document.getElementById('bfly');
   if(!bfly) return;
 
-  // Farfalla monarca realistica - appoggiata di profilo (ali chiuse)
-  var svgClosed='<svg viewBox="0 0 60 80" width="40" height="54"><defs><linearGradient id="rWU" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#E8751A"/><stop offset="40%" stop-color="#F5952F"/><stop offset="80%" stop-color="#E8751A"/><stop offset="100%" stop-color="#C45A10"/></linearGradient><linearGradient id="rWL" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#F5952F"/><stop offset="50%" stop-color="#E8751A"/><stop offset="100%" stop-color="#C45A10"/></linearGradient><filter id="wingTex"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" result="n"/><feColorMatrix type="saturate" values="0" in="n" result="g"/><feBlend in="SourceGraphic" in2="g" mode="multiply"/></filter></defs><!-- Hindwing (sotto, parzialmente nascosto) --><path d="M28,42 C24,48 16,56 12,60 C10,63 10,67 14,68 C18,68 24,62 28,56 C30,52 30,46 28,42Z" fill="url(#rWL)" stroke="#1a1a1a" stroke-width="0.6"/><!-- Hindwing black border --><path d="M12,60 C10,63 10,67 14,68 C18,68 24,62 28,56" stroke="#1a1a1a" stroke-width="1.2" fill="none"/><!-- Forewing (sopra, piu grande) --><path d="M30,40 C28,30 22,18 16,12 C12,8 8,8 6,12 C4,16 4,24 8,32 C12,38 20,42 26,42 L30,42Z" fill="url(#rWU)" stroke="#1a1a1a" stroke-width="0.8" filter="url(#wingTex)"/><!-- Forewing black border & apex --><path d="M16,12 C12,8 8,8 6,12 C4,16 4,24 8,32" stroke="#1a1a1a" stroke-width="1.8" fill="none"/><!-- Forewing veins --><path d="M30,40 C24,34 18,24 10,14" stroke="#1a1a1a" stroke-width="0.5" fill="none" opacity="0.7"/><path d="M30,40 C22,36 14,30 6,22" stroke="#1a1a1a" stroke-width="0.4" fill="none" opacity="0.5"/><path d="M30,40 C24,40 16,38 8,32" stroke="#1a1a1a" stroke-width="0.4" fill="none" opacity="0.5"/><!-- Hindwing veins --><path d="M28,42 C22,50 16,56 12,60" stroke="#1a1a1a" stroke-width="0.4" fill="none" opacity="0.5"/><!-- White spots on forewing border --><circle cx="7" cy="14" r="0.6" fill="white" opacity="0.9"/><circle cx="5" cy="18" r="0.5" fill="white" opacity="0.85"/><circle cx="5" cy="22" r="0.5" fill="white" opacity="0.8"/><circle cx="6" cy="26" r="0.5" fill="white" opacity="0.75"/><!-- White spots on hindwing border --><circle cx="11" cy="63" r="0.5" fill="white" opacity="0.8"/><circle cx="14" cy="66" r="0.5" fill="white" opacity="0.75"/><circle cx="17" cy="64" r="0.4" fill="white" opacity="0.7"/><!-- Body - torace --><ellipse cx="32" cy="42" rx="2.5" ry="12" fill="#1a1a1a"/><!-- Body - addome --><ellipse cx="32" cy="56" rx="2" ry="10" fill="#1a1a1a"/><!-- Body segmenti bianchi --><circle cx="31" cy="38" r="0.4" fill="white" opacity="0.5"/><circle cx="33" cy="38" r="0.4" fill="white" opacity="0.5"/><circle cx="31" cy="42" r="0.4" fill="white" opacity="0.5"/><circle cx="33" cy="42" r="0.4" fill="white" opacity="0.5"/><circle cx="31" cy="46" r="0.4" fill="white" opacity="0.5"/><circle cx="33" cy="46" r="0.4" fill="white" opacity="0.5"/><circle cx="31" cy="52" r="0.4" fill="white" opacity="0.4"/><circle cx="33" cy="52" r="0.4" fill="white" opacity="0.4"/><circle cx="31" cy="56" r="0.4" fill="white" opacity="0.4"/><circle cx="33" cy="56" r="0.4" fill="white" opacity="0.4"/><circle cx="31" cy="60" r="0.4" fill="white" opacity="0.3"/><circle cx="33" cy="60" r="0.4" fill="white" opacity="0.3"/><!-- Testa --><circle cx="32" cy="30" r="3" fill="#1a1a1a"/><circle cx="31" cy="29" r="0.5" fill="#333"/><circle cx="33" cy="29" r="0.5" fill="#333"/><!-- Occhi composti --><circle cx="30" cy="29" r="1" fill="#222"/><circle cx="34" cy="29" r="1" fill="#222"/><circle cx="30" cy="29" r="0.3" fill="#555"/><circle cx="34" cy="29" r="0.3" fill="#555"/><!-- Antenne --><path d="M30,28 Q24,18 20,12" stroke="#1a1a1a" stroke-width="0.8" fill="none" stroke-linecap="round"/><path d="M34,28 Q38,20 42,14" stroke="#1a1a1a" stroke-width="0.8" fill="none" stroke-linecap="round"/><!-- Antenna clubs --><ellipse cx="20" cy="12" rx="1.2" ry="0.8" fill="#1a1a1a" transform="rotate(-30,20,12)"/><ellipse cx="42" cy="14" rx="1.2" ry="0.8" fill="#1a1a1a" transform="rotate(20,42,14)"/><!-- Zampe --><path d="M31,48 L28,54 L26,58" stroke="#1a1a1a" stroke-width="0.5" fill="none"/><path d="M33,48 L36,54 L38,58" stroke="#1a1a1a" stroke-width="0.5" fill="none"/><path d="M31,44 L27,48" stroke="#1a1a1a" stroke-width="0.4" fill="none"/><path d="M33,44 L37,48" stroke="#1a1a1a" stroke-width="0.4" fill="none"/><!-- Proboscide --><path d="M32,32 Q34,36 30,40 Q28,42 30,44" stroke="#1a1a1a" stroke-width="0.4" fill="none"/></svg>';
+  var svgClosed='<svg viewBox="0 0 40 60" width="32" height="48"><path d="M20,18 C18,12 14,6 10,4 C7,3 5,4 4,7 C3,10 4,16 8,20 C11,23 16,24 20,22Z" fill="#F0932B" stroke="#1a1a1a" stroke-width="0.6"/><path d="M20,22 C17,26 12,32 10,36 C9,38 9,41 12,41 C15,41 19,36 20,30Z" fill="#E67E22" stroke="#1a1a1a" stroke-width="0.5"/><path d="M10,4 C7,3 5,4 4,7 C3,10 4,16 8,20" stroke="#1a1a1a" stroke-width="1.2" fill="none"/><path d="M20,18 C19,14 16,10 10,6" stroke="#1a1a1a" stroke-width="0.4" fill="none" opacity="0.6"/><path d="M20,20 C15,20 10,18 6,14" stroke="#1a1a1a" stroke-width="0.3" fill="none" opacity="0.4"/><path d="M20,22 C17,26 14,30 10,36" stroke="#1a1a1a" stroke-width="0.3" fill="none" opacity="0.4"/><circle cx="5" cy="8" r="0.4" fill="white" opacity="0.9"/><circle cx="4" cy="12" r="0.35" fill="white" opacity="0.8"/><circle cx="5" cy="16" r="0.3" fill="white" opacity="0.7"/><circle cx="10" cy="38" r="0.3" fill="white" opacity="0.7"/><circle cx="13" cy="39" r="0.3" fill="white" opacity="0.6"/><ellipse cx="22" cy="30" rx="1.5" ry="14" fill="#1a1a1a"/><circle cx="22" cy="15" r="2" fill="#1a1a1a"/><circle cx="21" cy="14.5" r="0.4" fill="#444"/><circle cx="23" cy="14.5" r="0.4" fill="#444"/><path d="M20,14 Q16,7 14,3" stroke="#1a1a1a" stroke-width="0.6" fill="none" stroke-linecap="round"/><path d="M24,14 Q27,8 29,4" stroke="#1a1a1a" stroke-width="0.6" fill="none" stroke-linecap="round"/><ellipse cx="14" cy="3" rx="0.8" ry="0.5" fill="#1a1a1a" transform="rotate(-25,14,3)"/><ellipse cx="29" cy="4" rx="0.8" ry="0.5" fill="#1a1a1a" transform="rotate(15,29,4)"/><path d="M21,36 L19,42" stroke="#1a1a1a" stroke-width="0.3" fill="none"/><path d="M23,36 L25,42" stroke="#1a1a1a" stroke-width="0.3" fill="none"/></svg>';
 
-  // Farfalla monarca realistica - ali aperte (volando)
-  var svgOpen='<svg viewBox="0 0 120 100" width="100" height="84" style="animation:colorShift 8s linear infinite"><defs><linearGradient id="fWU" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#E8751A"/><stop offset="30%" stop-color="#F5952F"/><stop offset="70%" stop-color="#E8751A"/><stop offset="100%" stop-color="#C45A10"/></linearGradient><linearGradient id="fWL" x1="100%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#F5952F"/><stop offset="40%" stop-color="#E8751A"/><stop offset="100%" stop-color="#C45A10"/></linearGradient><filter id="fWingTex"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="1" result="n"/><feColorMatrix type="saturate" values="0" in="n" result="g"/><feBlend in="SourceGraphic" in2="g" mode="multiply"/></filter></defs><g id="bflyWings"><!-- Upper left forewing --><path d="M57,42 C52,24 36,10 22,8 C14,7 6,12 4,22 C2,32 8,42 16,46 C24,50 40,48 54,44Z" fill="url(#fWU)" stroke="#1a1a1a" stroke-width="1.2" filter="url(#fWingTex)"/><!-- Upper right forewing --><path d="M63,42 C68,24 84,10 98,8 C106,7 114,12 116,22 C118,32 112,42 104,46 C96,50 80,48 66,44Z" fill="url(#fWU)" stroke="#1a1a1a" stroke-width="1.2" filter="url(#fWingTex)"/><!-- Lower left hindwing --><path d="M57,46 C50,54 36,64 26,66 C18,67 14,62 16,56 C18,50 28,46 40,45 L54,46Z" fill="url(#fWL)" stroke="#1a1a1a" stroke-width="1.0"/><!-- Lower right hindwing --><path d="M63,46 C70,54 84,64 94,66 C102,67 106,62 104,56 C102,50 92,46 80,45 L66,46Z" fill="url(#fWL)" stroke="#1a1a1a" stroke-width="1.0"/><!-- Hindwing tails --><path d="M26,66 C22,76 18,86 22,94 C26,92 26,80 28,70Z" fill="url(#fWL)" stroke="#1a1a1a" stroke-width="0.6"/><path d="M94,66 C98,76 102,86 98,94 C94,92 94,80 92,70Z" fill="url(#fWL)" stroke="#1a1a1a" stroke-width="0.6"/><!-- Forewing veins left --><path d="M57,42 C46,34 32,20 16,10" stroke="#1a1a1a" stroke-width="0.7" fill="none" opacity="0.8"/><path d="M57,42 C44,38 28,32 8,26" stroke="#1a1a1a" stroke-width="0.6" fill="none" opacity="0.7"/><path d="M57,42 C46,42 30,44 12,44" stroke="#1a1a1a" stroke-width="0.5" fill="none" opacity="0.6"/><!-- Forewing veins right --><path d="M63,42 C74,34 88,20 104,10" stroke="#1a1a1a" stroke-width="0.7" fill="none" opacity="0.8"/><path d="M63,42 C76,38 92,32 112,26" stroke="#1a1a1a" stroke-width="0.6" fill="none" opacity="0.7"/><path d="M63,42 C74,42 90,44 108,44" stroke="#1a1a1a" stroke-width="0.5" fill="none" opacity="0.6"/><!-- Hindwing veins --><path d="M57,46 C46,54 34,60 22,64" stroke="#1a1a1a" stroke-width="0.5" fill="none" opacity="0.6"/><path d="M63,46 C74,54 86,60 98,64" stroke="#1a1a1a" stroke-width="0.5" fill="none" opacity="0.6"/><!-- Black borders with white spots - left --><circle cx="12" cy="10" r="1" fill="white" opacity="0.9"/><circle cx="6" cy="16" r="0.9" fill="white" opacity="0.85"/><circle cx="4" cy="22" r="0.9" fill="white" opacity="0.8"/><circle cx="4" cy="28" r="0.8" fill="white" opacity="0.75"/><circle cx="6" cy="34" r="0.8" fill="white" opacity="0.7"/><circle cx="10" cy="44" r="0.8" fill="white" opacity="0.65"/><!-- Black borders with white spots - right --><circle cx="108" cy="10" r="1" fill="white" opacity="0.9"/><circle cx="114" cy="16" r="0.9" fill="white" opacity="0.85"/><circle cx="116" cy="22" r="0.9" fill="white" opacity="0.8"/><circle cx="116" cy="28" r="0.8" fill="white" opacity="0.75"/><circle cx="114" cy="34" r="0.8" fill="white" opacity="0.7"/><circle cx="110" cy="44" r="0.8" fill="white" opacity="0.65"/><!-- Hindwing white spots --><circle cx="20" cy="66" r="0.7" fill="white" opacity="0.7"/><circle cx="24" cy="68" r="0.6" fill="white" opacity="0.65"/><circle cx="100" cy="66" r="0.7" fill="white" opacity="0.7"/><circle cx="96" cy="68" r="0.6" fill="white" opacity="0.65"/><!-- Body --><ellipse cx="60" cy="46" rx="3.5" ry="18" fill="#1a1a1a"/><ellipse cx="60" cy="46" rx="2.2" ry="16" fill="#222"/><!-- Body white spots --><circle cx="58" cy="36" r="0.5" fill="white" opacity="0.5"/><circle cx="62" cy="36" r="0.5" fill="white" opacity="0.5"/><circle cx="58" cy="40" r="0.5" fill="white" opacity="0.5"/><circle cx="62" cy="40" r="0.5" fill="white" opacity="0.5"/><circle cx="58" cy="44" r="0.5" fill="white" opacity="0.5"/><circle cx="62" cy="44" r="0.5" fill="white" opacity="0.5"/><circle cx="58" cy="48" r="0.5" fill="white" opacity="0.4"/><circle cx="62" cy="48" r="0.5" fill="white" opacity="0.4"/><circle cx="58" cy="52" r="0.5" fill="white" opacity="0.4"/><circle cx="62" cy="52" r="0.5" fill="white" opacity="0.4"/><!-- Head --><circle cx="60" cy="26" r="4.5" fill="#1a1a1a"/><!-- Compound eyes --><circle cx="57" cy="25" r="1.5" fill="#222"/><circle cx="63" cy="25" r="1.5" fill="#222"/><circle cx="57" cy="25" r="0.5" fill="#444"/><circle cx="63" cy="25" r="0.5" fill="#444"/><!-- Antennae with clubs --><path d="M57,23 Q48,12 42,6" stroke="#1a1a1a" stroke-width="1.2" fill="none" stroke-linecap="round"/><path d="M63,23 Q72,12 78,6" stroke="#1a1a1a" stroke-width="1.2" fill="none" stroke-linecap="round"/><ellipse cx="42" cy="6" rx="1.8" ry="1" fill="#1a1a1a" transform="rotate(-30,42,6)"/><ellipse cx="78" cy="6" rx="1.8" ry="1" fill="#1a1a1a" transform="rotate(30,78,6)"/></g></svg>';
+  var svgOpen='<svg viewBox="0 0 100 80" width="80" height="64"><path d="M48,38 C44,22 30,8 18,6 C10,5 3,10 2,20 C1,30 8,38 18,42 C28,45 40,42 48,40Z" fill="#F0932B" stroke="#1a1a1a" stroke-width="0.8"/><path d="M52,38 C56,22 70,8 82,6 C90,5 97,10 98,20 C99,30 92,38 82,42 C72,45 60,42 52,40Z" fill="#F0932B" stroke="#1a1a1a" stroke-width="0.8"/><path d="M48,42 C42,50 30,58 22,60 C16,61 12,58 14,52 C16,47 24,42 34,41 L46,42Z" fill="#E67E22" stroke="#1a1a1a" stroke-width="0.6"/><path d="M52,42 C58,50 70,58 78,60 C84,61 88,58 86,52 C84,47 76,42 66,41 L54,42Z" fill="#E67E22" stroke="#1a1a1a" stroke-width="0.6"/><path d="M22,60 C19,68 16,76 19,80 C22,78 22,70 24,63Z" fill="#E67E22" stroke="#1a1a1a" stroke-width="0.4"/><path d="M78,60 C81,68 84,76 81,80 C78,78 78,70 76,63Z" fill="#E67E22" stroke="#1a1a1a" stroke-width="0.4"/><path d="M48,38 C40,30 28,16 14,8" stroke="#1a1a1a" stroke-width="0.5" fill="none" opacity="0.6"/><path d="M48,38 C38,34 22,28 4,22" stroke="#1a1a1a" stroke-width="0.4" fill="none" opacity="0.5"/><path d="M52,38 C60,30 72,16 86,8" stroke="#1a1a1a" stroke-width="0.5" fill="none" opacity="0.6"/><path d="M52,38 C62,34 78,28 96,22" stroke="#1a1a1a" stroke-width="0.4" fill="none" opacity="0.5"/><path d="M48,42 C40,48 30,54 20,58" stroke="#1a1a1a" stroke-width="0.3" fill="none" opacity="0.4"/><path d="M52,42 C60,48 70,54 80,58" stroke="#1a1a1a" stroke-width="0.3" fill="none" opacity="0.4"/><circle cx="8" cy="8" r="0.7" fill="white" opacity="0.9"/><circle cx="3" cy="14" r="0.6" fill="white" opacity="0.8"/><circle cx="2" cy="20" r="0.6" fill="white" opacity="0.75"/><circle cx="4" cy="28" r="0.5" fill="white" opacity="0.65"/><circle cx="92" cy="8" r="0.7" fill="white" opacity="0.9"/><circle cx="97" cy="14" r="0.6" fill="white" opacity="0.8"/><circle cx="98" cy="20" r="0.6" fill="white" opacity="0.75"/><circle cx="96" cy="28" r="0.5" fill="white" opacity="0.65"/><circle cx="18" cy="60" r="0.5" fill="white" opacity="0.6"/><circle cx="82" cy="60" r="0.5" fill="white" opacity="0.6"/><ellipse cx="50" cy="40" rx="2.5" ry="16" fill="#1a1a1a"/><circle cx="50" cy="22" r="3.5" fill="#1a1a1a"/><circle cx="48" cy="21.5" r="0.8" fill="#333"/><circle cx="52" cy="21.5" r="0.8" fill="#333"/><path d="M47,20 Q42,10 38,5" stroke="#1a1a1a" stroke-width="0.9" fill="none" stroke-linecap="round"/><path d="M53,20 Q58,10 62,5" stroke="#1a1a1a" stroke-width="0.9" fill="none" stroke-linecap="round"/><ellipse cx="38" cy="5" rx="1.2" ry="0.7" fill="#1a1a1a" transform="rotate(-25,38,5)"/><ellipse cx="62" cy="5" rx="1.2" ry="0.7" fill="#1a1a1a" transform="rotate(25,62,5)"/></svg>';
 
   var isFlying=false;
   var currentSvg='closed';
+  var flyAnimId=null;
 
   function setSvg(type){
-    if(type==='closed'&&currentSvg!=='closed'){
-      bfly.innerHTML=svgClosed;
-      currentSvg='closed';
-    } else if(type==='open'&&currentSvg!=='open'){
-      bfly.innerHTML=svgOpen;
-      currentSvg='open';
+    if(type!==currentSvg){
+      bfly.innerHTML=type==='closed'?svgClosed:svgOpen;
+      currentSvg=type;
     }
   }
 
-  // Trova posizione sopra la data (dov'è "2026")
   function getRestPos(){
     var dateEl=document.getElementById('headerClockDate');
     if(dateEl){
       var r=dateEl.getBoundingClientRect();
-      return {x:r.right-15,y:r.top-50};
+      return {x:r.right-10,y:r.top-44};
     }
     var icon=document.querySelector('.header-icon');
     if(icon){
       var r2=icon.getBoundingClientRect();
-      return {x:r2.right-30,y:r2.top-20};
+      return {x:r2.right-20,y:r2.top-15};
     }
-    return {x:100,y:50};
+    return {x:80,y:40};
   }
 
   function restOnDate(){
+    if(flyAnimId){cancelAnimationFrame(flyAnimId);flyAnimId=null;}
     var pos=getRestPos();
     bfly.style.left=pos.x+'px';
     bfly.style.top=pos.y+'px';
@@ -4244,97 +4240,98 @@ fetchWeather();
     bfly.style.animation='bflyRest 4s ease-in-out infinite';
     bfly.style.transform='rotate(-5deg)';
     setSvg('closed');
+    var svgEl=bfly.querySelector('svg');
+    if(svgEl){svgEl.style.animation='';svgEl.style.transform='';svgEl.style.filter='';}
   }
 
   function startFlying(){
     if(isFlying) return;
     isFlying=true;
-
     setSvg('open');
     bfly.className='bfly flying';
     bfly.style.animation='';
     bfly.style.transform='';
 
-    setTimeout(function(){
-      var svgEl=bfly.querySelector('svg');
-      if(svgEl) svgEl.style.animation='bflyFlutter 0.25s ease-in-out infinite, colorShift 8s linear infinite';
-
+    requestAnimationFrame(function(){
       var w=window.innerWidth;
       var h=window.innerHeight;
-      var startX=parseInt(bfly.style.left)||100;
-      var startY=parseInt(bfly.style.top)||100;
+      var startX=parseInt(bfly.style.left)||80;
+      var startY=parseInt(bfly.style.top)||40;
+      var totalDuration=12000;
+      var startTime=performance.now();
+      var restPos=getRestPos();
 
-      var points=[];
-      var numPoints=5;
-      for(var i=0;i<numPoints;i++){
-        points.push({
-          x:30+Math.random()*(w-100),
-          y:30+Math.random()*(h-120)
-        });
+      var p0={x:startX,y:startY};
+      var p1={x:Math.random()*w*0.6+w*0.1,y:Math.random()*h*0.3};
+      var p2={x:Math.random()*w*0.6+w*0.2,y:Math.random()*h*0.5+h*0.2};
+      var p3={x:Math.random()*w*0.6+w*0.1,y:Math.random()*h*0.3+h*0.1};
+      var p4={x:restPos.x,y:restPos.y};
+
+      function easeInOut(t){return t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;}
+
+      function bezierPoint(t,pts){
+        var n=pts.length-1;
+        var seg=Math.min(Math.floor(t*n),n-1);
+        var lt=(t*n)-seg;
+        var a=pts[seg],b=pts[seg+1];
+        var cpx1=a.x+(b.x-a.x)*0.5,cpy1=a.y+(b.y-a.y)*0.5-60;
+        var cpx2=a.x+(b.x-a.x)*0.5,cpy2=a.y+(b.y-a.y)*0.5+40;
+        var mt=1-lt;
+        return {
+          x:mt*mt*mt*a.x+3*mt*mt*lt*cpx1+3*mt*lt*lt*cpx2+lt*lt*lt*b.x,
+          y:mt*mt*mt*a.y+3*mt*mt*lt*cpy1+3*mt*lt*lt*cpy2+lt*lt*lt*b.y
+        };
       }
 
-      var totalDuration=10000;
-      var segmentTime=totalDuration/(numPoints+1);
-      var currentSegment=0;
+      var colorAngle=0;
 
-      function flyToNext(){
-        if(currentSegment>=numPoints){
-          var restPos=getRestPos();
-          flyTo(restPos.x,restPos.y,function(){
-            isFlying=false;
-            restOnDate();
-          });
-          return;
+      function animate(now){
+        var elapsed=now-startTime;
+        var t=Math.min(elapsed/totalDuration,1);
+        var et=easeInOut(t);
+        var pts=[p0,p1,p2,p3,p4];
+        var pos=bezierPoint(et,pts);
+        var waveX=Math.sin(t*Math.PI*6)*15;
+        var waveY=Math.cos(t*Math.PI*4)*20;
+
+        bfly.style.left=(pos.x+waveX)+'px';
+        bfly.style.top=(pos.y+waveY)+'px';
+
+        var nextT=Math.min(t+0.01,1);
+        var nextPos=bezierPoint(easeInOut(nextT),pts);
+        var dx=nextPos.x-pos.x,dy=nextPos.y-pos.y;
+        var angle=Math.atan2(dy,dx)*180/Math.PI;
+        bfly.style.transform='rotate('+(angle*0.15)+'deg)';
+
+        var svgEl=bfly.querySelector('svg');
+        if(svgEl){
+          var flutter=Math.sin(now*0.008);
+          svgEl.style.transform='scaleX('+(0.3+0.7*Math.abs(flutter))+')';
+          svgEl.style.transformOrigin='center center';
+          colorAngle=(colorAngle+1.5)%360;
+          svgEl.style.filter='hue-rotate('+colorAngle+'deg)';
         }
-        var target=points[currentSegment];
-        currentSegment++;
-        flyTo(target.x,target.y,flyToNext);
-      }
 
-      function flyTo(tx,ty,cb){
-        var sx=parseInt(bfly.style.left)||startX;
-        var sy=parseInt(bfly.style.top)||startY;
-        var dx=tx-sx;
-        var dy=ty-sy;
-        var dist=Math.sqrt(dx*dx+dy*dy);
-        var duration=Math.max(1200,Math.min(segmentTime,dist*3));
-        var startTime=performance.now();
-
-        function step(now){
-          var elapsed=now-startTime;
-          var t=Math.min(elapsed/duration,1);
-          var ease=t<0.5?2*t*t:(1-Math.pow(-2*t+2,2)/2);
-          var cx=sx+dx*ease;
-          var cy=sy+dy*ease-Math.sin(t*Math.PI)*30;
-          bfly.style.left=cx+'px';
-          bfly.style.top=cy+'px';
-          var angle=Math.atan2(dy,dx)*180/Math.PI;
-          bfly.style.transform='rotate('+(angle*0.3)+'deg)';
-
-          if(t<1){
-            requestAnimationFrame(step);
-          } else {
-            if(cb) cb();
-          }
+        if(t<1){
+          flyAnimId=requestAnimationFrame(animate);
+        } else {
+          flyAnimId=null;
+          isFlying=false;
+          restOnDate();
         }
-        requestAnimationFrame(step);
       }
 
-      flyToNext();
-    },80);
+      flyAnimId=requestAnimationFrame(animate);
+    });
   }
 
   setTimeout(function(){
     restOnDate();
-    setInterval(function(){
-      if(!isFlying) startFlying();
-    },20000);
-    setTimeout(function(){ if(!isFlying) startFlying(); },5000);
+    setInterval(function(){if(!isFlying) startFlying();},22000);
+    setTimeout(function(){if(!isFlying) startFlying();},6000);
   },2000);
 
-  window.addEventListener('resize',function(){
-    if(!isFlying) restOnDate();
-  });
+  window.addEventListener('resize',function(){if(!isFlying) restOnDate();});
 })();
 // ---- FINE FARFALLA ----
 // Aggiorna meteo ogni 30 minuti
