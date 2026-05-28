@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
 <title>Registro di Classe</title>
-<meta name="version" content="2025-05-28-v30-pointed-colorshift"/>
+<meta name="version" content="2025-05-28-v31-closed-rest"/>
 <meta name="description" content="Registro di Classe per la gestione della classe"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a1a2e'><path d='M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z'/></svg>"/>
 <style>
@@ -4201,130 +4201,145 @@ fetchWeather();
 (function(){
   var bfly=document.getElementById('bfly');
   if(!bfly) return;
-  
-  // Farfalla con ali a punta e colori che cambiano
-  bfly.innerHTML='<svg viewBox="0 0 120 110" width="90" height="82" style="animation:colorShift 8s linear infinite"><defs><linearGradient id="wgU" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#7B1FA2"/><stop offset="30%" stop-color="#2196F3"/><stop offset="60%" stop-color="#4CAF50"/><stop offset="100%" stop-color="#FFEB3B"/></linearGradient><linearGradient id="wgL" x1="100%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#E040FB"/><stop offset="35%" stop-color="#00BCD4"/><stop offset="70%" stop-color="#8BC34A"/><stop offset="100%" stop-color="#FFC107"/></linearGradient></defs><g id="bflyWings"><!-- Upper left wing - pointed/scalloped --><path d="M57,44 C52,30 40,18 30,10 C24,6 16,4 10,8 C4,13 2,22 4,30 C6,36 12,42 18,46 C24,49 32,50 38,48 L48,46 L54,45Z" fill="url(#wgU)" stroke="#1a1a1a" stroke-width="1.5"/><!-- Upper right wing - pointed/scalloped --><path d="M63,44 C68,30 80,18 90,10 C96,6 104,4 110,8 C116,13 118,22 116,30 C114,36 108,42 102,46 C96,49 88,50 82,48 L72,46 L66,45Z" fill="url(#wgU)" stroke="#1a1a1a" stroke-width="1.5"/><!-- Lower left wing - pointed with tail --><path d="M57,48 C50,54 38,62 28,64 C22,65 18,62 20,56 C22,52 28,48 34,46 L48,46 L54,47Z" fill="url(#wgL)" stroke="#1a1a1a" stroke-width="1.3"/><!-- Lower right wing - pointed with tail --><path d="M63,48 C70,54 82,62 92,64 C98,65 102,62 100,56 C98,52 92,48 86,46 L72,46 L66,47Z" fill="url(#wgL)" stroke="#1a1a1a" stroke-width="1.3"/><!-- Left tail --><path d="M28,64 C24,74 18,88 22,98 C26,96 28,82 30,68Z" fill="url(#wgL)" stroke="#1a1a1a" stroke-width="0.8"/><!-- Right tail --><path d="M92,64 C96,74 102,88 98,98 C94,96 92,82 90,68Z" fill="url(#wgL)" stroke="#1a1a1a" stroke-width="0.8"/><!-- Scalloped points on upper left --><path d="M10,8 L6,2" stroke="#1a1a1a" stroke-width="1" fill="none"/><path d="M4,30 L0,28" stroke="#1a1a1a" stroke-width="0.8" fill="none"/><path d="M18,46 L14,50" stroke="#1a1a1a" stroke-width="0.8" fill="none"/><!-- Scalloped points on upper right --><path d="M110,8 L114,2" stroke="#1a1a1a" stroke-width="1" fill="none"/><path d="M116,30 L120,28" stroke="#1a1a1a" stroke-width="0.8" fill="none"/><path d="M102,46 L106,50" stroke="#1a1a1a" stroke-width="0.8" fill="none"/><!-- Veins upper left --><path d="M57,44 C46,36 34,24 14,10" stroke="#1a1a1a" stroke-width="0.7" fill="none" opacity="0.7"/><path d="M57,44 C44,40 28,36 8,30" stroke="#1a1a1a" stroke-width="0.6" fill="none" opacity="0.6"/><path d="M57,44 C44,44 30,46 14,48" stroke="#1a1a1a" stroke-width="0.5" fill="none" opacity="0.5"/><!-- Veins upper right --><path d="M63,44 C74,36 86,24 106,10" stroke="#1a1a1a" stroke-width="0.7" fill="none" opacity="0.7"/><path d="M63,44 C76,40 92,36 112,30" stroke="#1a1a1a" stroke-width="0.6" fill="none" opacity="0.6"/><path d="M63,44 C76,44 90,46 106,48" stroke="#1a1a1a" stroke-width="0.5" fill="none" opacity="0.5"/><!-- Veins lower left --><path d="M57,48 C46,54 36,60 26,64" stroke="#1a1a1a" stroke-width="0.5" fill="none" opacity="0.6"/><!-- Veins lower right --><path d="M63,48 C74,54 84,60 94,64" stroke="#1a1a1a" stroke-width="0.5" fill="none" opacity="0.6"/><!-- Decorative dots on edges --><circle cx="8" cy="6" r="1.2" fill="white" opacity="0.8"/><circle cx="2" cy="20" r="1" fill="white" opacity="0.7"/><circle cx="6" cy="34" r="1" fill="white" opacity="0.65"/><circle cx="16" cy="48" r="0.9" fill="white" opacity="0.6"/><circle cx="112" cy="6" r="1.2" fill="white" opacity="0.8"/><circle cx="118" cy="20" r="1" fill="white" opacity="0.7"/><circle cx="114" cy="34" r="1" fill="white" opacity="0.65"/><circle cx="104" cy="48" r="0.9" fill="white" opacity="0.6"/><!-- Inner wing sparkles --><circle cx="30" cy="28" r="2" fill="white" opacity="0.25"/><circle cx="90" cy="28" r="2" fill="white" opacity="0.25"/><circle cx="36" cy="56" r="1.5" fill="white" opacity="0.2"/><circle cx="84" cy="56" r="1.5" fill="white" opacity="0.2"/><!-- Body --><ellipse cx="60" cy="48" rx="3.2" ry="18" fill="#1a1a1a"/><ellipse cx="60" cy="48" rx="2" ry="16" fill="#2a2a2a"/><!-- Body segments --><line x1="57" y1="40" x2="63" y2="40" stroke="#3a3a3a" stroke-width="0.5"/><line x1="57" y1="46" x2="63" y2="46" stroke="#3a3a3a" stroke-width="0.5"/><line x1="57" y1="52" x2="63" y2="52" stroke="#3a3a3a" stroke-width="0.5"/><!-- Head --><circle cx="60" cy="28" r="4" fill="#1a1a1a"/><!-- Eyes --><circle cx="58" cy="27" r="1" fill="#E040FB"/><circle cx="62" cy="27" r="1" fill="#E040FB"/><!-- Antennae --><path d="M57,25 Q48,12 40,4" stroke="#1a1a1a" stroke-width="1.3" fill="none" stroke-linecap="round"/><path d="M63,25 Q72,12 80,4" stroke="#1a1a1a" stroke-width="1.3" fill="none" stroke-linecap="round"/><circle cx="40" cy="4" r="2" fill="#E040FB"/><circle cx="80" cy="4" r="2" fill="#E040FB"/></g></svg>';
-  
-  var wingsSvg=bfly.querySelector('svg');
+
+  // SVG ali chiuse (profilo - ferma)
+  var svgClosed='<svg viewBox="0 0 30 50" width="22" height="38" style="animation:colorShift 8s linear infinite"><defs><linearGradient id="wgC" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#7B1FA2"/><stop offset="25%" stop-color="#2196F3"/><stop offset="55%" stop-color="#4CAF50"/><stop offset="100%" stop-color="#FFEB3B"/></linearGradient></defs><path d="M15,8 C13,6 9,4 7,6 C5,8 6,14 9,20 C11,24 13,28 15,30Z" fill="url(#wgC)" stroke="#1a1a1a" stroke-width="0.8"/><path d="M15,8 C17,6 21,4 23,6 C25,8 24,14 21,20 C19,24 17,28 15,30Z" fill="url(#wgC)" stroke="#1a1a1a" stroke-width="0.8"/><path d="M15,28 C13,30 10,34 9,38 C8,42 10,46 15,48Z" fill="url(#wgC)" stroke="#1a1a1a" stroke-width="0.6"/><path d="M15,28 C17,30 20,34 21,38 C22,42 20,46 15,48Z" fill="url(#wgC)" stroke="#1a1a1a" stroke-width="0.6"/><path d="M15,8 C14,10 14,28 15,30" stroke="#1a1a1a" stroke-width="0.5" fill="none" opacity="0.6"/><path d="M15,8 C16,10 16,28 15,30" stroke="#1a1a1a" stroke-width="0.5" fill="none" opacity="0.6"/><ellipse cx="15" cy="26" rx="2" ry="16" fill="#1a1a1a"/><circle cx="15" cy="10" r="2.5" fill="#1a1a1a"/><circle cx="14" cy="9.5" r="0.6" fill="#E040FB"/><circle cx="16" cy="9.5" r="0.6" fill="#E040FB"/><path d="M13,8 Q10,3 8,1" stroke="#1a1a1a" stroke-width="0.8" fill="none" stroke-linecap="round"/><path d="M17,8 Q20,3 22,1" stroke="#1a1a1a" stroke-width="0.8" fill="none" stroke-linecap="round"/><circle cx="8" cy="1" r="1" fill="#E040FB"/><circle cx="22" cy="1" r="1" fill="#E040FB"/></svg>';
+
+  // SVG ali aperte (volando)
+  var svgOpen='<svg viewBox="0 0 120 110" width="90" height="82" style="animation:colorShift 8s linear infinite"><defs><linearGradient id="wgU" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#7B1FA2"/><stop offset="30%" stop-color="#2196F3"/><stop offset="60%" stop-color="#4CAF50"/><stop offset="100%" stop-color="#FFEB3B"/></linearGradient><linearGradient id="wgL" x1="100%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#E040FB"/><stop offset="35%" stop-color="#00BCD4"/><stop offset="70%" stop-color="#8BC34A"/><stop offset="100%" stop-color="#FFC107"/></linearGradient></defs><g id="bflyWings"><path d="M57,44 C52,30 40,18 30,10 C24,6 16,4 10,8 C4,13 2,22 4,30 C6,36 12,42 18,46 C24,49 32,50 38,48 L48,46 L54,45Z" fill="url(#wgU)" stroke="#1a1a1a" stroke-width="1.5"/><path d="M63,44 C68,30 80,18 90,10 C96,6 104,4 110,8 C116,13 118,22 116,30 C114,36 108,42 102,46 C96,49 88,50 82,48 L72,46 L66,45Z" fill="url(#wgU)" stroke="#1a1a1a" stroke-width="1.5"/><path d="M57,48 C50,54 38,62 28,64 C22,65 18,62 20,56 C22,52 28,48 34,46 L48,46 L54,47Z" fill="url(#wgL)" stroke="#1a1a1a" stroke-width="1.3"/><path d="M63,48 C70,54 82,62 92,64 C98,65 102,62 100,56 C98,52 92,48 86,46 L72,46 L66,47Z" fill="url(#wgL)" stroke="#1a1a1a" stroke-width="1.3"/><path d="M28,64 C24,74 18,88 22,98 C26,96 28,82 30,68Z" fill="url(#wgL)" stroke="#1a1a1a" stroke-width="0.8"/><path d="M92,64 C96,74 102,88 98,98 C94,96 92,82 90,68Z" fill="url(#wgL)" stroke="#1a1a1a" stroke-width="0.8"/><path d="M10,8 L6,2" stroke="#1a1a1a" stroke-width="1" fill="none"/><path d="M4,30 L0,28" stroke="#1a1a1a" stroke-width="0.8" fill="none"/><path d="M18,46 L14,50" stroke="#1a1a1a" stroke-width="0.8" fill="none"/><path d="M110,8 L114,2" stroke="#1a1a1a" stroke-width="1" fill="none"/><path d="M116,30 L120,28" stroke="#1a1a1a" stroke-width="0.8" fill="none"/><path d="M102,46 L106,50" stroke="#1a1a1a" stroke-width="0.8" fill="none"/><path d="M57,44 C46,36 34,24 14,10" stroke="#1a1a1a" stroke-width="0.7" fill="none" opacity="0.7"/><path d="M57,44 C44,40 28,36 8,30" stroke="#1a1a1a" stroke-width="0.6" fill="none" opacity="0.6"/><path d="M63,44 C74,36 86,24 106,10" stroke="#1a1a1a" stroke-width="0.7" fill="none" opacity="0.7"/><path d="M63,44 C76,40 92,36 112,30" stroke="#1a1a1a" stroke-width="0.6" fill="none" opacity="0.6"/><circle cx="8" cy="6" r="1.2" fill="white" opacity="0.8"/><circle cx="2" cy="20" r="1" fill="white" opacity="0.7"/><circle cx="112" cy="6" r="1.2" fill="white" opacity="0.8"/><circle cx="118" cy="20" r="1" fill="white" opacity="0.7"/><circle cx="30" cy="28" r="2" fill="white" opacity="0.25"/><circle cx="90" cy="28" r="2" fill="white" opacity="0.25"/><ellipse cx="60" cy="48" rx="3.2" ry="18" fill="#1a1a1a"/><ellipse cx="60" cy="48" rx="2" ry="16" fill="#2a2a2a"/><circle cx="60" cy="28" r="4" fill="#1a1a1a"/><circle cx="58" cy="27" r="1" fill="#E040FB"/><circle cx="62" cy="27" r="1" fill="#E040FB"/><path d="M57,25 Q48,12 40,4" stroke="#1a1a1a" stroke-width="1.3" fill="none" stroke-linecap="round"/><path d="M63,25 Q72,12 80,4" stroke="#1a1a1a" stroke-width="1.3" fill="none" stroke-linecap="round"/><circle cx="40" cy="4" r="2" fill="#E040FB"/><circle cx="80" cy="4" r="2" fill="#E040FB"/></g></svg>';
+
   var isFlying=false;
-  var flyTimer=null;
-  var restTimer=null;
-  
-  function getSchoolIconPos(){
-    var icon=document.querySelector('.header-icon');
-    if(!icon) return null;
-    var r=icon.getBoundingClientRect();
-    return {x:r.right-25,y:r.top-10};
-  }
-  
-  function restOnSchool(){
-    var pos=getSchoolIconPos();
-    if(pos){
-      bfly.style.left=pos.x+'px';
-      bfly.style.top=pos.y+'px';
+  var currentSvg='closed';
+
+  function setSvg(type){
+    if(type==='closed'&&currentSvg!=='closed'){
+      bfly.innerHTML=svgClosed;
+      currentSvg='closed';
+    } else if(type==='open'&&currentSvg!=='open'){
+      bfly.innerHTML=svgOpen;
+      currentSvg='open';
     }
-    bfly.className='bfly resting';
-    bfly.style.animation='bflyRest 2.5s ease-in-out infinite';
-    wingsSvg.style.animation='';
   }
-  
+
+  // Trova posizione sopra la data (dov'è "2026")
+  function getRestPos(){
+    var dateEl=document.getElementById('headerClockDate');
+    if(dateEl){
+      var r=dateEl.getBoundingClientRect();
+      // Sopra il testo "2026", leggermente a destra
+      return {x:r.right-20,y:r.top-34};
+    }
+    // Fallback: icona scuola
+    var icon=document.querySelector('.header-icon');
+    if(icon){
+      var r2=icon.getBoundingClientRect();
+      return {x:r2.right-25,y:r2.top-10};
+    }
+    return {x:100,y:50};
+  }
+
+  function restOnDate(){
+    var pos=getRestPos();
+    bfly.style.left=pos.x+'px';
+    bfly.style.top=pos.y+'px';
+    bfly.className='bfly resting';
+    bfly.style.animation='bflyRest 3s ease-in-out infinite';
+    setSvg('closed');
+  }
+
   function startFlying(){
     if(isFlying) return;
     isFlying=true;
+
+    // Passa ad ali aperte
+    setSvg('open');
     bfly.className='bfly flying';
     bfly.style.animation='';
-    
-    var w=window.innerWidth;
-    var h=window.innerHeight;
-    var startX=parseInt(bfly.style.left)||100;
-    var startY=parseInt(bfly.style.top)||100;
-    
-    // Percorso volo: visita punti casuali per 10 secondi
-    var points=[];
-    var numPoints=5;
-    for(var i=0;i<numPoints;i++){
-      points.push({
-        x:30+Math.random()*(w-100),
-        y:30+Math.random()*(h-120)
-      });
-    }
-    
-    var totalDuration=10000; // 10 secondi di volo
-    var segmentTime=totalDuration/(numPoints+1);
-    var currentSegment=0;
-    var flutterInterval;
-    
-    // Sbatto le ali durante il volo
-    wingsSvg.style.animation='bflyFlutter 0.25s ease-in-out infinite';
-    
-    function flyToNext(){
-      if(currentSegment>=numPoints){
-        // Torna alla scuola
-        var schoolPos=getSchoolIconPos();
-        if(schoolPos){
-          flyTo(schoolPos.x,schoolPos.y,function(){
+
+    // Piccolo ritardo per far apparire le ali aperte
+    setTimeout(function(){
+      var svgEl=bfly.querySelector('svg');
+      if(svgEl) svgEl.style.animation='bflyFlutter 0.25s ease-in-out infinite, colorShift 8s linear infinite';
+
+      var w=window.innerWidth;
+      var h=window.innerHeight;
+      var startX=parseInt(bfly.style.left)||100;
+      var startY=parseInt(bfly.style.top)||100;
+
+      var points=[];
+      var numPoints=5;
+      for(var i=0;i<numPoints;i++){
+        points.push({
+          x:30+Math.random()*(w-100),
+          y:30+Math.random()*(h-120)
+        });
+      }
+
+      var totalDuration=10000;
+      var segmentTime=totalDuration/(numPoints+1);
+      var currentSegment=0;
+
+      function flyToNext(){
+        if(currentSegment>=numPoints){
+          var restPos=getRestPos();
+          flyTo(restPos.x,restPos.y,function(){
             isFlying=false;
-            restOnSchool();
+            restOnDate();
           });
-        } else {
-          isFlying=false;
-          restOnSchool();
+          return;
         }
-        return;
+        var target=points[currentSegment];
+        currentSegment++;
+        flyTo(target.x,target.y,flyToNext);
       }
-      var target=points[currentSegment];
-      currentSegment++;
-      flyTo(target.x,target.y,flyToNext);
-    }
-    
-    function flyTo(tx,ty,cb){
-      var sx=parseInt(bfly.style.left)||startX;
-      var sy=parseInt(bfly.style.top)||startY;
-      var dx=tx-sx;
-      var dy=ty-sy;
-      var dist=Math.sqrt(dx*dx+dy*dy);
-      var duration=Math.max(1200,Math.min(segmentTime,dist*3));
-      var startTime=performance.now();
-      
-      function step(now){
-        var elapsed=now-startTime;
-        var t=Math.min(elapsed/duration,1);
-        // Ease in-out
-        var ease=t<0.5?2*t*t:(1-Math.pow(-2*t+2,2)/2);
-        var cx=sx+dx*ease;
-        var cy=sy+dy*ease-Math.sin(t*Math.PI)*30; // arco verso l'alto
-        bfly.style.left=cx+'px';
-        bfly.style.top=cy+'px';
-        // Ruota nella direzione del volo
-        var angle=Math.atan2(dy,dx)*180/Math.PI;
-        bfly.style.transform='rotate('+(angle*0.3)+'deg)';
-        
-        if(t<1){
-          requestAnimationFrame(step);
-        } else {
-          if(cb) cb();
+
+      function flyTo(tx,ty,cb){
+        var sx=parseInt(bfly.style.left)||startX;
+        var sy=parseInt(bfly.style.top)||startY;
+        var dx=tx-sx;
+        var dy=ty-sy;
+        var dist=Math.sqrt(dx*dx+dy*dy);
+        var duration=Math.max(1200,Math.min(segmentTime,dist*3));
+        var startTime=performance.now();
+
+        function step(now){
+          var elapsed=now-startTime;
+          var t=Math.min(elapsed/duration,1);
+          var ease=t<0.5?2*t*t:(1-Math.pow(-2*t+2,2)/2);
+          var cx=sx+dx*ease;
+          var cy=sy+dy*ease-Math.sin(t*Math.PI)*30;
+          bfly.style.left=cx+'px';
+          bfly.style.top=cy+'px';
+          var angle=Math.atan2(dy,dx)*180/Math.PI;
+          bfly.style.transform='rotate('+(angle*0.3)+'deg)';
+
+          if(t<1){
+            requestAnimationFrame(step);
+          } else {
+            if(cb) cb();
+          }
         }
+        requestAnimationFrame(step);
       }
-      requestAnimationFrame(step);
-    }
-    
-    flyToNext();
+
+      flyToNext();
+    },80);
   }
-  
+
   // Aspetta che il render sia fatto, poi posiziona
   setTimeout(function(){
-    restOnSchool();
-    // Ogni 10 secondi vola per 10 secondi
-    flyTimer=setInterval(function(){
+    restOnDate();
+    // Ogni 20 secondi vola per 10 secondi
+    setInterval(function(){
       if(!isFlying) startFlying();
-    },20000); // 10s riposo + 10s volo = 20s ciclo
+    },20000);
     // Prima volata dopo 5 secondi
     setTimeout(function(){ if(!isFlying) startFlying(); },5000);
   },2000);
-  
+
   // Riposiziona quando la finestra ridimensiona
   window.addEventListener('resize',function(){
-    if(!isFlying) restOnSchool();
+    if(!isFlying) restOnDate();
   });
 })();
 // ---- FINE FARFALLA ----
