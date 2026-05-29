@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
 <title>Registro di Classe</title>
-<meta name="version" content="2025-05-30-v46-braccio-naturale"/>
+<meta name="version" content="2025-05-30-v47-braccio-curva-naturale"/>
 <meta name="description" content="Registro di Classe per la gestione della classe"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a1a2e'><path d='M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z'/></svg>"/>
 <style>
@@ -4694,34 +4694,34 @@ fetchWeather();
     '<circle cx="33" cy="47" r="4.5" fill="#FFB6C1" opacity="0.3"/>'+
 
     // === BRACCIO SINISTRO + CERCHIO BOLLE (tutto nel gruppo animato) ===
-    // Il braccio parte dalla spalla (x=30, y=68), gomito piegato in giù (x=22, y=80), avambraccio sale verso la bocca
+    // Braccio naturale: dalla spalla in avanti con curva morbida verso la bocca
     '<g id="blowArm">'+
-    // Spalla / inizio braccio (dall'attaccatura della maglia)
-    '<path d="M30,68 Q26,76 22,82 Q18,72 16,56" stroke="#FFD5B8" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'+
-    // Pezzo di manica sul braccio
-    '<path d="M30,68 Q26,76 24,80" stroke="#5DADE2" stroke-width="6" fill="none" stroke-linecap="round"/>'+
-    // Mano che tiene il bastoncino (dita che impugnano)
-    '<ellipse cx="16" cy="54" rx="3.5" ry="4" fill="#FFD5B8" stroke="#E8C4A0" stroke-width="0.3" transform="rotate(-15,16,54)"/>'+
+    // Braccio: spalla (30,68) -> curva morbida in avanti -> mano vicino alla bocca (18,54)
+    '<path d="M30,68 Q24,66 20,60 Q18,56 18,54" stroke="#FFD5B8" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'+
+    // Manica del braccio (sulla parte alta del braccio vicino alla spalla)
+    '<path d="M30,68 Q27,67 25,65" stroke="#5DADE2" stroke-width="6.5" fill="none" stroke-linecap="round"/>'+
+    // Mano che tiene il bastoncino
+    '<ellipse cx="18" cy="54" rx="3.5" ry="3" fill="#FFD5B8" stroke="#E8C4A0" stroke-width="0.3" transform="rotate(-20,18,54)"/>'+
     // Dito pollice
-    '<path d="M14,52 Q12,50 13,48" stroke="#FFD5B8" stroke-width="2" fill="none" stroke-linecap="round"/>'+
-    // Bastoncino del cerchio bolle (manico che va verso sinistra/bocca)
-    '<line x1="16" y1="54" x2="-2" y2="48" stroke="#C68642" stroke-width="2" stroke-linecap="round"/>'+
+    '<path d="M16,52 Q14,50 15,48" stroke="#FFD5B8" stroke-width="2" fill="none" stroke-linecap="round"/>'+
+    // Bastoncino del cerchio bolle (manico che va verso sinistra/davanti alla bocca)
+    '<line x1="18" y1="54" x2="2" y2="48" stroke="#C68642" stroke-width="2" stroke-linecap="round"/>'+
     // Cerchio bolle di sapone COMPLETO con film iridescente - davanti alla bocca!
-    '<circle cx="-2" cy="34" r="13" fill="url(#soapFilmG)" stroke="rgba(120,180,255,0.7)" stroke-width="2"/>'+
+    '<circle cx="2" cy="34" r="13" fill="url(#soapFilmG)" stroke="rgba(120,180,255,0.7)" stroke-width="2"/>'+
     // Bordo riflesso superiore del cerchio
-    '<path d="M-13,30 Q-7,24 -2,22 Q3,24 9,30" stroke="rgba(255,255,255,0.5)" stroke-width="1.2" fill="none"/>'+
+    '<path d="M-9,30 Q-3,24 2,22 Q7,24 13,30" stroke="rgba(255,255,255,0.5)" stroke-width="1.2" fill="none"/>'+
     // Riflesso interno (effetto arcobaleno)
-    '<path d="M-8,28 Q-4,25 0,27" stroke="rgba(200,220,255,0.5)" stroke-width="0.8" fill="none"/>'+
+    '<path d="M-4,28 Q0,25 4,27" stroke="rgba(200,220,255,0.5)" stroke-width="0.8" fill="none"/>'+
     // Gocciolina di sapone sul cerchio in basso
-    '<ellipse cx="-2" cy="47" rx="1.8" ry="2.5" fill="rgba(150,200,255,0.35)" stroke="rgba(120,180,255,0.3)" stroke-width="0.4"/>'+
+    '<ellipse cx="2" cy="47" rx="1.8" ry="2.5" fill="rgba(150,200,255,0.35)" stroke="rgba(120,180,255,0.3)" stroke-width="0.4"/>'+
     // Piccolo riflesso sul film
-    '<circle cx="-6" cy="30" r="2" fill="rgba(255,255,255,0.15)"/>'+
+    '<circle cx="-2" cy="30" r="2" fill="rgba(255,255,255,0.15)"/>'+
     '</g>'+
 
-    // Braccio destro (sulla bretella zaino) - parte dalla spalla destra in modo naturale
-    '<path d="M50,68 Q54,72 56,78 Q58,74 58,70" stroke="#FFD5B8" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>'+
+    // Braccio destro (sulla bretella zaino) - curva naturale dalla spalla
+    '<path d="M50,68 Q54,70 56,74 Q57,78 56,80" stroke="#FFD5B8" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>'+
     // Pezzo di manica destra
-    '<path d="M50,68 Q52,72 53,76" stroke="#5DADE2" stroke-width="5.5" fill="none" stroke-linecap="round" opacity="0.7"/>'+
+    '<path d="M50,68 Q53,70 54,73" stroke="#5DADE2" stroke-width="5.5" fill="none" stroke-linecap="round" opacity="0.7"/>'+
 
     // === GAMBE ===
     // Pantaloncini
@@ -4868,8 +4868,8 @@ fetchWeather();
     var childY=parseInt(el.style.top)||0;
     // Le bolle escono dal cerchio del sapone
     // ViewBox: -30 0 150 160 (width=150), rendering width=120
-    // Cerchio a cx=-2, cy=34 nella viewBox
-    var startX=childX+((-2+30)/150)*120;
+    // Cerchio a cx=2, cy=34 nella viewBox
+    var startX=childX+((2+30)/150)*120;
     var startY=childY+(34/160)*145;
 
     var bubble=document.createElement('div');
