@@ -4768,7 +4768,7 @@ fetchWeather();
     var cheek=svgEl.querySelector('circle[cy="47"]');
     var arm=svgEl.querySelector('#blowArm');
 
-    // Fase 1: Preparazione - bocca si apre, guancia si gonfia, braccio si muove avanti
+    // Fase 1: Preparazione - bocca si apre, guancia si gonfia, braccio si allunga fuori
     var blowStart=performance.now();
     var blowDuration=1800; // durata soffio
     var holdDuration=600; // tiene
@@ -4791,9 +4791,13 @@ fetchWeather();
           cheek.setAttribute('r',4.5+3*ease);
           cheek.setAttribute('opacity',0.3+0.2*ease);
         }
-        // Braccio va leggermente avanti
+        // Braccio si muove dal viso verso fuori (movimento ampio)
+        // Rotazione attorno alla spalla (34,68) + traslazione
         if(arm){
-          arm.setAttribute('transform','translate('+(3*ease)+','+(-2*ease)+')');
+          var armAngle=-12*ease; // ruota in fuori di 12 gradi
+          var armX=8*ease;       // trasla verso sinistra/esterno
+          var armY=-6*ease;      // trasla verso l'alto
+          arm.setAttribute('transform','translate('+armX+','+armY+') rotate('+armAngle+',34,68)');
         }
 
         requestAnimationFrame(animFrame);
@@ -4801,7 +4805,7 @@ fetchWeather();
         // Fase mantieni
         requestAnimationFrame(animFrame);
       } else {
-        // Fase ritorno - bocca si chiude
+        // Fase ritorno - bocca si chiude, braccio torna
         var returnStart=now;
         var returnDur=800;
         function returnFrame(now2){
@@ -4817,7 +4821,10 @@ fetchWeather();
             cheek.setAttribute('opacity',0.5-0.2*ease2);
           }
           if(arm){
-            arm.setAttribute('transform','translate('+(3-3*ease2)+','+(-2+2*ease2)+')');
+            var armAngle2=-12*(1-ease2);
+            var armX2=8*(1-ease2);
+            var armY2=-6*(1-ease2);
+            arm.setAttribute('transform','translate('+armX2+','+armY2+') rotate('+armAngle2+',34,68)');
           }
           if(rt<1){
             requestAnimationFrame(returnFrame);
