@@ -4692,20 +4692,20 @@ fetchWeather();
   el.innerHTML=svg;
 
   function positionChild(){
-    // Posiziona sotto il meteo, a destra
+    // Posiziona in linea con il meteo, a destra del blocco meteo
     var weatherEl=document.querySelector('.header-weather');
     if(!weatherEl){
       var dateEl=document.getElementById('headerClockDate');
       if(!dateEl) return;
       var r=dateEl.getBoundingClientRect();
       el.style.left=(r.right+10)+'px';
-      el.style.top=(r.bottom+4)+'px';
+      el.style.top=(r.top)+'px';
       return;
     }
     var wr=weatherEl.getBoundingClientRect();
-    // Sotto il meteo, spostato più a sinistra (lontano dal bordo destro)
-    var x=wr.left+10;
-    var y=wr.bottom+4;
+    // In linea con il meteo (stessa altezza), subito a destra
+    var x=wr.right+8;
+    var y=wr.top-30;
     el.style.left=x+'px';
     el.style.top=y+'px';
   }
