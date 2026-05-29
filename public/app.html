@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
 <title>Registro di Classe</title>
-<meta name="version" content="2025-05-30-v47-braccio-curva-naturale"/>
+<meta name="version" content="2025-05-30-v48-braccio-abbassato"/>
 <meta name="description" content="Registro di Classe per la gestione della classe"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a1a2e'><path d='M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z'/></svg>"/>
 <style>
@@ -4694,28 +4694,28 @@ fetchWeather();
     '<circle cx="33" cy="47" r="4.5" fill="#FFB6C1" opacity="0.3"/>'+
 
     // === BRACCIO SINISTRO + CERCHIO BOLLE (tutto nel gruppo animato) ===
-    // Braccio naturale: dalla spalla in avanti con curva morbida verso la bocca
+    // Braccio naturale: dalla spalla in avanti con curva morbida verso la bocca - ABBASSATO
     '<g id="blowArm">'+
-    // Braccio: spalla (30,68) -> curva morbida in avanti -> mano vicino alla bocca (18,54)
-    '<path d="M30,68 Q24,66 20,60 Q18,56 18,54" stroke="#FFD5B8" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'+
+    // Braccio: spalla (30,68) -> curva morbida in avanti -> mano (18,62)
+    '<path d="M30,68 Q24,68 20,64 Q18,62 18,62" stroke="#FFD5B8" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'+
     // Manica del braccio (sulla parte alta del braccio vicino alla spalla)
-    '<path d="M30,68 Q27,67 25,65" stroke="#5DADE2" stroke-width="6.5" fill="none" stroke-linecap="round"/>'+
+    '<path d="M30,68 Q27,68 25,67" stroke="#5DADE2" stroke-width="6.5" fill="none" stroke-linecap="round"/>'+
     // Mano che tiene il bastoncino
-    '<ellipse cx="18" cy="54" rx="3.5" ry="3" fill="#FFD5B8" stroke="#E8C4A0" stroke-width="0.3" transform="rotate(-20,18,54)"/>'+
+    '<ellipse cx="18" cy="62" rx="3.5" ry="3" fill="#FFD5B8" stroke="#E8C4A0" stroke-width="0.3" transform="rotate(-20,18,62)"/>'+
     // Dito pollice
-    '<path d="M16,52 Q14,50 15,48" stroke="#FFD5B8" stroke-width="2" fill="none" stroke-linecap="round"/>'+
+    '<path d="M16,60 Q14,58 15,56" stroke="#FFD5B8" stroke-width="2" fill="none" stroke-linecap="round"/>'+
     // Bastoncino del cerchio bolle (manico che va verso sinistra/davanti alla bocca)
-    '<line x1="18" y1="54" x2="2" y2="48" stroke="#C68642" stroke-width="2" stroke-linecap="round"/>'+
+    '<line x1="18" y1="62" x2="2" y2="56" stroke="#C68642" stroke-width="2" stroke-linecap="round"/>'+
     // Cerchio bolle di sapone COMPLETO con film iridescente - davanti alla bocca!
-    '<circle cx="2" cy="34" r="13" fill="url(#soapFilmG)" stroke="rgba(120,180,255,0.7)" stroke-width="2"/>'+
+    '<circle cx="2" cy="42" r="13" fill="url(#soapFilmG)" stroke="rgba(120,180,255,0.7)" stroke-width="2"/>'+
     // Bordo riflesso superiore del cerchio
-    '<path d="M-9,30 Q-3,24 2,22 Q7,24 13,30" stroke="rgba(255,255,255,0.5)" stroke-width="1.2" fill="none"/>'+
+    '<path d="M-9,38 Q-3,32 2,30 Q7,32 13,38" stroke="rgba(255,255,255,0.5)" stroke-width="1.2" fill="none"/>'+
     // Riflesso interno (effetto arcobaleno)
-    '<path d="M-4,28 Q0,25 4,27" stroke="rgba(200,220,255,0.5)" stroke-width="0.8" fill="none"/>'+
+    '<path d="M-4,36 Q0,33 4,35" stroke="rgba(200,220,255,0.5)" stroke-width="0.8" fill="none"/>'+
     // Gocciolina di sapone sul cerchio in basso
-    '<ellipse cx="2" cy="47" rx="1.8" ry="2.5" fill="rgba(150,200,255,0.35)" stroke="rgba(120,180,255,0.3)" stroke-width="0.4"/>'+
+    '<ellipse cx="2" cy="55" rx="1.8" ry="2.5" fill="rgba(150,200,255,0.35)" stroke="rgba(120,180,255,0.3)" stroke-width="0.4"/>'+
     // Piccolo riflesso sul film
-    '<circle cx="-2" cy="30" r="2" fill="rgba(255,255,255,0.15)"/>'+
+    '<circle cx="-2" cy="38" r="2" fill="rgba(255,255,255,0.15)"/>'+
     '</g>'+
 
     // Braccio destro (sulla bretella zaino) - curva naturale dalla spalla
@@ -4868,9 +4868,9 @@ fetchWeather();
     var childY=parseInt(el.style.top)||0;
     // Le bolle escono dal cerchio del sapone
     // ViewBox: -30 0 150 160 (width=150), rendering width=120
-    // Cerchio a cx=2, cy=34 nella viewBox
+    // Cerchio a cx=2, cy=42 nella viewBox
     var startX=childX+((2+30)/150)*120;
-    var startY=childY+(34/160)*145;
+    var startY=childY+(42/160)*145;
 
     var bubble=document.createElement('div');
     bubble.className='soap-bubble';
