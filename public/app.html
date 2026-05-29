@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
 <title>Registro di Classe</title>
-<meta name="version" content="2025-05-30-v53-stelline-fix"/>
+<meta name="version" content="2025-05-30-v54-giostra-cavalli"/>
 <meta name="description" content="Registro di Classe per la gestione della classe"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a1a2e'><path d='M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z'/></svg>"/>
 <style>
@@ -306,11 +306,10 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .altalena svg{display:block;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.15))}
 @keyframes colorShift{0%{filter:drop-shadow(0 2px 6px rgba(0,0,0,0.18)) hue-rotate(0deg)}33%{filter:drop-shadow(0 2px 6px rgba(0,0,0,0.18)) hue-rotate(90deg)}66%{filter:drop-shadow(0 2px 6px rgba(0,0,0,0.18)) hue-rotate(200deg)}100%{filter:drop-shadow(0 2px 6px rgba(0,0,0,0.18)) hue-rotate(360deg)}}
 
-.bolle-child{position:fixed;pointer-events:none;z-index:9997}
-.bolle-child svg{display:block;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.12))}
-.soap-bubble{position:fixed;pointer-events:none;z-index:9996;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,0.8),rgba(173,216,230,0.3) 40%,rgba(100,180,255,0.15) 60%,rgba(255,255,255,0.05));box-shadow:inset 0 0 4px rgba(255,255,255,0.6),0 0 6px rgba(100,180,255,0.2);border:1px solid rgba(255,255,255,0.3);animation:bubbleFloat var(--float-dur,4s) ease-out forwards}
-@keyframes bubbleFloat{0%{opacity:0.9;transform:translate(0,0) scale(0.3)}10%{opacity:1;transform:translate(var(--bx1,2px),var(--by1,-10px)) scale(0.7)}30%{opacity:0.95;transform:translate(var(--bx2,5px),var(--by2,-30px)) scale(1)}60%{opacity:0.7;transform:translate(var(--bx3,-3px),var(--by3,-60px)) scale(1.1)}80%{opacity:0.35;transform:translate(var(--bx4,2px),var(--by4,-85px)) scale(1.15)}100%{opacity:0;transform:translate(var(--bx5,0px),var(--by5,-110px)) scale(1.2)}}
-@keyframes childBlowBreath{0%,100%{transform:scaleX(1)}50%{transform:scaleX(1.06)}}
+.giostra{position:fixed;pointer-events:none;z-index:9997}
+.giostra svg{display:block;filter:drop-shadow(0 3px 10px rgba(0,0,0,0.2))}
+@keyframes giostraSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes giostraHorseBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 .falling-star{position:absolute;pointer-events:none;z-index:1;color:#ffd700;opacity:0;animation:starFall var(--star-dur,5s) ease-in var(--star-delay,0s) infinite;font-size:var(--star-size,14px);text-shadow:0 0 8px var(--star-glow,#ffd700)}
 @keyframes starFall{0%{opacity:0;transform:translateY(-10px) rotate(0deg) scale(0.3)}8%{opacity:1;transform:translateY(10px) rotate(40deg) scale(1)}30%{opacity:0.85;transform:translateY(var(--star-mid,80px)) rotate(150deg) scale(0.95)}70%{opacity:0.5;transform:translateY(var(--star-far,160px)) rotate(300deg) scale(0.8)}90%{opacity:0.15;transform:translateY(var(--star-end,220px)) rotate(350deg) scale(0.5)}100%{opacity:0;transform:translateY(var(--star-end,220px)) rotate(360deg) scale(0.2)}}
 </style>
@@ -318,7 +317,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 <body>
 <div class="bfly resting" id="bfly"></div>
 <div class="altalena" id="altalena"></div>
-<div class="bolle-child" id="bolleChild"></div>
+<div class="giostra" id="giostra"></div>
 <div id="app" class="app"></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
@@ -4611,310 +4610,226 @@ fetchWeather();
 })();
 // ---- FINE ALTALENA ----
 
-// ---- BAMBINO BOLLE DI SAPONE ----
+// ---- GIOSTRA CON CAVALLI ----
 (function(){
-  var el=document.getElementById('bolleChild');
+  var el=document.getElementById('giostra');
   if(!el) return;
 
-  // Bambino di profilo - testa ben fatta, cappello visiera, zaino
-  // ViewBox allargato a sinistra per contenere il cerchio delle bolle e l'animazione del braccio
-  var svg='<svg viewBox="-30 0 150 160" width="120" height="145">'+
+  // Giostra con 4 cavalli su un piatto rotante, tetto a strisce colorate
+  var svg='<svg viewBox="0 0 200 200" width="130" height="130">'+
     '<defs>'+
-      // Gradiente pelle
-      '<radialGradient id="skinG" cx="40%" cy="40%"><stop offset="0%" stop-color="#FFE0CC"/><stop offset="100%" stop-color="#FFD5B8"/></radialGradient>'+
-      // Gradiente capelli
-      '<linearGradient id="hairG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7B4B2A"/><stop offset="100%" stop-color="#5D3A1A"/></linearGradient>'+
-      // Gradiente zaino
-      '<linearGradient id="backpackG" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#D63031"/><stop offset="100%" stop-color="#E74C3C"/></linearGradient>'+
-      // Gradiente cappello
-      '<linearGradient id="hatG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3498DB"/><stop offset="100%" stop-color="#2471A3"/></linearGradient>'+
-      // Gradiente film di sapone (iridescente)
-      '<radialGradient id="soapFilmG" cx="35%" cy="35%"><stop offset="0%" stop-color="rgba(255,255,255,0.25)"/><stop offset="40%" stop-color="rgba(140,200,255,0.15)"/><stop offset="70%" stop-color="rgba(180,140,255,0.12)"/><stop offset="100%" stop-color="rgba(100,200,180,0.08)"/></radialGradient>'+
+      '<radialGradient id="gRoofG" cx="50%" cy="40%"><stop offset="0%" stop-color="#FF6B9D"/><stop offset="100%" stop-color="#C0392B"/></radialGradient>'+
+      '<linearGradient id="gPoleG" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#D4AC0D"/><stop offset="50%" stop-color="#F7DC6F"/><stop offset="100%" stop-color="#D4AC0D"/></linearGradient>'+
+      '<linearGradient id="gBaseG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8E44AD"/><stop offset="100%" stop-color="#6C3483"/></linearGradient>'+
+      '<radialGradient id="gPlateG" cx="50%" cy="50%"><stop offset="0%" stop-color="#D2B4DE"/><stop offset="100%" stop-color="#8E44AD"/></radialGradient>'+
     '</defs>'+
 
-    // === ZAINO (dietro, a destra) ===
-    '<path d="M58,58 C56,56 54,56 54,58 L52,100 C52,102 54,104 56,104 L70,104 C72,104 74,102 74,100 L72,58 C72,56 70,56 68,58 Z" fill="url(#backpackG)" stroke="#C0392B" stroke-width="0.6"/>'+
-    '<rect x="55" y="74" width="14" height="18" rx="3" fill="#C0392B" stroke="none"/>'+
-    '<line x1="55" y1="74" x2="69" y2="74" stroke="#922B21" stroke-width="0.8"/>'+
-    '<circle cx="62" cy="83" r="1.5" fill="#F1C40F"/>'+
-    // Bretella zaino
-    '<path d="M52,62 Q56,56 60,60" stroke="#E74C3C" stroke-width="3.5" fill="none" stroke-linecap="round"/>'+
-    // Portachiavi
-    '<circle cx="63" cy="106" r="2.5" fill="#F1C40F" stroke="#D4AC0D" stroke-width="0.5"/>'+
-    '<line x1="63" y1="104" x2="63" y2="101" stroke="#D4AC0D" stroke-width="0.6"/>'+
+    // === BASE della giostra ===
+    '<ellipse cx="100" cy="178" rx="80" ry="14" fill="url(#gBaseG)" stroke="#5B2C6F" stroke-width="1.5"/>'+
+    // Decorazione base
+    '<ellipse cx="100" cy="178" rx="60" ry="10" fill="none" stroke="#D7BDE2" stroke-width="0.8" stroke-dasharray="4,3"/>'+
 
-    // === CORPO (maglia azzurra) ===
-    '<path d="M44,62 C38,62 30,68 28,78 L26,108 L62,108 L60,78 C58,68 52,62 46,62 Z" fill="#5DADE2" stroke="#2E86C1" stroke-width="0.6"/>'+
-    // Colletto a V
-    '<path d="M41,62 L45,70 L49,62" fill="white" stroke="none" opacity="0.85"/>'+
-    // Collo
-    '<path d="M41,52 C41,50 49,50 49,52 L49,62 L41,62 Z" fill="#FFD5B8"/>'+
+    // === PIASTRO ROTANTE (gruppo che gira) ===
+    '<g id="giostraPlatform" style="transform-origin:100px 140px;animation:giostraSpin 8s linear infinite">'+
 
-    // === TESTA DI PROFILO (molto più curata) ===
-    // Forma testa - mento arrotondato, fronte
-    '<path d="M54,22 C54,8 28,8 28,22 L26,32 C26,42 28,48 32,52 L34,54 C36,56 40,58 44,56 L46,54 C50,50 54,44 54,36 Z" fill="url(#skinG)" stroke="#E8C4A0" stroke-width="0.5"/>'+
+      // Piattaforma disco
+      '<ellipse cx="100" cy="155" rx="70" ry="12" fill="url(#gPlateG)" stroke="#7D3C98" stroke-width="1"/>'+
+      // Decorazione piattaforma - cerchi dorati
+      '<ellipse cx="100" cy="155" rx="55" ry="9" fill="none" stroke="#F7DC6F" stroke-width="0.8"/>'+
+      '<ellipse cx="100" cy="155" rx="35" ry="6" fill="none" stroke="#F7DC6F" stroke-width="0.6"/>'+
 
-    // Orecchio (destra, visibile di profilo)
-    '<path d="M54,30 C58,30 60,34 60,38 C60,42 58,44 54,44" fill="#FFD5B8" stroke="#E8C4A0" stroke-width="0.5"/>'+
-    '<path d="M54,33 C56,33 57,35 57,38 C57,41 56,42 54,42" fill="#F0C0A0" stroke="none"/>'+
+      // === CAVALLO 1 (destra) - bianco ===
+      '<g style="animation:giostraHorseBob 1.5s ease-in-out infinite">'+
+        // Palo decorativo
+        '<line x1="155" y1="155" x2="155" y2="85" stroke="url(#gPoleG)" stroke-width="3.5" stroke-linecap="round"/>'+
+        // Anelli dorati sul palo
+        '<ellipse cx="155" cy="95" rx="4" ry="1.5" fill="#F7DC6F" stroke="#D4AC0D" stroke-width="0.5"/>'+
+        '<ellipse cx="155" cy="115" rx="4" ry="1.5" fill="#F7DC6F" stroke="#D4AC0D" stroke-width="0.5"/>'+
+        // Cavallo corpo
+        '<ellipse cx="150" cy="120" rx="18" ry="8" fill="white" stroke="#BBB" stroke-width="0.8"/>'+
+        // Collo
+        '<path d="M140,118 C138,108 140,98 148,95" fill="white" stroke="#BBB" stroke-width="0.8"/>'+
+        // Testa
+        '<ellipse cx="150" cy="95" rx="7" ry="5" fill="white" stroke="#BBB" stroke-width="0.8" transform="rotate(-20,150,95)"/>'+
+        // Orecchio
+        '<path d="M148,91 L146,86 L149,89" fill="white" stroke="#BBB" stroke-width="0.5"/>'+
+        // Occhio
+        '<circle cx="152" cy="94" r="1.5" fill="#333"/>'+
+        '<circle cx="152.5" cy="93.5" r="0.5" fill="white"/>'+
+        // Narice
+        '<circle cx="156" cy="96" r="0.8" fill="#E8A0A0"/>'+
+        // Criniera
+        '<path d="M142,100 C140,96 138,94 139,90 C141,92 143,94 144,98" fill="#FF69B4" stroke="#E91E8C" stroke-width="0.3"/>'+
+        '<path d="M144,97 C142,93 140,91 141,87 C143,89 145,92 146,96" fill="#FF69B4" stroke="#E91E8C" stroke-width="0.3"/>'+
+        // Coda
+        '<path d="M167,118 C172,116 175,112 174,108 C173,110 170,114 168,116" fill="#FF69B4" stroke="#E91E8C" stroke-width="0.3"/>'+
+        // Gambe
+        '<line x1="140" y1="127" x2="138" y2="140" stroke="white" stroke-width="3" stroke-linecap="round"/>'+
+        '<line x1="147" y1="127" x2="149" y2="140" stroke="white" stroke-width="3" stroke-linecap="round"/>'+
+        '<line x1="155" y1="127" x2="153" y2="140" stroke="white" stroke-width="3" stroke-linecap="round"/>'+
+        '<line x1="162" y1="127" x2="164" y2="140" stroke="white" stroke-width="3" stroke-linecap="round"/>'+
+        // Zoccoli
+        '<circle cx="138" cy="141" r="2" fill="#8B4513"/>'+
+        '<circle cx="149" cy="141" r="2" fill="#8B4513"/>'+
+        '<circle cx="153" cy="141" r="2" fill="#8B4513"/>'+
+        '<circle cx="164" cy="141" r="2" fill="#8B4513"/>'+
+        // Sella
+        '<ellipse cx="150" cy="115" rx="10" ry="4" fill="#FF69B4" stroke="#E91E8C" stroke-width="0.5"/>'+
+        '<path d="M146,115 L145,120 L155,120 L154,115" fill="#E91E8C" stroke="none"/>'+
+        // Finimenti dorati
+        '<path d="M143,115 L157,115" stroke="#F7DC6F" stroke-width="1.5" fill="none"/>'+
+      '</g>'+
 
-    // Capelli dietro/ai lati (sotto il cappello)
-    '<path d="M28,22 C28,12 54,12 54,22 L54,28 C52,24 48,20 41,20 C34,20 30,24 28,28 Z" fill="url(#hairG)"/>'+
-    // Ciuffo che esce dal cappello dietro
-    '<path d="M52,16 C54,14 56,16 55,20" stroke="#6B4226" stroke-width="2" fill="none" stroke-linecap="round"/>'+
+      // === CAVALLO 2 (sinistra) - marrone ===
+      '<g style="animation:giostraHorseBob 1.5s ease-in-out 0.4s infinite">'+
+        '<line x1="45" y1="155" x2="45" y2="85" stroke="url(#gPoleG)" stroke-width="3.5" stroke-linecap="round"/>'+
+        '<ellipse cx="45" cy="95" rx="4" ry="1.5" fill="#F7DC6F" stroke="#D4AC0D" stroke-width="0.5"/>'+
+        '<ellipse cx="45" cy="115" rx="4" ry="1.5" fill="#F7DC6F" stroke="#D4AC0D" stroke-width="0.5"/>'+
+        // Cavallo marrone (specchiato)
+        '<ellipse cx="50" cy="120" rx="18" ry="8" fill="#8B6914" stroke="#6B4F12" stroke-width="0.8"/>'+
+        '<path d="M60,118 C62,108 60,98 52,95" fill="#8B6914" stroke="#6B4F12" stroke-width="0.8"/>'+
+        '<ellipse cx="50" cy="95" rx="7" ry="5" fill="#8B6914" stroke="#6B4F12" stroke-width="0.8" transform="rotate(20,50,95)"/>'+
+        '<path d="M52,91 L54,86 L51,89" fill="#8B6914" stroke="#6B4F12" stroke-width="0.5"/>'+
+        '<circle cx="48" cy="94" r="1.5" fill="#333"/>'+
+        '<circle cx="47.5" cy="93.5" r="0.5" fill="white"/>'+
+        '<circle cx="44" cy="96" r="0.8" fill="#C08080"/>'+
+        // Criniera blu
+        '<path d="M58,100 C60,96 62,94 61,90 C59,92 57,94 56,98" fill="#5DADE2" stroke="#2E86C1" stroke-width="0.3"/>'+
+        '<path d="M56,97 C58,93 60,91 59,87 C57,89 55,92 54,96" fill="#5DADE2" stroke="#2E86C1" stroke-width="0.3"/>'+
+        // Coda
+        '<path d="M33,118 C28,116 25,112 26,108 C27,110 30,114 32,116" fill="#5DADE2" stroke="#2E86C1" stroke-width="0.3"/>'+
+        // Gambe
+        '<line x1="60" y1="127" x2="62" y2="140" stroke="#8B6914" stroke-width="3" stroke-linecap="round"/>'+
+        '<line x1="53" y1="127" x2="51" y2="140" stroke="#8B6914" stroke-width="3" stroke-linecap="round"/>'+
+        '<line x1="45" y1="127" x2="47" y2="140" stroke="#8B6914" stroke-width="3" stroke-linecap="round"/>'+
+        '<line x1="38" y1="127" x2="36" y2="140" stroke="#8B6914" stroke-width="3" stroke-linecap="round"/>'+
+        '<circle cx="62" cy="141" r="2" fill="#5D3A1A"/>'+
+        '<circle cx="51" cy="141" r="2" fill="#5D3A1A"/>'+
+        '<circle cx="47" cy="141" r="2" fill="#5D3A1A"/>'+
+        '<circle cx="36" cy="141" r="2" fill="#5D3A1A"/>'+
+        // Sella
+        '<ellipse cx="50" cy="115" rx="10" ry="4" fill="#5DADE2" stroke="#2E86C1" stroke-width="0.5"/>'+
+        '<path d="M54,115 L55,120 L45,120 L46,115" fill="#2E86C1" stroke="none"/>'+
+        '<path d="M43,115 L57,115" stroke="#F7DC6F" stroke-width="1.5" fill="none"/>'+
+      '</g>'+
 
-    // === CAPPELLO CON VISIERA ===
-    // Cupola
-    '<path d="M26,24 C26,6 56,6 56,24 L54,26 L28,26 Z" fill="url(#hatG)" stroke="#1A5276" stroke-width="0.5"/>'+
-    // Visiera (sporge a sinistra)
-    '<path d="M28,26 L26,26 L6,32 L4,28 L8,24 L26,24 Z" fill="#1A5276" stroke="#0E3A5A" stroke-width="0.5"/>'+
-    // Bordo cappello
-    '<line x1="28" y1="26" x2="54" y2="26" stroke="#1A5276" stroke-width="1.5"/>'+
-    // Logo stella sul cappello
-    '<polygon points="41,12 42.5,16 46.5,16 43.5,19 44.5,23 41,20.5 37.5,23 38.5,19 35.5,16 39.5,16" fill="#F1C40F" stroke="#D4AC0D" stroke-width="0.3"/>'+
+      // === CAVALLO 3 (dietro, alto) - grigio ===
+      '<g style="animation:giostraHorseBob 1.5s ease-in-out 0.8s infinite;opacity:0.7">'+
+        '<line x1="100" y1="155" x2="100" y2="80" stroke="url(#gPoleG)" stroke-width="3" stroke-linecap="round"/>'+
+        '<ellipse cx="100" cy="90" rx="3.5" ry="1.3" fill="#F7DC6F" stroke="#D4AC0D" stroke-width="0.4"/>'+
+        '<ellipse cx="100" cy="108" rx="3.5" ry="1.3" fill="#F7DC6F" stroke="#D4AC0D" stroke-width="0.4"/>'+
+        // Cavallo grigio (frontale, più piccolo = lontano)
+        '<ellipse cx="100" cy="112" rx="14" ry="7" fill="#B0B0B0" stroke="#999" stroke-width="0.6"/>'+
+        '<path d="M93,110 C92,102 93,96 97,93" fill="#B0B0B0" stroke="#999" stroke-width="0.6"/>'+
+        '<path d="M107,110 C108,102 107,96 103,93" fill="#B0B0B0" stroke="#999" stroke-width="0.6"/>'+
+        '<ellipse cx="100" cy="93" rx="5" ry="4" fill="#B0B0B0" stroke="#999" stroke-width="0.6"/>'+
+        '<circle cx="98" cy="92" r="1.2" fill="#333"/>'+
+        '<circle cx="102" cy="92" r="1.2" fill="#333"/>'+
+        // Criniera rossa
+        '<path d="M96,98 C94,95 94,93 95,90 C96,92 97,95 97,97" fill="#E74C3C" stroke="#C0392B" stroke-width="0.3"/>'+
+        '<path d="M104,98 C106,95 106,93 105,90 C104,92 103,95 103,97" fill="#E74C3C" stroke="#C0392B" stroke-width="0.3"/>'+
+        // Gambe
+        '<line x1="92" y1="118" x2="91" y2="130" stroke="#B0B0B0" stroke-width="2.5" stroke-linecap="round"/>'+
+        '<line x1="108" y1="118" x2="109" y2="130" stroke="#B0B0B0" stroke-width="2.5" stroke-linecap="round"/>'+
+        '<circle cx="91" cy="131" r="1.5" fill="#666"/>'+
+        '<circle cx="109" cy="131" r="1.5" fill="#666"/>'+
+        // Sella
+        '<ellipse cx="100" cy="108" rx="8" ry="3" fill="#E74C3C" stroke="#C0392B" stroke-width="0.4"/>'+
+      '</g>'+
 
-    // Sopracciglio
-    '<path d="M30,28 Q36,25 42,28" stroke="#5D3A1A" stroke-width="1.2" fill="none" stroke-linecap="round"/>'+
-    // Occhio (più dettagliato - di profilo)
-    '<ellipse cx="35" cy="34" rx="4" ry="4.5" fill="white" stroke="#1a1a1a" stroke-width="0.4"/>'+
-    '<circle cx="34" cy="34" r="2.2" fill="#2C3E50"/>'+
-    '<circle cx="33" cy="33" r="0.8" fill="white"/>'+
-    // Ciglio superiore (palpebra)
-    '<path d="M31,30 Q35,28 39,30" stroke="#333" stroke-width="0.8" fill="none"/>'+
-    // Ciglia
-    '<line x1="31" y1="30" x2="30" y2="29" stroke="#333" stroke-width="0.5"/>'+
-    '<line x1="39" y1="30" x2="40" y2="29" stroke="#333" stroke-width="0.5"/>'+
+      // === CAVALLO 4 (davanti basso, cucciolo) - nocciola ===
+      '<g style="animation:giostraHorseBob 1.8s ease-in-out 1.2s infinite;opacity:0.8">'+
+        '<line x1="78" y1="155" x2="78" y2="100" stroke="url(#gPoleG)" stroke-width="2.5" stroke-linecap="round"/>'+
+        '<ellipse cx="78" cy="108" rx="3" ry="1.2" fill="#F7DC6F" stroke="#D4AC0D" stroke-width="0.4"/>'+
+        // Cucciolo piccolo
+        '<ellipse cx="78" cy="125" rx="12" ry="6" fill="#D4A76A" stroke="#B8860B" stroke-width="0.6"/>'+
+        '<path d="M72,123 C71,116 73,110 77,108" fill="#D4A76A" stroke="#B8860B" stroke-width="0.6"/>'+
+        '<ellipse cx="77" cy="108" rx="5" ry="3.5" fill="#D4A76A" stroke="#B8860B" stroke-width="0.6" transform="rotate(-15,77,108)"/>'+
+        '<circle cx="75.5" cy="107" r="1.2" fill="#333"/>'+
+        // Criniera verde
+        '<path d="M73,113 C72,110 72,108 73,105 C74,107 75,110 75,112" fill="#2ECC71" stroke="#27AE60" stroke-width="0.3"/>'+
+        // Gambe
+        '<line x1="72" y1="130" x2="71" y2="142" stroke="#D4A76A" stroke-width="2.5" stroke-linecap="round"/>'+
+        '<line x1="84" y1="130" x2="85" y2="142" stroke="#D4A76A" stroke-width="2.5" stroke-linecap="round"/>'+
+        '<circle cx="71" cy="143" r="1.5" fill="#8B4513"/>'+
+        '<circle cx="85" cy="143" r="1.5" fill="#8B4513"/>'+
+        // Sella
+        '<ellipse cx="78" cy="121" rx="7" ry="3" fill="#2ECC71" stroke="#27AE60" stroke-width="0.4"/>'+
+      '</g>'+
 
-    // Naso (profilo più naturale)
-    '<path d="M30,36 Q26,40 28,44 Q30,45 32,44 L30,42" fill="#F0C8A0" stroke="#DDB090" stroke-width="0.5"/>'+
+    '</g>'+ // fine piattaforma rotante
 
-    // Bocca che soffia - "O" con labbra
-    '<ellipse cx="26" cy="50" rx="3" ry="2.5" fill="#D06060" stroke="#B04040" stroke-width="0.5"/>'+
-    '<ellipse cx="26" cy="50" rx="2" ry="1.5" fill="#C05050"/>'+
+    // === TETTO A STRISCE COLORATE (non ruota - sopra tutto) ===
+    // Cone del tetto
+    '<path d="M100,30 L30,85 L170,85 Z" fill="url(#gRoofG)" stroke="#A93226" stroke-width="1"/>'+
+    // Strisce colorate sul tetto
+    '<path d="M100,30 L65,57.5 L56,62.5 L100,30" fill="#F7DC6F" opacity="0.6"/>'+
+    '<path d="M100,30 L78,65 L69,70 L100,30" fill="#5DADE2" opacity="0.6"/>'+
+    '<path d="M100,30 L91,72.5 L82,77.5 L100,30" fill="#2ECC71" opacity="0.6"/>'+
+    '<path d="M100,30 L109,72.5 L118,77.5 L100,30" fill="#FF69B4" opacity="0.6"/>'+
+    '<path d="M100,30 L122,65 L131,70 L100,30" fill="#F39C12" opacity="0.6"/>'+
+    '<path d="M100,30 L135,57.5 L144,62.5 L100,30" fill="#8E44AD" opacity="0.6"/>'+
+    // Bordo del tetto (grondaia)
+    '<ellipse cx="100" cy="85" rx="70" ry="10" fill="#C0392B" stroke="#A93226" stroke-width="1"/>'+
+    // Decorazione grondaia - lucine
+    '<circle cx="40" cy="85" r="2.5" fill="#FFD700" stroke="#FFA500" stroke-width="0.5"/>'+
+    '<circle cx="55" cy="81" r="2.5" fill="#5DADE2" stroke="#2E86C1" stroke-width="0.5"/>'+
+    '<circle cx="70" cy="79" r="2.5" fill="#FF69B4" stroke="#E91E8C" stroke-width="0.5"/>'+
+    '<circle cx="85" cy="78" r="2.5" fill="#2ECC71" stroke="#27AE60" stroke-width="0.5"/>'+
+    '<circle cx="100" cy="77.5" r="2.5" fill="#FFD700" stroke="#FFA500" stroke-width="0.5"/>'+
+    '<circle cx="115" cy="78" r="2.5" fill="#FF69B4" stroke="#E91E8C" stroke-width="0.5"/>'+
+    '<circle cx="130" cy="79" r="2.5" fill="#5DADE2" stroke="#2E86C1" stroke-width="0.5"/>'+
+    '<circle cx="145" cy="81" r="2.5" fill="#2ECC71" stroke="#27AE60" stroke-width="0.5"/>'+
+    '<circle cx="160" cy="85" r="2.5" fill="#FFD700" stroke="#FFA500" stroke-width="0.5"/>'+
 
-    // Guancia arrossata
-    '<circle cx="33" cy="47" r="4.5" fill="#FFB6C1" opacity="0.3"/>'+
+    // === PUNTALE SUPERIORE ===
+    '<circle cx="100" cy="30" r="6" fill="#FFD700" stroke="#D4AC0D" stroke-width="1"/>'+
+    // Bandierina
+    '<line x1="100" y1="24" x2="100" y2="12" stroke="#D4AC0D" stroke-width="1.5"/>'+
+    '<path d="M100,12 L114,16 L100,20 Z" fill="#E74C3C" stroke="#C0392B" stroke-width="0.5"/>'+
 
-    // === BRACCIO SINISTRO + CERCHIO BOLLE (tutto nel gruppo animato) ===
-    // Il braccio parte PROFONDAMENTE dentro il corpo, così la spalla non si stacca mai
-    // Animazione: SOLO rotazione intorno alla spalla, niente translate!
-    '<g id="blowArm">'+
-    // Spalla grande (sovrapposta alla maglia - resta attaccata durante rotazione)
-    '<ellipse cx="36" cy="66" rx="8" ry="6" fill="#5DADE2" stroke="none"/>'+
-    // Braccio: parte da DENTRO il corpo (38,68) -> curva -> mano (18,62)
-    '<path d="M38,68 Q32,68 26,65 Q22,63 18,62" stroke="#FFD5B8" stroke-width="5.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'+
-    // Manica del braccio (copre la giunzione)
-    '<path d="M38,68 Q34,68 30,66" stroke="#5DADE2" stroke-width="7.5" fill="none" stroke-linecap="round"/>'+
-    // Mano che tiene il bastoncino
-    '<ellipse cx="18" cy="62" rx="3.5" ry="3" fill="#FFD5B8" stroke="#E8C4A0" stroke-width="0.3" transform="rotate(-20,18,62)"/>'+
-    // Dito pollice
-    '<path d="M16,60 Q14,58 15,56" stroke="#FFD5B8" stroke-width="2" fill="none" stroke-linecap="round"/>'+
-    // Bastoncino del cerchio bolle (manico che va verso sinistra/davanti alla bocca)
-    '<line x1="18" y1="62" x2="2" y2="56" stroke="#C68642" stroke-width="2" stroke-linecap="round"/>'+
-    // Cerchio bolle di sapone PIU PICCOLO con film iridescente - davanti alla bocca!
-    '<circle cx="2" cy="42" r="9" fill="url(#soapFilmG)" stroke="rgba(120,180,255,0.7)" stroke-width="1.5"/>'+
-    // Bordo riflesso superiore del cerchio
-    '<path d="M-5,38 Q-1,34 2,33 Q5,34 9,38" stroke="rgba(255,255,255,0.5)" stroke-width="1" fill="none"/>'+
-    // Riflesso interno (effetto arcobaleno)
-    '<path d="M-2,37 Q0,35 2,36" stroke="rgba(200,220,255,0.5)" stroke-width="0.6" fill="none"/>'+
-    // Gocciolina di sapone sul cerchio in basso
-    '<ellipse cx="2" cy="51" rx="1.2" ry="2" fill="rgba(150,200,255,0.35)" stroke="rgba(120,180,255,0.3)" stroke-width="0.4"/>'+
-    // Piccolo riflesso sul film
-    '<circle cx="-1" cy="38" r="1.5" fill="rgba(255,255,255,0.15)"/>'+
-    '</g>'+
-
-    // Braccio destro (sulla bretella zaino) - curva naturale dalla spalla
-    '<path d="M50,68 Q54,70 56,74 Q57,78 56,80" stroke="#FFD5B8" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>'+
-    // Pezzo di manica destra
-    '<path d="M50,68 Q53,70 54,73" stroke="#5DADE2" stroke-width="5.5" fill="none" stroke-linecap="round" opacity="0.7"/>'+
-
-    // === GAMBE ===
-    // Pantaloncini
-    '<path d="M30,104 L26,116 L48,116 L46,104 Z" fill="#2471A3" stroke="none"/>'+
-    '<path d="M48,104 L48,116 L62,116 L60,104 Z" fill="#2471A3" stroke="none"/>'+
-    // Gamba sinistra
-    '<path d="M36,116 L28,140 L24,146" stroke="#5DADE2" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'+
-    // Gamba destra
-    '<path d="M54,116 L60,140 L64,146" stroke="#4A9BD9" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"/>'+
-    // Scarpa sinistra
-    '<path d="M24,144 L16,146 L16,150 L30,150 L30,146 Z" fill="#34495E" stroke="#2C3E50" stroke-width="0.5"/>'+
-    // Scarpa destra
-    '<path d="M60,144 L64,146 L70,146 L70,150 L56,150 L56,146 Z" fill="#2C3E50" stroke="#1a1a2e" stroke-width="0.5"/>'+
+    // Luci lampeggianti sulla base
+    '<circle cx="35" cy="178" r="2" fill="#FFD700" opacity="0.8"><animate attributeName="opacity" values="0.8;0.3;0.8" dur="1s" repeatCount="indefinite"/></circle>'+
+    '<circle cx="55" cy="182" r="2" fill="#FF69B4" opacity="0.8"><animate attributeName="opacity" values="0.3;0.8;0.3" dur="1.2s" repeatCount="indefinite"/></circle>'+
+    '<circle cx="75" cy="184" r="2" fill="#5DADE2" opacity="0.8"><animate attributeName="opacity" values="0.8;0.3;0.8" dur="0.9s" repeatCount="indefinite"/></circle>'+
+    '<circle cx="100" cy="185" r="2" fill="#2ECC71" opacity="0.8"><animate attributeName="opacity" values="0.3;0.8;0.3" dur="1.1s" repeatCount="indefinite"/></circle>'+
+    '<circle cx="125" cy="184" r="2" fill="#FFD700" opacity="0.8"><animate attributeName="opacity" values="0.8;0.3;0.8" dur="1.3s" repeatCount="indefinite"/></circle>'+
+    '<circle cx="145" cy="182" r="2" fill="#FF69B4" opacity="0.8"><animate attributeName="opacity" values="0.3;0.8;0.3" dur="0.8s" repeatCount="indefinite"/></circle>'+
+    '<circle cx="165" cy="178" r="2" fill="#5DADE2" opacity="0.8"><animate attributeName="opacity" values="0.8;0.3;0.8" dur="1s" repeatCount="indefinite"/></circle>'+
 
   '</svg>';
 
   el.innerHTML=svg;
 
-  function positionChild(){
+  // Posizionamento: sotto il blocco meteo, allineato a destra (stesso posto del bambino bolle)
+  function positionGiostra(){
     var weatherEl=document.querySelector('.header-weather');
     if(!weatherEl){
       var dateEl=document.getElementById('headerClockDate');
       if(!dateEl) return;
       var r=dateEl.getBoundingClientRect();
-      el.style.left=(r.right-60)+'px';
+      el.style.left=(r.right-65)+'px';
       el.style.top=(r.bottom+4)+'px';
       return;
     }
     var wr=weatherEl.getBoundingClientRect();
-    var x=wr.right-60;
-    var y=wr.bottom+4;
-    el.style.left=x+'px';
-    el.style.top=y+'px';
+    el.style.left=(wr.right-65)+'px';
+    el.style.top=(wr.bottom+4)+'px';
   }
 
-  positionChild();
-  window.addEventListener('resize',positionChild);
-  setInterval(positionChild,2000);
+  positionGiostra();
+  window.addEventListener('resize',positionGiostra);
+  setInterval(positionGiostra,2000);
 
   var origRender=window.render;
   if(origRender){
     window.render=function(){
       origRender.apply(this,arguments);
-      setTimeout(positionChild,100);
+      setTimeout(positionGiostra,100);
     };
   }
-
-  // ---- Animazione soffio + bolle sincronizzate ----
-  var bubbleContainer=document.body;
-  var isBlowing=false;
-
-  function animateBlow(){
-    if(isBlowing) return;
-    isBlowing=true;
-
-    var svgEl=el.querySelector('svg');
-    if(!svgEl){isBlowing=false;return;}
-
-    // Anima la bocca: da chiusa a "O" aperta
-    var mouth=svgEl.querySelector('ellipse[cy="50"]');
-    var cheek=svgEl.querySelector('circle[cy="47"]');
-    var arm=svgEl.querySelector('#blowArm');
-
-    // Il braccio parte dalla spalla (36,66) dentro il corpo
-    // Animazione: SOLO rotazione intorno alla spalla, NIENTE translate
-    // Il translate sposta la spalla via dal corpo - ecco perché si staccava!
-
-    var blowStart=performance.now();
-    var blowDuration=1800;
-    var holdDuration=600;
-    var totalPhase=blowDuration+holdDuration;
-
-    function animFrame(now){
-      var elapsed=now-blowStart;
-      if(elapsed<blowDuration){
-        var t=elapsed/blowDuration;
-        var ease=1-Math.pow(1-t,2);
-
-        // Bocca si allarga
-        if(mouth){
-          mouth.setAttribute('rx',3+3*ease);
-          mouth.setAttribute('ry',2.5+2*ease);
-        }
-        // Guancia si gonfia
-        if(cheek){
-          cheek.setAttribute('r',4.5+3*ease);
-          cheek.setAttribute('opacity',0.3+0.2*ease);
-        }
-        // Braccio: SOLO rotazione intorno alla spalla (36,66)
-        // Niente translate! La spalla resta attaccata al corpo
-        if(arm){
-          var armAngle=35*ease;  // ruota in fuori di 35 gradi
-          arm.setAttribute('transform','rotate('+armAngle+',36,66)');
-        }
-
-        requestAnimationFrame(animFrame);
-      } else if(elapsed<totalPhase){
-        requestAnimationFrame(animFrame);
-      } else {
-        var returnStart=now;
-        var returnDur=800;
-        function returnFrame(now2){
-          var rt=(now2-returnStart)/returnDur;
-          if(rt>1) rt=1;
-          var ease2=1-Math.pow(1-rt,3);
-          if(mouth){
-            mouth.setAttribute('rx',6-3*ease2);
-            mouth.setAttribute('ry',4.5-2*ease2);
-          }
-          if(cheek){
-            cheek.setAttribute('r',7.5-3*ease2);
-            cheek.setAttribute('opacity',0.5-0.2*ease2);
-          }
-          if(arm){
-            var armAngle2=35*(1-ease2);
-            arm.setAttribute('transform','rotate('+armAngle2+',36,66)');
-          }
-          if(rt<1){
-            requestAnimationFrame(returnFrame);
-          } else {
-            isBlowing=false;
-          }
-        }
-        requestAnimationFrame(returnFrame);
-      }
-    }
-    requestAnimationFrame(animFrame);
-
-    // Bolle escono durante il soffio (sincronizzate)
-    var bubbleCount=Math.floor(Math.random()*5)+3;
-    for(var i=0;i<bubbleCount;i++){
-      setTimeout(function(){createBubble();},200+i*200+Math.random()*100);
-    }
-  }
-
-  function createBubble(){
-    var childX=parseInt(el.style.left)||0;
-    var childY=parseInt(el.style.top)||0;
-    // Le bolle escono dal cerchio del sapone
-    // ViewBox: -30 0 150 160 (width=150), rendering width=120
-    // Cerchio a cx=2, cy=42 nella viewBox
-    var startX=childX+((2+30)/150)*120;
-    var startY=childY+(42/160)*145;
-
-    var bubble=document.createElement('div');
-    bubble.className='soap-bubble';
-
-    var size=Math.random()*18+8;
-    bubble.style.width=size+'px';
-    bubble.style.height=size+'px';
-    bubble.style.left=startX+'px';
-    bubble.style.top=startY+'px';
-
-    // Bolle vanno verso sinistra e in alto
-    var drift=-10-Math.random()*30;
-    var dur=Math.random()*4+3;
-    bubble.style.setProperty('--float-dur',dur+'s');
-    bubble.style.setProperty('--bx1',(drift*0.15)+'px');
-    bubble.style.setProperty('--by1',(-8-Math.random()*10)+'px');
-    bubble.style.setProperty('--bx2',(drift*0.35)+'px');
-    bubble.style.setProperty('--by2',(-25-Math.random()*15)+'px');
-    bubble.style.setProperty('--bx3',(drift*0.6)+'px');
-    bubble.style.setProperty('--by3',(-50-Math.random()*25)+'px');
-    bubble.style.setProperty('--bx4',(drift*0.8)+'px');
-    bubble.style.setProperty('--by4',(-80-Math.random()*30)+'px');
-    bubble.style.setProperty('--bx5',(drift)+'px');
-    bubble.style.setProperty('--by5',(-110-Math.random()*50)+'px');
-
-    var hue=Math.random()*360;
-    bubble.style.background='radial-gradient(circle at 30% 30%,rgba(255,255,255,0.9),hsla('+hue+',70%,80%,0.35) 40%,hsla('+((hue+60)%360)+',60%,70%,0.15) 60%,rgba(255,255,255,0.05))';
-
-    bubbleContainer.appendChild(bubble);
-    setTimeout(function(){
-      if(bubble.parentNode) bubble.parentNode.removeChild(bubble);
-    },dur*1000+200);
-  }
-
-  // Ciclo: soffia, pausa, soffia di nuovo
-  function blowCycle(){
-    animateBlow();
-    // Prossimo soffio tra 4-7 secondi
-    setTimeout(blowCycle,4000+Math.random()*3000);
-  }
-
-  setTimeout(blowCycle,2500);
-
 })();
-// ---- FINE BAMBINO BOLLE ----
+// ---- FINE GIOSTRA CON CAVALLI ----
 
 // ---- STELLINE CADENTI NELL'HEADER ----
 (function(){
