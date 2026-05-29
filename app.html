@@ -300,11 +300,16 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .bfly svg{display:block;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.18))}
 @keyframes bflyRest{0%,100%{transform:rotate(-3deg) translateY(0)}50%{transform:rotate(-1deg) translateY(-1.5px)}}
 @keyframes bflyFlutter{0%,100%{transform:scaleX(1)}50%{transform:scaleX(0.3)}}
+
+.altalena{position:fixed;pointer-events:none;z-index:9998;transform-origin:top center}
+@keyframes swing{0%,100%{transform:rotate(-18deg)}50%{transform:rotate(18deg)}}
+.altalena svg{display:block;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.2))}
 @keyframes colorShift{0%{filter:drop-shadow(0 2px 6px rgba(0,0,0,0.18)) hue-rotate(0deg)}33%{filter:drop-shadow(0 2px 6px rgba(0,0,0,0.18)) hue-rotate(90deg)}66%{filter:drop-shadow(0 2px 6px rgba(0,0,0,0.18)) hue-rotate(200deg)}100%{filter:drop-shadow(0 2px 6px rgba(0,0,0,0.18)) hue-rotate(360deg)}}
 </style>
 </head>
 <body>
 <div class="bfly resting" id="bfly"></div>
+<div class="altalena" id="altalena"></div>
 <div id="app" class="app"></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
@@ -4490,6 +4495,80 @@ fetchWeather();
   window.addEventListener('resize',function(){if(!isFlying) restOnDate();});
 })();
 // ---- FINE FARFALLA ----
+
+// ---- ALTALENA ----
+(function(){
+  var el=document.getElementById('altalena');
+  if(!el) return;
+
+  // SVG altalena: asta orizzontale in cima, due corde, sedile, e un omino stilizzato
+  var svgSwing='<svg viewBox="0 0 60 90" width="50" height="75">'+
+    // Asta di sostegno orizzontale (attaccata alla data)
+    '<rect x="5" y="0" width="50" height="4" rx="2" fill="#8B4513" stroke="#5D3A1A" stroke-width="0.5"/>'+
+    // Corda sinistra
+    '<line x1="18" y1="4" x2="18" y2="58" stroke="#A0522D" stroke-width="1.5" stroke-linecap="round"/>'+
+    // Corda destra
+    '<line x1="42" y1="4" x2="42" y2="58" stroke="#A0522D" stroke-width="1.5" stroke-linecap="round"/>'+
+    // Sedile
+    '<rect x="12" y="56" width="36" height="5" rx="2" fill="#8B4513" stroke="#5D3A1A" stroke-width="0.5"/>'+
+    // Bambino - testa
+    '<circle cx="30" cy="38" r="7" fill="#FFD5B8" stroke="#1a1a1a" stroke-width="0.6"/>'+
+    // Capelli
+    '<path d="M23,36 C23,28 37,28 37,36" fill="#5D3A1A" stroke="none"/>'+
+    // Occhi
+    '<circle cx="27" cy="38" r="1" fill="#1a1a1a"/>'+
+    '<circle cx="33" cy="38" r="1" fill="#1a1a1a"/>'+
+    // Sorriso
+    '<path d="M27,41 Q30,44 33,41" stroke="#1a1a1a" stroke-width="0.6" fill="none" stroke-linecap="round"/>'+
+    // Corpo (vestito)
+    '<path d="M24,45 L22,56 L38,56 L36,45 Z" fill="#4CAF50" stroke="#388E3C" stroke-width="0.4"/>'+
+    // Braccia che tengono le corde
+    '<line x1="24" y1="47" x2="18" y2="40" stroke="#FFD5B8" stroke-width="2" stroke-linecap="round"/>'+
+    '<line x1="36" y1="47" x2="42" y2="40" stroke="#FFD5B8" stroke-width="2" stroke-linecap="round"/>'+
+    // Gambe
+    '<line x1="26" y1="56" x2="22" y2="72" stroke="#FFD5B8" stroke-width="2" stroke-linecap="round"/>'+
+    '<line x1="34" y1="56" x2="38" y2="72" stroke="#FFD5B8" stroke-width="2" stroke-linecap="round"/>'+
+    // Scarpe
+    '<ellipse cx="21" cy="73" rx="3" ry="2" fill="#333"/>'+
+    '<ellipse cx="39" cy="73" rx="3" ry="2" fill="#333"/>'+
+    // Gamba piegata sinistra (avanti)
+    '<line x1="22" y1="72" x2="26" y2="64" stroke="#FFD5B8" stroke-width="2" stroke-linecap="round"/>'+
+    // Gamba piegata destra (avanti)
+    '<line x1="38" y1="72" x2="34" y2="64" stroke="#FFD5B8" stroke-width="2" stroke-linecap="round"/>'+
+  '</svg>';
+
+  el.innerHTML=svgSwing;
+
+  function positionSwing(){
+    var dateEl=document.getElementById('headerClockDate');
+    if(!dateEl) return;
+    var r=dateEl.getBoundingClientRect();
+    // Posiziona l'altalena sotto la data, centrata
+    var x=r.left+r.width/2-25; // centro meno metà larghezza SVG
+    var y=r.bottom+2; // appena sotto la data
+    el.style.left=x+'px';
+    el.style.top=y+'px';
+    el.style.animation='swing 3s ease-in-out infinite';
+  }
+
+  positionSwing();
+
+  // Riposiziona al resize e dopo render
+  window.addEventListener('resize',positionSwing);
+
+  // Riposiziona periodicamente (il contenuto potrebbe cambiare)
+  setInterval(positionSwing,2000);
+
+  // Riposiziona dopo ogni render
+  var origRender=window.render;
+  if(origRender){
+    window.render=function(){
+      origRender.apply(this,arguments);
+      setTimeout(positionSwing,100);
+    };
+  }
+})();
+// ---- FINE ALTALENA ----
 // Aggiorna meteo ogni 30 minuti
 setInterval(function(){fetchWeather();},1800000);
 
