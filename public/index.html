@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
 <title>Registro di Classe</title>
-<meta name="version" content="2025-05-30-v54-giostra-cavalli"/>
+<meta name="version" content="2025-05-30-v55-giostra-fix"/>
 <meta name="description" content="Registro di Classe per la gestione della classe"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a1a2e'><path d='M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z'/></svg>"/>
 <style>
@@ -4630,7 +4630,8 @@ fetchWeather();
     '<ellipse cx="100" cy="178" rx="60" ry="10" fill="none" stroke="#D7BDE2" stroke-width="0.8" stroke-dasharray="4,3"/>'+
 
     // === PIASTRO ROTANTE (gruppo che gira) ===
-    '<g id="giostraPlatform" style="transform-origin:100px 140px;animation:giostraSpin 8s linear infinite">'+
+    // animateTransform ruota intorno al centro (100,155) in modo affidabile su tutti i browser
+    '<g id="giostraPlatform"><animateTransform attributeName="transform" type="rotate" from="0 100 155" to="360 100 155" dur="8s" repeatCount="indefinite"/>'+
 
       // Piattaforma disco
       '<ellipse cx="100" cy="155" rx="70" ry="12" fill="url(#gPlateG)" stroke="#7D3C98" stroke-width="1"/>'+
@@ -4808,12 +4809,12 @@ fetchWeather();
       var dateEl=document.getElementById('headerClockDate');
       if(!dateEl) return;
       var r=dateEl.getBoundingClientRect();
-      el.style.left=(r.right-65)+'px';
+      el.style.left=(r.right-80)+'px';
       el.style.top=(r.bottom+4)+'px';
       return;
     }
     var wr=weatherEl.getBoundingClientRect();
-    el.style.left=(wr.right-65)+'px';
+    el.style.left=(wr.right-80)+'px';
     el.style.top=(wr.bottom+4)+'px';
   }
 
