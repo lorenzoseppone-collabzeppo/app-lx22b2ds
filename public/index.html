@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
 <title>Registro di Classe</title>
-<meta name="version" content="2025-05-30-v48-braccio-abbassato"/>
+<meta name="version" content="2025-05-30-v49-braccio-unito-corpo"/>
 <meta name="description" content="Registro di Classe per la gestione della classe"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a1a2e'><path d='M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z'/></svg>"/>
 <style>
@@ -4695,11 +4695,14 @@ fetchWeather();
 
     // === BRACCIO SINISTRO + CERCHIO BOLLE (tutto nel gruppo animato) ===
     // Braccio naturale: dalla spalla in avanti con curva morbida verso la bocca - ABBASSATO
+    // Il braccio parte DA DENTRO la maglia così resta sempre attaccato al corpo
     '<g id="blowArm">'+
-    // Braccio: spalla (30,68) -> curva morbida in avanti -> mano (18,62)
-    '<path d="M30,68 Q24,68 20,64 Q18,62 18,62" stroke="#FFD5B8" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'+
-    // Manica del braccio (sulla parte alta del braccio vicino alla spalla)
-    '<path d="M30,68 Q27,68 25,67" stroke="#5DADE2" stroke-width="6.5" fill="none" stroke-linecap="round"/>'+
+    // Spalla larga (forma che si sovrappone alla maglia - così non si stacca mai)
+    '<path d="M34,64 Q28,64 26,66 Q24,68 24,72 Q26,70 28,68 Q30,66 34,66 Z" fill="#5DADE2" stroke="none"/>'+
+    // Braccio: parte da dentro la maglia (34,66) -> curva morbida -> mano (18,62)
+    '<path d="M34,66 Q28,66 24,64 Q20,62 18,62" stroke="#FFD5B8" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'+
+    // Manica del braccio (copre la giunzione spalla-braccio)
+    '<path d="M34,66 Q30,66 27,65" stroke="#5DADE2" stroke-width="7" fill="none" stroke-linecap="round"/>'+
     // Mano che tiene il bastoncino
     '<ellipse cx="18" cy="62" rx="3.5" ry="3" fill="#FFD5B8" stroke="#E8C4A0" stroke-width="0.3" transform="rotate(-20,18,62)"/>'+
     // Dito pollice
@@ -4785,10 +4788,10 @@ fetchWeather();
     var cheek=svgEl.querySelector('circle[cy="47"]');
     var arm=svgEl.querySelector('#blowArm');
 
-    // Il braccio parte dalla spalla (30,68) con gomito piegato naturale
+    // Il braccio parte dalla spalla (34,66) con curva naturale
     // Posizione riposo: braccio con cerchio vicino alla bocca
     // Posizione soffio: braccio si estende verso sinistra/esterno
-    // Rotazione intorno alla spalla (30,68)
+    // Rotazione intorno alla spalla (34,66)
 
     var blowStart=performance.now();
     var blowDuration=1800;
@@ -4812,19 +4815,18 @@ fetchWeather();
           cheek.setAttribute('opacity',0.3+0.2*ease);
         }
         // Braccio: parte vicino alla bocca, poi si estende fuori
-        // Rotazione intorno alla spalla (30,68): positivo = in fuori/sinistra
+        // Rotazione intorno alla spalla (34,66)
         if(arm){
-          var armAngle=30*ease;   // ruota in fuori di 30 gradi
-          var armX=-12*ease;      // trasla verso sinistra/esterno
-          var armY=-6*ease;       // trasla leggermente verso l'alto
-          arm.setAttribute('transform','translate('+armX+','+armY+') rotate('+armAngle+',30,68)');
+          var armAngle=30*ease;
+          var armX=-12*ease;
+          var armY=-6*ease;
+          arm.setAttribute('transform','translate('+armX+','+armY+') rotate('+armAngle+',34,66)');
         }
 
         requestAnimationFrame(animFrame);
       } else if(elapsed<totalPhase){
         requestAnimationFrame(animFrame);
       } else {
-        // Fase ritorno - bocca si chiude, braccio torna
         var returnStart=now;
         var returnDur=800;
         function returnFrame(now2){
@@ -4843,7 +4845,7 @@ fetchWeather();
             var armAngle2=30*(1-ease2);
             var armX2=-12*(1-ease2);
             var armY2=-6*(1-ease2);
-            arm.setAttribute('transform','translate('+armX2+','+armY2+') rotate('+armAngle2+',30,68)');
+            arm.setAttribute('transform','translate('+armX2+','+armY2+') rotate('+armAngle2+',34,66)');
           }
           if(rt<1){
             requestAnimationFrame(returnFrame);
