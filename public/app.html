@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
 <title>Registro di Classe</title>
-<meta name="version" content="2025-05-28-v39-takeoff-right"/>
+<meta name="version" content="2025-05-29-v40-bolle-bambino"/>
 <meta name="description" content="Registro di Classe per la gestione della classe"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a1a2e'><path d='M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z'/></svg>"/>
 <style>
@@ -305,11 +305,18 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 @keyframes swingBoth{0%,100%{transform:rotate(-14deg)}50%{transform:rotate(14deg)}}
 .altalena svg{display:block;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.15))}
 @keyframes colorShift{0%{filter:drop-shadow(0 2px 6px rgba(0,0,0,0.18)) hue-rotate(0deg)}33%{filter:drop-shadow(0 2px 6px rgba(0,0,0,0.18)) hue-rotate(90deg)}66%{filter:drop-shadow(0 2px 6px rgba(0,0,0,0.18)) hue-rotate(200deg)}100%{filter:drop-shadow(0 2px 6px rgba(0,0,0,0.18)) hue-rotate(360deg)}}
+
+.bolle-child{position:fixed;pointer-events:none;z-index:9997}
+.bolle-child svg{display:block;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.12))}
+.soap-bubble{position:fixed;pointer-events:none;z-index:9996;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,0.8),rgba(173,216,230,0.3) 40%,rgba(100,180,255,0.15) 60%,rgba(255,255,255,0.05));box-shadow:inset 0 0 4px rgba(255,255,255,0.6),0 0 6px rgba(100,180,255,0.2);border:1px solid rgba(255,255,255,0.3);animation:bubbleFloat var(--float-dur,4s) ease-out forwards}
+@keyframes bubbleFloat{0%{opacity:0.9;transform:translate(0,0) scale(0.3)}10%{opacity:1;transform:translate(var(--bx1,2px),var(--by1,-10px)) scale(0.7)}30%{opacity:0.95;transform:translate(var(--bx2,5px),var(--by2,-30px)) scale(1)}60%{opacity:0.7;transform:translate(var(--bx3,-3px),var(--by3,-60px)) scale(1.1)}80%{opacity:0.35;transform:translate(var(--bx4,2px),var(--by4,-85px)) scale(1.15)}100%{opacity:0;transform:translate(var(--bx5,0px),var(--by5,-110px)) scale(1.2)}}
+@keyframes childBlowBreath{0%,100%{transform:scaleX(1)}50%{transform:scaleX(1.06)}}
 </style>
 </head>
 <body>
 <div class="bfly resting" id="bfly"></div>
 <div class="altalena" id="altalena"></div>
+<div class="bolle-child" id="bolleChild"></div>
 <div id="app" class="app"></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
@@ -4601,6 +4608,156 @@ fetchWeather();
   }
 })();
 // ---- FINE ALTALENA ----
+
+// ---- BAMBINO BOLLE DI SAPONE ----
+(function(){
+  var el=document.getElementById('bolleChild');
+  if(!el) return;
+
+  // Bambino più grande visto di profilo (verso sinistra) che soffia bolle
+  // Circa 120px alto - bambino di 6-7 anni
+  var svg='<svg viewBox="0 0 90 130" width="72" height="104">'+
+    // Corpo vestito azzurro (profilo sinistra)
+    '<path d="M42,52 C38,52 32,56 30,64 L28,90 L58,90 L56,64 C54,56 48,52 44,52 Z" fill="#5DADE2" stroke="#2E86C1" stroke-width="0.6"/>'+
+    // Colletto
+    '<path d="M38,52 L43,58 L48,52" fill="white" stroke="none" opacity="0.9"/>'+
+    // Collo
+    '<rect x="39" y="46" width="8" height="8" rx="2" fill="#FFD5B8"/>'+
+    // Testa di profilo (guarda a sinistra)
+    '<ellipse cx="38" cy="36" rx="12" ry="14" fill="#FFD5B8" stroke="#E8C4A0" stroke-width="0.4"/>'+
+    // Capelli castani
+    '<path d="M26,32 C26,18 50,18 50,32 C50,28 48,22 38,22 C28,22 26,28 26,32 Z" fill="#6B4226" stroke="none"/>'+
+    '<path d="M26,32 C24,30 23,34 25,38" fill="#6B4226" stroke="none"/>'+
+    // Orecchio
+    '<ellipse cx="50" cy="36" rx="3" ry="4" fill="#F5C7A8" stroke="#E8C4A0" stroke-width="0.4"/>'+
+    // Occhio di profilo
+    '<ellipse cx="32" cy="34" rx="2.5" ry="3" fill="white" stroke="#1a1a1a" stroke-width="0.3"/>'+
+    '<circle cx="31" cy="34" r="1.5" fill="#2C3E50"/>'+
+    '<circle cx="30.5" cy="33.5" r="0.5" fill="white"/>'+
+    // Sopracciglio
+    '<path d="M28,30 Q32,28 36,30" stroke="#5D3A1A" stroke-width="0.8" fill="none" stroke-linecap="round"/>'+
+    // Naso di profilo
+    '<path d="M28,36 L25,39 L28,39" fill="#F0C8A0" stroke="#E0B090" stroke-width="0.4"/>'+
+    // Bocca che soffia (piccolo "O")
+    '<ellipse cx="26" cy="43" rx="3" ry="2.5" fill="#E08080" stroke="#C06060" stroke-width="0.4"/>'+
+    // Guancia arrossata
+    '<circle cx="30" cy="42" r="3" fill="#FFB6C1" opacity="0.35"/>'+
+    // Braccio sinistro (avanti, tiene il cerchio bolle)
+    '<path d="M32,58 L18,66 L14,62" stroke="#FFD5B8" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'+
+    // Mano che tiene il cerchio
+    '<circle cx="13" cy="61" r="2.5" fill="#FFD5B8"/>'+
+    // Cerchio per bolle di sapone
+    '<circle cx="8" cy="52" r="10" fill="none" stroke="rgba(150,200,255,0.6)" stroke-width="1.5"/>'+
+    '<circle cx="8" cy="52" r="10" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="0.5" stroke-dasharray="3,5"/>'+
+    // Riflesso sul cerchio
+    '<path d="M2,46 Q4,44 6,46" stroke="rgba(255,255,255,0.5)" stroke-width="0.8" fill="none"/>'+
+    // Braccio destro (dietro)
+    '<path d="M48,58 L56,72 L52,78" stroke="#FFD5B8" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>'+
+    // Gamba sinistra (avanti)
+    '<path d="M36,90 L30,112 L26,114" stroke="#5DADE2" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'+
+    // Gamba destra (dietro)
+    '<path d="M50,90 L54,112 L58,114" stroke="#4A9BD9" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"/>'+
+    // Scarpa sinistra
+    '<path d="M26,112 L20,114 L20,117 L30,117 L30,114 Z" fill="#34495E" stroke="#2C3E50" stroke-width="0.4"/>'+
+    // Scarpa destra
+    '<path d="M54,112 L58,114 L62,114 L62,117 L52,117 L52,114 Z" fill="#2C3E50" stroke="#1a1a2e" stroke-width="0.4"/>'+
+    // Pantaloncini
+    '<path d="M30,86 L28,94 L42,94 L42,86 Z" fill="#2E86C1" stroke="none"/>'+
+    '<path d="M44,86 L44,94 L58,94 L56,86 Z" fill="#2E86C1" stroke="none"/>'+
+  '</svg>';
+
+  el.innerHTML=svg;
+
+  function positionChild(){
+    var dateEl=document.getElementById('headerClockDate');
+    if(!dateEl) return;
+    var r=dateEl.getBoundingClientRect();
+    // Posiziona il bambino a destra della data, sotto l'header
+    var x=r.right-20;
+    var y=r.bottom+2;
+    el.style.left=x+'px';
+    el.style.top=y+'px';
+  }
+
+  positionChild();
+  window.addEventListener('resize',positionChild);
+  setInterval(positionChild,2000);
+
+  var origRender=window.render;
+  if(origRender){
+    window.render=function(){
+      origRender.apply(this,arguments);
+      setTimeout(positionChild,100);
+    };
+  }
+
+  // ---- Bolle di sapone animate ----
+  var bubbleContainer=document.body;
+  var bubbleTimer=null;
+
+  function createBubble(){
+    var dateEl=document.getElementById('headerClockDate');
+    if(!dateEl) return;
+    var r=dateEl.getBoundingClientRect();
+    // Partenza: vicino alla bocca del bambino
+    var childX=parseInt(el.style.left)||r.right-20;
+    var childY=parseInt(el.style.top)||r.bottom+2;
+    // La bocca è a circa (childX+20, childY+43) nel sistema di coordinate
+    var startX=childX+18;
+    var startY=childY+40;
+
+    var bubble=document.createElement('div');
+    bubble.className='soap-bubble';
+
+    var size=Math.random()*14+6; // 6-20px
+    bubble.style.width=size+'px';
+    bubble.style.height=size+'px';
+    bubble.style.left=startX+'px';
+    bubble.style.top=startY+'px';
+
+    // Movimento casuale per ogni bolla
+    var drift=(Math.random()-0.5)*40;
+    var dur=Math.random()*3+3; // 3-6 secondi
+    bubble.style.setProperty('--float-dur',dur+'s');
+    bubble.style.setProperty('--bx1',(drift*0.1)+'px');
+    bubble.style.setProperty('--by1',(-10-Math.random()*8)+'px');
+    bubble.style.setProperty('--bx2',(drift*0.3)+'px');
+    bubble.style.setProperty('--by2',(-25-Math.random()*15)+'px');
+    bubble.style.setProperty('--bx3',(drift*0.6)+'px');
+    bubble.style.setProperty('--by3',(-50-Math.random()*20)+'px');
+    bubble.style.setProperty('--bx4',(drift*0.8)+'px');
+    bubble.style.setProperty('--by4',(-75-Math.random()*25)+'px');
+    bubble.style.setProperty('--bx5',(drift)+'px');
+    bubble.style.setProperty('--by5',(-100-Math.random()*40)+'px');
+
+    // Colore iridescente casuale
+    var hue=Math.random()*360;
+    bubble.style.background='radial-gradient(circle at 30% 30%,rgba(255,255,255,0.85),hsla('+hue+',70%,80%,0.3) 40%,hsla('+((hue+60)%360)+',60%,70%,0.15) 60%,rgba(255,255,255,0.05))';
+
+    bubbleContainer.appendChild(bubble);
+
+    // Rimuovi la bolla dopo la fine dell'animazione
+    setTimeout(function(){
+      if(bubble.parentNode) bubble.parentNode.removeChild(bubble);
+    },dur*1000+200);
+  }
+
+  // Soffia un gruppo di bolle ogni 3-5 secondi
+  function blowBubbles(){
+    var count=Math.floor(Math.random()*4)+2; // 2-5 bolle per soffio
+    for(var i=0;i<count;i++){
+      setTimeout(createBubble,i*180+Math.random()*100);
+    }
+    // Prossimo soffio tra 3-6 secondi
+    bubbleTimer=setTimeout(blowBubbles,3000+Math.random()*3000);
+  }
+
+  // Inizia dopo 2.5 secondi
+  setTimeout(blowBubbles,2500);
+
+})();
+// ---- FINE BAMBINO BOLLE ----
+
 // Aggiorna meteo ogni 30 minuti
 setInterval(function(){fetchWeather();},1800000);
 
