@@ -4614,96 +4614,126 @@ fetchWeather();
   var el=document.getElementById('bolleChild');
   if(!el) return;
 
-  // Bambino più grande visto di profilo (verso sinistra) che soffia bolle
-  // Più alto - bambino di 7-8 anni, 90x160 viewBox per proporzioni più slanciate
-  var svg='<svg viewBox="0 0 105 160" width="95" height="143">'+
-    // === ZAINO (dietro, a destra del corpo) ===
-    '<path d="M56,58 L54,100 L68,100 L70,58 Z" fill="#E74C3C" stroke="#C0392B" stroke-width="0.6" rx="3"/>'+
-    // Scomparto zaino
-    '<rect x="56" y="72" width="12" height="18" rx="2" fill="#C0392B" stroke="none"/>'+
-    // Cerniera zaino
-    '<line x1="56" y1="72" x2="68" y2="72" stroke="#8B0000" stroke-width="0.6"/>'+
-    // Bretella zaino (sulla spalla)
-    '<path d="M52,62 L58,58 L58,66" stroke="#E74C3C" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'+
-    // Topo/portachiavi appeso
-    '<circle cx="62" cy="102" r="2.5" fill="#F1C40F" stroke="#D4AC0D" stroke-width="0.4"/>'+
-    '<line x1="62" y1="100" x2="62" y2="98" stroke="#D4AC0D" stroke-width="0.5"/>'+
+  // Bambino di profilo - testa ben fatta, cappello visiera, zaino
+  var svg='<svg viewBox="0 0 110 160" width="100" height="145">'+
+    '<defs>'+
+      // Gradiente pelle
+      '<radialGradient id="skinG" cx="40%" cy="40%"><stop offset="0%" stop-color="#FFE0CC"/><stop offset="100%" stop-color="#FFD5B8"/></radialGradient>'+
+      // Gradiente capelli
+      '<linearGradient id="hairG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7B4B2A"/><stop offset="100%" stop-color="#5D3A1A"/></linearGradient>'+
+      // Gradiente zaino
+      '<linearGradient id="backpackG" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#D63031"/><stop offset="100%" stop-color="#E74C3C"/></linearGradient>'+
+      // Gradiente cappello
+      '<linearGradient id="hatG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#3498DB"/><stop offset="100%" stop-color="#2471A3"/></linearGradient>'+
+    '</defs>'+
 
-    // Corpo vestito azzurro (profilo sinistra) - più lungo
-    '<path d="M44,60 C39,60 32,65 30,75 L28,106 L60,106 L58,75 C56,65 50,60 46,60 Z" fill="#5DADE2" stroke="#2E86C1" stroke-width="0.6"/>'+
-    // Colletto
-    '<path d="M40,60 L45,67 L50,60" fill="white" stroke="none" opacity="0.9"/>'+
+    // === ZAINO (dietro, a destra) ===
+    '<path d="M58,58 C56,56 54,56 54,58 L52,100 C52,102 54,104 56,104 L70,104 C72,104 74,102 74,100 L72,58 C72,56 70,56 68,58 Z" fill="url(#backpackG)" stroke="#C0392B" stroke-width="0.6"/>'+
+    '<rect x="55" y="74" width="14" height="18" rx="3" fill="#C0392B" stroke="none"/>'+
+    '<line x1="55" y1="74" x2="69" y2="74" stroke="#922B21" stroke-width="0.8"/>'+
+    '<circle cx="62" cy="83" r="1.5" fill="#F1C40F"/>'+
+    // Bretella zaino
+    '<path d="M52,62 Q56,56 60,60" stroke="#E74C3C" stroke-width="3.5" fill="none" stroke-linecap="round"/>'+
+    // Portachiavi
+    '<circle cx="63" cy="106" r="2.5" fill="#F1C40F" stroke="#D4AC0D" stroke-width="0.5"/>'+
+    '<line x1="63" y1="104" x2="63" y2="101" stroke="#D4AC0D" stroke-width="0.6"/>'+
+
+    // === CORPO (maglia azzurra) ===
+    '<path d="M44,62 C38,62 30,68 28,78 L26,108 L62,108 L60,78 C58,68 52,62 46,62 Z" fill="#5DADE2" stroke="#2E86C1" stroke-width="0.6"/>'+
+    // Colletto a V
+    '<path d="M41,62 L45,70 L49,62" fill="white" stroke="none" opacity="0.85"/>'+
     // Collo
-    '<rect x="41" y="52" width="9" height="10" rx="2" fill="#FFD5B8"/>'+
-    // Testa di profilo (guarda a sinistra) - più grande
-    '<ellipse cx="40" cy="38" rx="15" ry="17" fill="#FFD5B8" stroke="#E8C4A0" stroke-width="0.4"/>'+
-    // Capelli castani (solo dietro, sotto il cappello)
-    '<path d="M55,34 C57,32 58,37 56,40" fill="#6B4226" stroke="none"/>'+
-    '<path d="M25,34 C23,31 21,37 24,42" fill="#6B4226" stroke="none"/>'+
+    '<path d="M41,52 C41,50 49,50 49,52 L49,62 L41,62 Z" fill="#FFD5B8"/>'+
+
+    // === TESTA DI PROFILO (molto più curata) ===
+    // Forma testa - mento arrotondato, fronte
+    '<path d="M54,22 C54,8 28,8 28,22 L26,32 C26,42 28,48 32,52 L34,54 C36,56 40,58 44,56 L46,54 C50,50 54,44 54,36 Z" fill="url(#skinG)" stroke="#E8C4A0" stroke-width="0.5"/>'+
+
+    // Orecchio (destra, visibile di profilo)
+    '<path d="M54,30 C58,30 60,34 60,38 C60,42 58,44 54,44" fill="#FFD5B8" stroke="#E8C4A0" stroke-width="0.5"/>'+
+    '<path d="M54,33 C56,33 57,35 57,38 C57,41 56,42 54,42" fill="#F0C0A0" stroke="none"/>'+
+
+    // Capelli dietro/ai lati (sotto il cappello)
+    '<path d="M28,22 C28,12 54,12 54,22 L54,28 C52,24 48,20 41,20 C34,20 30,24 28,28 Z" fill="url(#hairG)"/>'+
+    // Ciuffo che esce dal cappello dietro
+    '<path d="M52,16 C54,14 56,16 55,20" stroke="#6B4226" stroke-width="2" fill="none" stroke-linecap="round"/>'+
 
     // === CAPPELLO CON VISIERA ===
-    // Cupola del cappello
-    '<path d="M24,28 C24,12 56,12 56,28 L54,30 L26,30 Z" fill="#2E86C1" stroke="#1B5E8C" stroke-width="0.6"/>'+
-    // Visiera (sporge in avanti verso sinistra)
-    '<path d="M24,30 L26,30 L8,34 L6,31 L8,28 L24,28 Z" fill="#1B5E8C" stroke="#0D3B5E" stroke-width="0.5"/>'+
-    // Logo sul cappello (piccolo cerchio)
-    '<circle cx="40" cy="22" r="3" fill="#F1C40F" stroke="#D4AC0D" stroke-width="0.4"/>'+
+    // Cupola
+    '<path d="M26,24 C26,6 56,6 56,24 L54,26 L28,26 Z" fill="url(#hatG)" stroke="#1A5276" stroke-width="0.5"/>'+
+    // Visiera (sporge a sinistra)
+    '<path d="M28,26 L26,26 L6,32 L4,28 L8,24 L26,24 Z" fill="#1A5276" stroke="#0E3A5A" stroke-width="0.5"/>'+
     // Bordo cappello
-    '<line x1="26" y1="30" x2="54" y2="30" stroke="#1B5E8C" stroke-width="1.2"/>'+
+    '<line x1="28" y1="26" x2="54" y2="26" stroke="#1A5276" stroke-width="1.5"/>'+
+    // Logo stella sul cappello
+    '<polygon points="41,12 42.5,16 46.5,16 43.5,19 44.5,23 41,20.5 37.5,23 38.5,19 35.5,16 39.5,16" fill="#F1C40F" stroke="#D4AC0D" stroke-width="0.3"/>'+
 
-    // Orecchio
-    '<ellipse cx="55" cy="38" rx="3.5" ry="5" fill="#F5C7A8" stroke="#E8C4A0" stroke-width="0.4"/>'+
-    // Occhio di profilo
-    '<ellipse cx="33" cy="36" rx="3" ry="3.5" fill="white" stroke="#1a1a1a" stroke-width="0.3"/>'+
-    '<circle cx="32" cy="36" r="1.8" fill="#2C3E50"/>'+
-    '<circle cx="31.2" cy="35.2" r="0.6" fill="white"/>'+
     // Sopracciglio
-    '<path d="M28,30 Q34,27 39,30" stroke="#5D3A1A" stroke-width="1" fill="none" stroke-linecap="round"/>'+
-    // Naso di profilo
-    '<path d="M28,38 L24,42 L28,42" fill="#F0C8A0" stroke="#E0B090" stroke-width="0.5"/>'+
-    // Bocca che soffia (piccolo "O")
-    '<ellipse cx="24" cy="48" rx="3.5" ry="3" fill="#E08080" stroke="#C06060" stroke-width="0.5"/>'+
+    '<path d="M30,28 Q36,25 42,28" stroke="#5D3A1A" stroke-width="1.2" fill="none" stroke-linecap="round"/>'+
+    // Occhio (più dettagliato - di profilo)
+    '<ellipse cx="35" cy="34" rx="4" ry="4.5" fill="white" stroke="#1a1a1a" stroke-width="0.4"/>'+
+    '<circle cx="34" cy="34" r="2.2" fill="#2C3E50"/>'+
+    '<circle cx="33" cy="33" r="0.8" fill="white"/>'+
+    // Ciglio superiore (palpebra)
+    '<path d="M31,30 Q35,28 39,30" stroke="#333" stroke-width="0.8" fill="none"/>'+
+    // Ciglia
+    '<line x1="31" y1="30" x2="30" y2="29" stroke="#333" stroke-width="0.5"/>'+
+    '<line x1="39" y1="30" x2="40" y2="29" stroke="#333" stroke-width="0.5"/>'+
+
+    // Naso (profilo più naturale)
+    '<path d="M30,36 Q26,40 28,44 Q30,45 32,44 L30,42" fill="#F0C8A0" stroke="#DDB090" stroke-width="0.5"/>'+
+
+    // Bocca che soffia - "O" con labbra
+    '<ellipse cx="26" cy="50" rx="3" ry="2.5" fill="#D06060" stroke="#B04040" stroke-width="0.5"/>'+
+    '<ellipse cx="26" cy="50" rx="2" ry="1.5" fill="#C05050"/>'+
+
     // Guancia arrossata
-    '<circle cx="31" cy="46" r="4" fill="#FFB6C1" opacity="0.35"/>'+
-    // Braccio sinistro (avanti, tiene il cerchio bolle)
-    '<path d="M34,66 L16,76 L12,72" stroke="#FFD5B8" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'+
-    // Mano che tiene il cerchio
-    '<circle cx="11" cy="71" r="3" fill="#FFD5B8"/>'+
-    // Cerchio per bolle di sapone
-    '<circle cx="6" cy="58" r="12" fill="none" stroke="rgba(150,200,255,0.6)" stroke-width="1.8"/>'+
-    '<circle cx="6" cy="58" r="12" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="0.6" stroke-dasharray="4,6"/>'+
+    '<circle cx="33" cy="47" r="4.5" fill="#FFB6C1" opacity="0.3"/>'+
+
+    // === BRACCIO SINISTRO + CERCHIO BOLLE ===
+    // Braccio che tiene il cerchio (animato)
+    '<g id="blowArm">'+
+    '<path d="M34,68 L14,78 L10,74" stroke="#FFD5B8" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'+
+    // Mano
+    '<circle cx="9" cy="73" r="3.5" fill="#FFD5B8"/>'+
+    '</g>'+
+    // Cerchio bolle di sapone
+    '<circle cx="4" cy="60" r="14" fill="none" stroke="rgba(120,180,255,0.5)" stroke-width="2"/>'+
+    '<circle cx="4" cy="60" r="14" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="0.7" stroke-dasharray="4,6"/>'+
     // Riflesso sul cerchio
-    '<path d="M-1,50 Q2,47 5,50" stroke="rgba(255,255,255,0.5)" stroke-width="1" fill="none"/>'+
-    // Braccio destro (dietro, tiene la bretella zaino)
-    '<path d="M52,66 L58,62 L58,70" stroke="#FFD5B8" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>'+
-    // Gamba sinistra (avanti) - più lunga
-    '<path d="M38,106 L30,135 L25,140" stroke="#5DADE2" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'+
-    // Gamba destra (dietro)
-    '<path d="M52,106 L58,135 L63,140" stroke="#4A9BD9" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"/>'+
-    // Scarpa sinistra
-    '<path d="M25,138 L18,140 L18,144 L30,144 L30,140 Z" fill="#34495E" stroke="#2C3E50" stroke-width="0.5"/>'+
-    // Scarpa destra
-    '<path d="M59,138 L63,140 L68,140 L68,144 L56,144 L56,140 Z" fill="#2C3E50" stroke="#1a1a2e" stroke-width="0.5"/>'+
+    '<path d="M-4,52 Q0,49 4,52" stroke="rgba(255,255,255,0.5)" stroke-width="1" fill="none"/>'+
+
+    // Braccio destro (sulla bretella zaino)
+    '<path d="M52,68 L58,62 L58,72" stroke="#FFD5B8" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>'+
+
+    // === GAMBE ===
     // Pantaloncini
-    '<path d="M32,102 L28,114 L46,114 L44,102 Z" fill="#2E86C1" stroke="none"/>'+
-    '<path d="M46,102 L46,114 L62,114 L60,102 Z" fill="#2E86C1" stroke="none"/>'+
+    '<path d="M30,104 L26,116 L48,116 L46,104 Z" fill="#2471A3" stroke="none"/>'+
+    '<path d="M48,104 L48,116 L62,116 L60,104 Z" fill="#2471A3" stroke="none"/>'+
+    // Gamba sinistra
+    '<path d="M36,116 L28,140 L24,146" stroke="#5DADE2" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'+
+    // Gamba destra
+    '<path d="M54,116 L60,140 L64,146" stroke="#4A9BD9" stroke-width="7" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.8"/>'+
+    // Scarpa sinistra
+    '<path d="M24,144 L16,146 L16,150 L30,150 L30,146 Z" fill="#34495E" stroke="#2C3E50" stroke-width="0.5"/>'+
+    // Scarpa destra
+    '<path d="M60,144 L64,146 L70,146 L70,150 L56,150 L56,146 Z" fill="#2C3E50" stroke="#1a1a2e" stroke-width="0.5"/>'+
+
   '</svg>';
 
   el.innerHTML=svg;
 
   function positionChild(){
-    // Posiziona sotto il meteo, allineato a destra con il meteo
     var weatherEl=document.querySelector('.header-weather');
     if(!weatherEl){
       var dateEl=document.getElementById('headerClockDate');
       if(!dateEl) return;
       var r=dateEl.getBoundingClientRect();
-      el.style.left=(r.right-40)+'px';
+      el.style.left=(r.right-50)+'px';
       el.style.top=(r.bottom+4)+'px';
       return;
     }
     var wr=weatherEl.getBoundingClientRect();
-    // Sotto il meteo, allineato al bordo destro del meteo
     var x=wr.right-50;
     var y=wr.bottom+4;
     el.style.left=x+'px';
@@ -4722,69 +4752,141 @@ fetchWeather();
     };
   }
 
-  // ---- Bolle di sapone animate ----
+  // ---- Animazione soffio + bolle sincronizzate ----
   var bubbleContainer=document.body;
-  var bubbleTimer=null;
+  var isBlowing=false;
+
+  function animateBlow(){
+    if(isBlowing) return;
+    isBlowing=true;
+
+    var svgEl=el.querySelector('svg');
+    if(!svgEl){isBlowing=false;return;}
+
+    // Anima la bocca: da chiusa a "O" aperta
+    var mouth=svgEl.querySelector('ellipse[cy="50"]');
+    var cheek=svgEl.querySelector('circle[cy="47"]');
+    var arm=svgEl.querySelector('#blowArm');
+
+    // Fase 1: Preparazione - bocca si apre, guancia si gonfia, braccio si muove avanti
+    var blowStart=performance.now();
+    var blowDuration=1800; // durata soffio
+    var holdDuration=600; // tiene
+    var totalPhase=blowDuration+holdDuration;
+
+    function animFrame(now){
+      var elapsed=now-blowStart;
+      if(elapsed<blowDuration){
+        // Fase soffio
+        var t=elapsed/blowDuration;
+        var ease=1-Math.pow(1-t,2);
+
+        // Bocca si allarga
+        if(mouth){
+          mouth.setAttribute('rx',3+3*ease);
+          mouth.setAttribute('ry',2.5+2*ease);
+        }
+        // Guancia si gonfia
+        if(cheek){
+          cheek.setAttribute('r',4.5+3*ease);
+          cheek.setAttribute('opacity',0.3+0.2*ease);
+        }
+        // Braccio va leggermente avanti
+        if(arm){
+          arm.setAttribute('transform','translate('+(3*ease)+','+(-2*ease)+')');
+        }
+
+        requestAnimationFrame(animFrame);
+      } else if(elapsed<totalPhase){
+        // Fase mantieni
+        requestAnimationFrame(animFrame);
+      } else {
+        // Fase ritorno - bocca si chiude
+        var returnStart=now;
+        var returnDur=800;
+        function returnFrame(now2){
+          var rt=(now2-returnStart)/returnDur;
+          if(rt>1) rt=1;
+          var ease2=1-Math.pow(1-rt,3);
+          if(mouth){
+            mouth.setAttribute('rx',6-3*ease2);
+            mouth.setAttribute('ry',4.5-2*ease2);
+          }
+          if(cheek){
+            cheek.setAttribute('r',7.5-3*ease2);
+            cheek.setAttribute('opacity',0.5-0.2*ease2);
+          }
+          if(arm){
+            arm.setAttribute('transform','translate('+(3-3*ease2)+','+(-2+2*ease2)+')');
+          }
+          if(rt<1){
+            requestAnimationFrame(returnFrame);
+          } else {
+            isBlowing=false;
+          }
+        }
+        requestAnimationFrame(returnFrame);
+      }
+    }
+    requestAnimationFrame(animFrame);
+
+    // Bolle escono durante il soffio (sincronizzate)
+    var bubbleCount=Math.floor(Math.random()*5)+3;
+    for(var i=0;i<bubbleCount;i++){
+      setTimeout(function(){createBubble();},200+i*200+Math.random()*100);
+    }
+  }
 
   function createBubble(){
-    var weatherEl=document.querySelector('.header-weather');
-    var dateEl=document.getElementById('headerClockDate');
-    if(!weatherEl&&!dateEl) return;
-    // Partenza: vicino alla bocca del bambino
     var childX=parseInt(el.style.left)||0;
     var childY=parseInt(el.style.top)||0;
-    // La bocca è a circa (childX+21, childY+48) - nel sistema di coordinate del bambino
-    var startX=childX+19;
-    var startY=childY+44;
+    // Le bolle escono dal cerchio del sapone (a sinistra del bambino)
+    // Il cerchio è a circa cx=4 nella viewBox, con r=14
+    // Nel rendering: childX + (4/110)*100 = childX+3.6, cy=60/160*145 = childY+54
+    var startX=childX+1;
+    var startY=childY+50;
 
     var bubble=document.createElement('div');
     bubble.className='soap-bubble';
 
-    var size=Math.random()*16+8; // 8-24px - bolle più grandi
+    var size=Math.random()*18+8;
     bubble.style.width=size+'px';
     bubble.style.height=size+'px';
     bubble.style.left=startX+'px';
     bubble.style.top=startY+'px';
 
-    // Movimento casuale per ogni bolla
-    var drift=(Math.random()-0.5)*40;
-    var dur=Math.random()*3+3; // 3-6 secondi
+    // Bolle vanno verso sinistra e in alto (dalla parte del cerchio)
+    var drift=-10-Math.random()*30;
+    var dur=Math.random()*4+3;
     bubble.style.setProperty('--float-dur',dur+'s');
-    bubble.style.setProperty('--bx1',(drift*0.1)+'px');
-    bubble.style.setProperty('--by1',(-10-Math.random()*8)+'px');
-    bubble.style.setProperty('--bx2',(drift*0.3)+'px');
+    bubble.style.setProperty('--bx1',(drift*0.15)+'px');
+    bubble.style.setProperty('--by1',(-8-Math.random()*10)+'px');
+    bubble.style.setProperty('--bx2',(drift*0.35)+'px');
     bubble.style.setProperty('--by2',(-25-Math.random()*15)+'px');
     bubble.style.setProperty('--bx3',(drift*0.6)+'px');
-    bubble.style.setProperty('--by3',(-50-Math.random()*20)+'px');
+    bubble.style.setProperty('--by3',(-50-Math.random()*25)+'px');
     bubble.style.setProperty('--bx4',(drift*0.8)+'px');
-    bubble.style.setProperty('--by4',(-75-Math.random()*25)+'px');
+    bubble.style.setProperty('--by4',(-80-Math.random()*30)+'px');
     bubble.style.setProperty('--bx5',(drift)+'px');
-    bubble.style.setProperty('--by5',(-100-Math.random()*40)+'px');
+    bubble.style.setProperty('--by5',(-110-Math.random()*50)+'px');
 
-    // Colore iridescente casuale
     var hue=Math.random()*360;
-    bubble.style.background='radial-gradient(circle at 30% 30%,rgba(255,255,255,0.85),hsla('+hue+',70%,80%,0.3) 40%,hsla('+((hue+60)%360)+',60%,70%,0.15) 60%,rgba(255,255,255,0.05))';
+    bubble.style.background='radial-gradient(circle at 30% 30%,rgba(255,255,255,0.9),hsla('+hue+',70%,80%,0.35) 40%,hsla('+((hue+60)%360)+',60%,70%,0.15) 60%,rgba(255,255,255,0.05))';
 
     bubbleContainer.appendChild(bubble);
-
-    // Rimuovi la bolla dopo la fine dell'animazione
     setTimeout(function(){
       if(bubble.parentNode) bubble.parentNode.removeChild(bubble);
     },dur*1000+200);
   }
 
-  // Soffia un gruppo di bolle ogni 3-5 secondi
-  function blowBubbles(){
-    var count=Math.floor(Math.random()*4)+2; // 2-5 bolle per soffio
-    for(var i=0;i<count;i++){
-      setTimeout(createBubble,i*180+Math.random()*100);
-    }
-    // Prossimo soffio tra 3-6 secondi
-    bubbleTimer=setTimeout(blowBubbles,3000+Math.random()*3000);
+  // Ciclo: soffia, pausa, soffia di nuovo
+  function blowCycle(){
+    animateBlow();
+    // Prossimo soffio tra 4-7 secondi
+    setTimeout(blowCycle,4000+Math.random()*3000);
   }
 
-  // Inizia dopo 2.5 secondi
-  setTimeout(blowBubbles,2500);
+  setTimeout(blowCycle,2500);
 
 })();
 // ---- FINE BAMBINO BOLLE ----
