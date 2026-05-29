@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
 <title>Registro di Classe</title>
-<meta name="version" content="2025-05-30-v51-cerchio-piu-piccolo"/>
+<meta name="version" content="2025-05-30-v52-stelline-cadenti"/>
 <meta name="description" content="Registro di Classe per la gestione della classe"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a1a2e'><path d='M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z'/></svg>"/>
 <style>
@@ -20,7 +20,7 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background-color:var(--bg-body);background-image:radial-gradient(circle,var(--bg-dots) 1px,transparent 1px);background-size:20px 20px;color:var(--text-main);-webkit-font-smoothing:antialiased;transition:background-color 0.3s,color 0.3s}
 .app{max-width:900px;margin:0 auto;padding:16px;min-height:100vh}
-.header{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:16px;padding:20px 16px;background:linear-gradient(135deg,#1a1a2e,#2d2d5e);border-radius:16px;box-shadow:0 4px 16px rgba(0,0,0,0.15);position:relative}
+.header{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:16px;padding:20px 16px;background:linear-gradient(135deg,#1a1a2e,#2d2d5e);border-radius:16px;box-shadow:0 4px 16px rgba(0,0,0,0.15);position:relative;overflow:hidden}
 .header-icon{font-size:48px;line-height:1;flex-shrink:0}
 .header-info{display:flex;flex-direction:column;align-items:center;gap:4px;width:100%}
 .header-weather-row{display:flex;align-items:center;justify-content:space-between;width:100%;gap:8px}
@@ -311,6 +311,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .soap-bubble{position:fixed;pointer-events:none;z-index:9996;border-radius:50%;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,0.8),rgba(173,216,230,0.3) 40%,rgba(100,180,255,0.15) 60%,rgba(255,255,255,0.05));box-shadow:inset 0 0 4px rgba(255,255,255,0.6),0 0 6px rgba(100,180,255,0.2);border:1px solid rgba(255,255,255,0.3);animation:bubbleFloat var(--float-dur,4s) ease-out forwards}
 @keyframes bubbleFloat{0%{opacity:0.9;transform:translate(0,0) scale(0.3)}10%{opacity:1;transform:translate(var(--bx1,2px),var(--by1,-10px)) scale(0.7)}30%{opacity:0.95;transform:translate(var(--bx2,5px),var(--by2,-30px)) scale(1)}60%{opacity:0.7;transform:translate(var(--bx3,-3px),var(--by3,-60px)) scale(1.1)}80%{opacity:0.35;transform:translate(var(--bx4,2px),var(--by4,-85px)) scale(1.15)}100%{opacity:0;transform:translate(var(--bx5,0px),var(--by5,-110px)) scale(1.2)}}
 @keyframes childBlowBreath{0%,100%{transform:scaleX(1)}50%{transform:scaleX(1.06)}}
+.falling-star{position:absolute;pointer-events:none;z-index:1;color:#ffd700;opacity:0;animation:starFall var(--star-dur,4s) ease-in var(--star-delay,0s) infinite;font-size:var(--star-size,12px)}
+@keyframes starFall{0%{opacity:0;transform:translateY(-20px) rotate(0deg) scale(0.5)}10%{opacity:0.8;transform:translateY(0) rotate(30deg) scale(1)}50%{opacity:0.6;transform:translateY(50%) rotate(120deg) scale(0.9)}90%{opacity:0.2;transform:translateY(95%) rotate(280deg) scale(0.6)}100%{opacity:0;transform:translateY(100%) rotate(360deg) scale(0.3)}}
 </style>
 </head>
 <body>
@@ -4913,6 +4915,50 @@ fetchWeather();
 
 })();
 // ---- FINE BAMBINO BOLLE ----
+
+// ---- STELLINE CADENTI NELL'HEADER ----
+(function(){
+  var starSymbols=['✦','✧','⭐','✶','✨','⋆'];
+  var colors=['#ffd700','#ffec8b','#ffa500','#fff8dc','#ffe4b5','#fffacd'];
+
+  function addStarsToHeader(){
+    var header=document.querySelector('.header');
+    if(!header) return;
+    // Rimuovi stelline vecchie se ci sono
+    header.querySelectorAll('.falling-star').forEach(function(s){s.remove();});
+    // Crea 12-16 stelline
+    var count=12+Math.floor(Math.random()*5);
+    for(var i=0;i<count;i++){
+      var star=document.createElement('span');
+      star.className='falling-star';
+      star.textContent=starSymbols[Math.floor(Math.random()*starSymbols.length)];
+      var x=Math.random()*100;
+      var size=8+Math.random()*10;
+      var dur=3+Math.random()*5;
+      var delay=Math.random()*6;
+      var color=colors[Math.floor(Math.random()*colors.length)];
+      star.style.left=x+'%';
+      star.style.top=(-5-Math.random()*10)+'%';
+      star.style.color=color;
+      star.style.setProperty('--star-size',size+'px');
+      star.style.setProperty('--star-dur',dur+'s');
+      star.style.setProperty('--star-delay',delay+'s');
+      star.style.textShadow='0 0 6px '+color;
+      header.appendChild(star);
+    }
+  }
+
+  // Aggiungi stelline quando la pagina si carica e dopo ogni render
+  setTimeout(addStarsToHeader,500);
+  var origRender=window.render;
+  if(origRender){
+    window.render=function(){
+      origRender.apply(this,arguments);
+      setTimeout(addStarsToHeader,100);
+    };
+  }
+})();
+// ---- FINE STELLINE CADENTI ----
 
 // Aggiorna meteo ogni 30 minuti
 setInterval(function(){fetchWeather();},1800000);
