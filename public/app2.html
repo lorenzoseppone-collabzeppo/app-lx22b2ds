@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
 <title>Registro di Classe</title>
-<meta name="version" content="2025-05-30-v56-giostra-fix2"/>
+<meta name="version" content="2025-05-30-v57-giostra-js"/>
 <meta name="description" content="Registro di Classe per la gestione della classe"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a1a2e'><path d='M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z'/></svg>"/>
 <style>
@@ -2179,7 +2179,7 @@ function render(){
   var displayClassName=(currentClassId&&classes[currentClassId])?classes[currentClassId].name:className;
   if(editingClass&&!isCoordinatrice()){html+='<input class="class-name-input" id="classInput" value="'+esc(displayClassName.toUpperCase())+'" onblur="App.finishEditClass()" onkeydown="if(event.key===\'Enter\')App.finishEditClass()"/>';}
   else{html+='<div class="class-name"'+(isCoordinatrice()?' style="cursor:default"':' onclick="App.startEditClass()" title="Clicca per modificare"')+'>'+esc(displayClassName.toUpperCase())+'</div>';}
-  html+='<div class="class-sub">REGISTRO DI CLASSE<span style="font-size:9px;opacity:0.4;margin-left:6px">v56</span>'+(isCoordinatrice()&&regularClassCount()>0?' · '+regularClassCount()+' classi':'')+'</div>';
+  html+='<div class="class-sub">REGISTRO DI CLASSE<span style="font-size:9px;opacity:0.4;margin-left:6px">v57</span>'+(isCoordinatrice()&&regularClassCount()>0?' · '+regularClassCount()+' classi':'')+'</div>';
   html+='<div class="header-teachers">';
   if(isCoordinatrice()){
     // COORDINATRICE: un solo campo "Coordinatrice" + campo PIN
@@ -4629,9 +4629,8 @@ fetchWeather();
     // Decorazione base
     '<ellipse cx="100" cy="178" rx="60" ry="10" fill="none" stroke="#D7BDE2" stroke-width="0.8" stroke-dasharray="4,3"/>'+
 
-    // === PIASTRO ROTANTE (gruppo che gira) ===
-    // animateTransform ruota intorno al centro (100,155) in modo affidabile su tutti i browser
-    '<g id="giostraPlatform"><animateTransform attributeName="transform" type="rotate" from="0 100 155" to="360 100 155" dur="8s" repeatCount="indefinite"/>'+
+    // === PIASTRO ROTANTE (gruppo che gira via JS) ===
+    '<g id="giostraPlatform">'+
 
       // Piattaforma disco
       '<ellipse cx="100" cy="155" rx="70" ry="12" fill="url(#gPlateG)" stroke="#7D3C98" stroke-width="1"/>'+
@@ -4640,7 +4639,7 @@ fetchWeather();
       '<ellipse cx="100" cy="155" rx="35" ry="6" fill="none" stroke="#F7DC6F" stroke-width="0.6"/>'+
 
       // === CAVALLO 1 (destra) - bianco ===
-      '<g style="animation:giostraHorseBob 1.5s ease-in-out infinite">'+
+      '<g class="ghorse" data-bob-delay="0">'+
         // Palo decorativo
         '<line x1="155" y1="155" x2="155" y2="85" stroke="url(#gPoleG)" stroke-width="3.5" stroke-linecap="round"/>'+
         // Anelli dorati sul palo
@@ -4682,7 +4681,7 @@ fetchWeather();
       '</g>'+
 
       // === CAVALLO 2 (sinistra) - marrone ===
-      '<g style="animation:giostraHorseBob 1.5s ease-in-out 0.4s infinite">'+
+      '<g class="ghorse" data-bob-delay="400">'+
         '<line x1="45" y1="155" x2="45" y2="85" stroke="url(#gPoleG)" stroke-width="3.5" stroke-linecap="round"/>'+
         '<ellipse cx="45" cy="95" rx="4" ry="1.5" fill="#F7DC6F" stroke="#D4AC0D" stroke-width="0.5"/>'+
         '<ellipse cx="45" cy="115" rx="4" ry="1.5" fill="#F7DC6F" stroke="#D4AC0D" stroke-width="0.5"/>'+
@@ -4715,7 +4714,7 @@ fetchWeather();
       '</g>'+
 
       // === CAVALLO 3 (dietro, alto) - grigio ===
-      '<g style="animation:giostraHorseBob 1.5s ease-in-out 0.8s infinite;opacity:0.7">'+
+      '<g class="ghorse" data-bob-delay="800" style="opacity:0.7">'+
         '<line x1="100" y1="155" x2="100" y2="80" stroke="url(#gPoleG)" stroke-width="3" stroke-linecap="round"/>'+
         '<ellipse cx="100" cy="90" rx="3.5" ry="1.3" fill="#F7DC6F" stroke="#D4AC0D" stroke-width="0.4"/>'+
         '<ellipse cx="100" cy="108" rx="3.5" ry="1.3" fill="#F7DC6F" stroke="#D4AC0D" stroke-width="0.4"/>'+
@@ -4739,7 +4738,7 @@ fetchWeather();
       '</g>'+
 
       // === CAVALLO 4 (davanti basso, cucciolo) - nocciola ===
-      '<g style="animation:giostraHorseBob 1.8s ease-in-out 1.2s infinite;opacity:0.8">'+
+      '<g class="ghorse" data-bob-delay="1200" style="opacity:0.8">'+
         '<line x1="78" y1="155" x2="78" y2="100" stroke="url(#gPoleG)" stroke-width="2.5" stroke-linecap="round"/>'+
         '<ellipse cx="78" cy="108" rx="3" ry="1.2" fill="#F7DC6F" stroke="#D4AC0D" stroke-width="0.4"/>'+
         // Cucciolo piccolo
@@ -4789,18 +4788,49 @@ fetchWeather();
     '<line x1="100" y1="24" x2="100" y2="12" stroke="#D4AC0D" stroke-width="1.5"/>'+
     '<path d="M100,12 L114,16 L100,20 Z" fill="#E74C3C" stroke="#C0392B" stroke-width="0.5"/>'+
 
-    // Luci lampeggianti sulla base
-    '<circle cx="35" cy="178" r="2" fill="#FFD700" opacity="0.8"><animate attributeName="opacity" values="0.8;0.3;0.8" dur="1s" repeatCount="indefinite"/></circle>'+
-    '<circle cx="55" cy="182" r="2" fill="#FF69B4" opacity="0.8"><animate attributeName="opacity" values="0.3;0.8;0.3" dur="1.2s" repeatCount="indefinite"/></circle>'+
-    '<circle cx="75" cy="184" r="2" fill="#5DADE2" opacity="0.8"><animate attributeName="opacity" values="0.8;0.3;0.8" dur="0.9s" repeatCount="indefinite"/></circle>'+
-    '<circle cx="100" cy="185" r="2" fill="#2ECC71" opacity="0.8"><animate attributeName="opacity" values="0.3;0.8;0.3" dur="1.1s" repeatCount="indefinite"/></circle>'+
-    '<circle cx="125" cy="184" r="2" fill="#FFD700" opacity="0.8"><animate attributeName="opacity" values="0.8;0.3;0.8" dur="1.3s" repeatCount="indefinite"/></circle>'+
-    '<circle cx="145" cy="182" r="2" fill="#FF69B4" opacity="0.8"><animate attributeName="opacity" values="0.3;0.8;0.3" dur="0.8s" repeatCount="indefinite"/></circle>'+
-    '<circle cx="165" cy="178" r="2" fill="#5DADE2" opacity="0.8"><animate attributeName="opacity" values="0.8;0.3;0.8" dur="1s" repeatCount="indefinite"/></circle>'+
+    // Luci lampeggianti sulla base (animate via JS)
+    '<circle class="glight" cx="35" cy="178" r="2" fill="#FFD700"/>'+
+    '<circle class="glight" cx="55" cy="182" r="2" fill="#FF69B4"/>'+
+    '<circle class="glight" cx="75" cy="184" r="2" fill="#5DADE2"/>'+
+    '<circle class="glight" cx="100" cy="185" r="2" fill="#2ECC71"/>'+
+    '<circle class="glight" cx="125" cy="184" r="2" fill="#FFD700"/>'+
+    '<circle class="glight" cx="145" cy="182" r="2" fill="#FF69B4"/>'+
+    '<circle class="glight" cx="165" cy="178" r="2" fill="#5DADE2"/>'+
 
   '</svg>';
 
   el.innerHTML=svg;
+
+  // === ANIMAZIONE GIR0 + BOB + LUCI via JavaScript puro (funziona sempre) ===
+  var svgEl=el.querySelector('svg');
+  var platform=svgEl?svgEl.querySelector('#giostraPlatform'):null;
+  var horses=svgEl?svgEl.querySelectorAll('.ghorse'):[];
+  var lights=svgEl?svgEl.querySelectorAll('.glight'):[];
+  var startTime=performance.now();
+
+  function animateGiostra(now){
+    var elapsed=now-startTime;
+    // Rotazione piattaforma: 360 gradi in 8 secondi, senso orario
+    if(platform){
+      var angle=(elapsed/8000)*360;
+      platform.setAttribute('transform','rotate('+angle+' 100 155)');
+    }
+    // Cavalli dondolano su e giù
+    for(var i=0;i<horses.length;i++){
+      var delay=parseInt(horses[i].getAttribute('data-bob-delay'))||0;
+      var t=((elapsed-delay)%1500)/1500;
+      var bob=Math.sin(t*Math.PI*2)*5; // -5px a +5px
+      horses[i].setAttribute('transform','translate(0,'+bob+')');
+    }
+    // Luci lampeggianti
+    for(var j=0;j<lights.length;j++){
+      var phase=(elapsed+j*200)%1200;
+      var op=phase<600?0.8:0.3;
+      lights[j].setAttribute('opacity',op);
+    }
+    requestAnimationFrame(animateGiostra);
+  }
+  requestAnimationFrame(animateGiostra);
 
   // Posizionamento: sotto il blocco meteo, allineato a destra (stesso posto del bambino bolle)
   function positionGiostra(){
