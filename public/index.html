@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="it" data-theme="dark">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
@@ -2928,9 +2928,9 @@ function fixFirebaseRules(){
 }
 
 window.App={
-  getTheme:function(){return localStorage.getItem('rp_theme')||'light';},
+  getTheme:function(){return localStorage.getItem('rp_theme')||'dark';},
   toggleTheme:function(){
-    var current=localStorage.getItem('rp_theme')||'light';
+    var current=localStorage.getItem('rp_theme')||'dark';
     var next=current==='dark'?'light':'dark';
     localStorage.setItem('rp_theme',next);
     document.documentElement.setAttribute('data-theme',next);
@@ -4371,7 +4371,7 @@ initFirebase();
 ensureDefaultClass();
 // Apply saved theme on load
 (function(){
-  var saved=localStorage.getItem('rp_theme')||'light';
+  var saved=localStorage.getItem('rp_theme')||'dark';
   document.documentElement.setAttribute('data-theme',saved);
 })();
 setupPinAutoLockListeners();
