@@ -4806,8 +4806,6 @@ fetchWeather();
   document.body.appendChild(wbDiv);
 
   // SVG bambino in piedi - STESSE DIMENSIONI del bambino sull'altalena
-  // Il bambino sull'altalena ha testa r=7, corpo verde, gambe lunghe, scarpe nere
-  // Scaliamo questo SVG a 28x47px per corrispondere
   var wbSvgStr='<svg viewBox="0 0 30 50" width="30" height="50">'+
     '<circle cx="15" cy="7" r="6" fill="#FFD5B8" stroke="#1a1a1a" stroke-width="0.5"/>'+
     '<path d="M9,5 C9,0 21,0 21,5" fill="#5D3A1A"/>'+
@@ -4833,17 +4831,19 @@ fetchWeather();
   var wbLShoe=wbSvgEl.querySelector('#wbLShoe');
   var wbRShoe=wbSvgEl.querySelector('#wbRShoe');
 
-  // Stati - NESSUNO STACCO, movimento continuo, altalena NON si ferma MAI
-  var ST_IDLE=0,ST_WAIT_DEPART=1,ST_DESCEND=2,ST_WALK=3,ST_CLIMB=4,ST_ENTER=5,ST_INSIDE=6,ST_WAIT_RETURN=7;
+  // UNICO PERCORSO CONTINUO - nessuna pausa tra i tratti!
+  // 3 waypoint: altalena → Bonirola → icona scuola
+  // Un solo parametro t: 0→1 per tutto il percorso
+  var ST_IDLE=0,ST_WAIT=1,ST_JOURNEY=2,ST_FADEIN=3,ST_INSIDE=4,ST_WAIT_RETURN=5;
   var wbState=ST_IDLE,wbFrame=0;
-  var wbX=0,wbY=0,wbOp=0;
-  var wbSX=0,wbSY=0,wbDX=0,wbDY=0;
-  var wbWalkF=0;
+  var wbOp=0;
+  // Waypoint (riempiti a runtime)
+  var wp0x=0,wp0y=0,wp1x=0,wp1y=0,wp2x=0,wp2y=0;
+  var TOTAL_FRAMES=200; // tutto il percorso in ~6.6 secondi
+  var FADE_FRAMES=20;
+  var INSIDE_FRAMES=90;
 
-  // Frame per stato (~30fps)
-  var FR_DESC=75,FR_WALK=90,FR_CLIMB=55,FR_ENT=30,FR_INSIDE=90;
-
-  // Leggi angolo attuale dell'altalena (radianti)
+  // Leggi angolo altalena
   function getSwingAngle(){
     var cs=window.getComputedStyle(el);
     var tr=cs.transform;
@@ -4853,7 +4853,7 @@ fetchWeather();
     return 0;
   }
 
-  // Posizione VISIVA reale del bambino sull'altalena (considerando rotazione)
+  // Posizione VISIVA del bambino sull'altalena
   function swingBoyVisualPos(){
     var lx=parseInt(el.style.left)||0;
     var ly=parseInt(el.style.top)||0;
@@ -4864,21 +4864,17 @@ fetchWeather();
     var angle=getSwingAngle();
     var dx=bx-px, dy=by-py;
     var cosA=Math.cos(angle), sinA=Math.sin(angle);
-    var rx=dx*cosA-dy*sinA;
-    var ry=dx*sinA+dy*cosA;
-    // Offset: centro testa del bambino che cammina e' a (15/30*30, 7/50*50)=(15,7)
-    return{x:px+rx-15, y:py+ry-7};
+    return{x:px+dx*cosA-dy*sinA-15, y:py+dx*sinA+dy*cosA-7};
   }
 
-  // Y dove il bambino atterra sulla scritta Bonirola
-  function bonirolaTextY(){
+  function bonirolaTextPos(){
     var sn=document.querySelector('.school-name');
     if(!sn)return null;
     var r=sn.getBoundingClientRect();
-    return r.top-42;
+    // Centro del testo, sopra di esso
+    return{x:r.left+r.width/2-15, y:r.top-42};
   }
 
-  // Centro icona scuola
   function iconCenterPos(){
     var ic=document.querySelector('.header-icon');
     if(!ic)return null;
@@ -4886,30 +4882,23 @@ fetchWeather();
     return{x:r.left+r.width/2-15, y:r.top+r.height/2-7};
   }
 
-  // Mostra/nascondi bambino sull'altalena
   function setSwingBoyVis(v){
     var g=el.querySelector('#swingBoyGroup');
     if(g)g.style.opacity=v?'1':'0';
   }
 
-  // Ciclo di camminata (sinusoidale) - viewBox 30x50
+  // Camminata (sinusoidale)
   function updateWalk(frame){
     var ph=frame*0.2;
     var ls=Math.sin(ph)*6;
     var as=Math.sin(ph)*5;
     var bn=Math.abs(Math.sin(ph))*1;
-    wbLLeg.setAttribute('x2',String(10+ls));
-    wbLLeg.setAttribute('y2',String(42-bn));
-    wbRLeg.setAttribute('x2',String(20-ls));
-    wbRLeg.setAttribute('y2',String(42-bn));
-    wbLShoe.setAttribute('cx',String(9+ls));
-    wbLShoe.setAttribute('cy',String(43-bn));
-    wbRShoe.setAttribute('cx',String(21-ls));
-    wbRShoe.setAttribute('cy',String(43-bn));
-    wbLArm.setAttribute('x2',String(6-as));
-    wbLArm.setAttribute('y2',String(23+bn));
-    wbRArm.setAttribute('x2',String(24+as));
-    wbRArm.setAttribute('y2',String(23+bn));
+    wbLLeg.setAttribute('x2',String(10+ls));wbLLeg.setAttribute('y2',String(42-bn));
+    wbRLeg.setAttribute('x2',String(20-ls));wbRLeg.setAttribute('y2',String(42-bn));
+    wbLShoe.setAttribute('cx',String(9+ls));wbLShoe.setAttribute('cy',String(43-bn));
+    wbRShoe.setAttribute('cx',String(21-ls));wbRShoe.setAttribute('cy',String(43-bn));
+    wbLArm.setAttribute('x2',String(6-as));wbLArm.setAttribute('y2',String(23+bn));
+    wbRArm.setAttribute('x2',String(24+as));wbRArm.setAttribute('y2',String(23+bn));
   }
 
   function resetWalk(){
@@ -4921,104 +4910,104 @@ fetchWeather();
     wbRArm.setAttribute('x2','24');wbRArm.setAttribute('y2','23');
   }
 
-  function easeIO(t){return t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;}
-  // easeOut: parte veloce, rallenta alla fine - per la discesa
-  function easeOut(t){return 1-Math.pow(1-t,3);}
+  // Interpolazione lineare
+  function lerp(a,b,t){return a+(b-a)*t;}
 
-  // Avvia passeggiata - aspetta che l'altalena passi dal centro
+  // Avvia passeggiata
   function startBoyWalk(){
     if(wbState!==ST_IDLE)return;
-    var btY=bonirolaTextY();
+    var bp=bonirolaTextPos();
     var ip=iconCenterPos();
-    if(btY===null||!ip){setTimeout(startBoyWalk,5000);return;}
-    wbState=ST_WAIT_DEPART;
+    if(!bp||!ip){setTimeout(startBoyWalk,5000);return;}
+    wbState=ST_WAIT;
     wbFrame=0;
   }
 
-  // Loop animazione ~30fps - l'altalena NON si ferma MAI
+  // Loop ~30fps
   setInterval(function(){
     wbFrame++;
-    var t,e;
     switch(wbState){
-      case ST_WAIT_DEPART:
-        // Aspetta che l'altalena passi vicino al centro (angolo ~0)
-        // L'altalena continua a dondolare - NESSUNA pausa visibile!
+      case ST_WAIT:
+        // Aspetta che l'altalena passi dal centro
         if(Math.abs(getSwingAngle())<0.08){
           var sp=swingBoyVisualPos();
-          // Scambio ISTANTANEO: il bambino "salta giu" dal seggiolino
-          // Appare gia' 8px piu' in basso - gia' in movimento, mai fermo!
+          var bp=bonirolaTextPos();
+          var ip=iconCenterPos();
+          if(!sp||!bp||!ip){wbState=ST_IDLE;return;}
+          // Imposta 3 waypoint del percorso
+          wp0x=sp.x; wp0y=sp.y+6; // appena sotto il seggiolino (gia' in discesa)
+          wp1x=bp.x; wp1y=bp.y;   // sopra la scritta Bonirola
+          wp2x=ip.x; wp2y=ip.y;   // icona scuola
           setSwingBoyVis(false);
-          var btY=bonirolaTextY();
-          var dropY=8; // gia' caduto di 8px
-          wbX=sp.x;wbY=sp.y+dropY;
-          wbDiv.style.left=wbX+'px';
-          wbDiv.style.top=wbY+'px';
+          wbOp=1;
           wbDiv.style.opacity=1;
           wbDiv.style.transform='scale(1)';
           resetWalk();
-          wbSX=sp.x;wbSY=sp.y+dropY;wbDX=sp.x;wbDY=btY;
-          wbWalkF=0;wbState=ST_DESCEND;wbFrame=0;
+          wbState=ST_JOURNEY;wbFrame=0;
         }
         break;
-      case ST_DESCEND:
-        // Scende DIRITTO verso la scritta Bonirola - easeOut (parte veloce!)
-        t=Math.min(1,wbFrame/FR_DESC);
-        e=easeOut(t);
-        wbX=wbSX+(wbDX-wbSX)*e;
-        wbY=wbSY+(wbDY-wbSY)*e;
-        wbDiv.style.left=wbX+'px';
-        wbDiv.style.top=wbY+'px';
-        if(wbFrame>=FR_DESC){
-          wbState=ST_WALK;wbFrame=0;wbWalkF=0;
-          wbSX=wbX;wbSY=wbY;
-          var ip=iconCenterPos();
-          if(ip){wbDX=ip.x;wbDY=wbY;}
+
+      case ST_JOURNEY:
+        // UNICO PERCORSO CONTINUO con un solo parametro t: 0→1
+        // Nessuna pausa tra i tratti - e' tutto un movimento!
+        var t=Math.min(1,wbFrame/TOTAL_FRAMES);
+        // Usiamo easeInOut per tutto: accelera all'inizio, rallenta alla fine
+        // Ma senza pause tra i segmenti!
+        var et=t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+        var px,py,walkF;
+
+        if(et<0.35){
+          // Tratto 1: altalena → Bonirola (discesa, 35% del percorso)
+          var s=et/0.35; // 0→1 dentro questo tratto
+          var se=1-Math.pow(1-s,2); // easeOut: parte veloce
+          px=lerp(wp0x,wp1x,se);
+          py=lerp(wp0y,wp1y,se);
+          walkF=false; // non cammina ancora, sta scendendo
+        } else if(et<0.75){
+          // Tratto 2: Bonirola → verso scuola (camminata, 40%)
+          var s=(et-0.35)/0.4;
+          var se=s<0.5?2*s*s:1-Math.pow(-2*s+2,2)/2;
+          px=lerp(wp1x,lerp(wp1x,wp2x,0.5),se);
+          py=lerp(wp1y,lerp(wp1y,wp2y,0.3),se);
+          walkF=true;
+        } else {
+          // Tratto 3: risalita verso icona scuola (25%)
+          var s=(et-0.75)/0.25;
+          var se=s<0.5?2*s*s:1-Math.pow(-2*s+2,2)/2;
+          px=lerp(lerp(wp1x,wp2x,0.5),wp2x,se);
+          py=lerp(lerp(wp1y,wp2y,0.3),wp2y,se);
+          walkF=true;
         }
-        break;
-      case ST_WALK:
-        t=Math.min(1,wbFrame/FR_WALK);
-        e=easeIO(t);
-        wbX=wbSX+(wbDX-wbSX)*e;
-        wbDiv.style.left=wbX+'px';
-        wbWalkF++;
-        updateWalk(wbWalkF);
-        if(wbFrame>=FR_WALK){
-          wbState=ST_CLIMB;wbFrame=0;
-          var ip2=iconCenterPos();
-          if(ip2){wbDX=ip2.x;wbDY=ip2.y;}
-          wbSX=wbX;wbSY=wbY;
+
+        wbDiv.style.left=px+'px';
+        wbDiv.style.top=py+'px';
+
+        // Camminata durante i tratti 2 e 3
+        if(walkF){
+          updateWalk(wbFrame);
         }
-        break;
-      case ST_CLIMB:
-        t=Math.min(1,wbFrame/FR_CLIMB);
-        e=easeIO(t);
-        wbX=wbSX+(wbDX-wbSX)*e;
-        wbY=wbSY+(wbDY-wbSY)*e;
-        wbDiv.style.left=wbX+'px';
-        wbDiv.style.top=wbY+'px';
-        wbWalkF++;
-        updateWalk(wbWalkF);
-        if(wbFrame>=FR_CLIMB){
-          wbState=ST_ENTER;wbFrame=0;
+
+        // Fade finale: ultimi frame si dissolve verso la scuola
+        if(et>0.85){
+          var ft=(et-0.85)/0.15;
+          wbDiv.style.opacity=1-ft*0.7; // sfuma al 30%
         }
-        break;
-      case ST_ENTER:
-        t=Math.min(1,wbFrame/FR_ENT);
-        wbOp=1-t;
-        wbDiv.style.opacity=wbOp;
-        if(wbFrame>=FR_ENT){
-          wbState=ST_INSIDE;wbFrame=0;
+
+        if(wbFrame>=TOTAL_FRAMES){
           wbDiv.style.opacity=0;
-        }
-        break;
-      case ST_INSIDE:
-        if(wbFrame>=FR_INSIDE){
-          wbState=ST_WAIT_RETURN;wbFrame=0;
+          wbState=ST_INSIDE;wbFrame=0;
           resetWalk();
         }
         break;
+
+      case ST_INSIDE:
+        if(wbFrame>=INSIDE_FRAMES){
+          wbState=ST_WAIT_RETURN;wbFrame=0;
+        }
+        break;
+
       case ST_WAIT_RETURN:
-        // Aspetta che l'altalena passi dal centro per rimettere il bambino
+        // Aspetta altalena al centro per rimettere il bambino
         if(Math.abs(getSwingAngle())<0.08){
           setSwingBoyVis(true);
           wbDiv.style.opacity=0;
