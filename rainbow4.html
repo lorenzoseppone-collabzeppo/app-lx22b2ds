@@ -5284,15 +5284,55 @@ fetchWeather();
   });
 })();
 
-// ---- 2 SAETTE / METEORE VELOCI CON CODA (setInterval per Safari) ----
+// ---- 2 SAETTE / METEORE VELOCI CON CODA E SCIA (setInterval per Safari) ----
 (function(){
+  // Scia: pezzi di scia che rimangono e svaniscono lentamente
+  var trails=[];
+  var MAX_TRAILS=60;
+
+  function addTrail(x,y,angle,op){
+    var t=document.createElement('div');
+    t.style.cssText='position:absolute;pointer-events:none;z-index:9996;opacity:'+op;
+    t.innerHTML='<svg width="30" height="4" viewBox="0 0 30 4" style="display:block"><line x1="0" y1="2" x2="26" y2="2" stroke="white" stroke-width="1.5" stroke-linecap="round" opacity="0.7"/><circle cx="28" cy="2" r="1.5" fill="white" opacity="0.9"/></svg>';
+    var svg=t.querySelector('svg');
+    svg.style.transform='rotate('+angle+'deg)';
+    svg.style.transformOrigin='28px 2px';
+    t.style.left=x+'px';
+    t.style.top=y+'px';
+    document.body.appendChild(t);
+    trails.push({el:t, born:performance.now(), life:1200+Math.random()*600, op:op});
+    // Rimuovi scie vecchie se troppe
+    while(trails.length>MAX_TRAILS){
+      var old=trails.shift();
+      if(old.el.parentNode) old.el.remove();
+    }
+  }
+
+  // Anima scia: svanisce lentamente
+  setInterval(function(){
+    var now=performance.now();
+    for(var i=trails.length-1;i>=0;i--){
+      var tr=trails[i];
+      var age=now-tr.born;
+      var t=Math.min(age/tr.life,1);
+      var op=tr.op*(1-t);
+      if(t>=1){
+        if(tr.el.parentNode) tr.el.remove();
+        trails.splice(i,1);
+      } else {
+        tr.el.style.opacity=String(op);
+      }
+    }
+  },50);
+
+  // Meteore
   var meteors=[];
   for(var i=0;i<2;i++){
     var d=document.createElement('div');
     d.style.cssText='position:absolute;pointer-events:none;z-index:9997;opacity:0';
     d.innerHTML='<svg width="120" height="6" viewBox="0 0 120 6" style="display:block;overflow:visible"><defs><linearGradient id="mt'+i+'" x1="0%" y1="50%" x2="100%" y2="50%"><stop offset="0%" stop-color="#ffffff" stop-opacity="0"/><stop offset="50%" stop-color="#ffe4b5" stop-opacity="0.3"/><stop offset="85%" stop-color="#fffacd" stop-opacity="0.85"/><stop offset="100%" stop-color="#ffffff" stop-opacity="1"/></linearGradient><filter id="mg'+i+'" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><line x1="0" y1="3" x2="100" y2="3" stroke="url(#mt'+i+')" stroke-width="2" stroke-linecap="round"/><circle cx="106" cy="3" r="2.5" fill="#ffffff" filter="url(#mg'+i+')"/></svg>';
     document.body.appendChild(d);
-    meteors.push({el:d, svg:d.querySelector('svg'), active:false, startX:0, startY:0, dx:0, dy:0, dur:0, start:0});
+    meteors.push({el:d, svg:d.querySelector('svg'), active:false, startX:0, startY:0, dx:0, dy:0, dur:0, start:0, lastTrail:0});
   }
 
   function launchMeteor(m){
@@ -5313,6 +5353,7 @@ fetchWeather();
     m.dx=ex-sx;m.dy=ey-sy;
     m.dur=600+Math.random()*600;
     m.start=performance.now();
+    m.lastTrail=0;
     m.active=true;
 
     var angle=Math.atan2(m.dy,m.dx)*180/Math.PI;
@@ -5335,6 +5376,15 @@ fetchWeather();
       m.el.style.left=x+'px';
       m.el.style.top=y+'px';
       m.el.style.opacity=String(op);
+
+      // Aggiungi scia ogni 40ms
+      var now=performance.now();
+      if(now-m.lastTrail>40 && op>0.3){
+        var angle=Math.atan2(m.dy,m.dx)*180/Math.PI;
+        addTrail(x+50*Math.cos(Math.atan2(m.dy,m.dx)),y+50*Math.sin(Math.atan2(m.dy,m.dx)),angle,op*0.6);
+        m.lastTrail=now;
+      }
+
       if(t>=1){m.active=false;m.el.style.opacity='0';}
     }
   },16);
