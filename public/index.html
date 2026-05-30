@@ -5283,7 +5283,60 @@ fetchWeather();
     window._starResizeTimer=setTimeout(addStarsToHeader,300);
   });
 })();
-// ---- FINE STELLINE CADENTI ----
+
+// ---- 2 STELLE CADENTI GRANDI E VISIBILI ----
+(function(){
+  var header=document.querySelector('.header');
+  if(!header) return;
+  var colors=['#ffd700','#ffec8b','#ffa500','#fff8dc','#ffe4b5','#fffacd','#ffe066','#ffffff'];
+  var starChars=['★','✦','✧','✶','⋆','☆'];
+
+  function dropOneStar(){
+    var header=document.querySelector('.header');
+    if(!header) return;
+    var hHeight=header.offsetHeight||200;
+    var star=document.createElement('span');
+    star.className='falling-star';
+    star.textContent=starChars[Math.floor(Math.random()*starChars.length)];
+    var x=5+Math.random()*85;
+    var size=20+Math.random()*14; // 20-34px, più grandi delle altre
+    var dur=3+Math.random()*3; // 3-6s caduta più veloce
+    var delay=0; // nessun ritardo, cade subito
+    var color=colors[Math.floor(Math.random()*colors.length)];
+    var midPx=Math.round(hHeight*0.35+Math.random()*hHeight*0.15);
+    var farPx=Math.round(hHeight*0.55+Math.random()*hHeight*0.2);
+    var endPx=Math.round(hHeight*0.8+Math.random()*hHeight*0.18);
+    star.style.left=x+'%';
+    star.style.top='0px';
+    star.style.color=color;
+    star.style.setProperty('--star-size',size+'px');
+    star.style.setProperty('--star-dur',dur+'s');
+    star.style.setProperty('--star-delay',delay+'s');
+    star.style.setProperty('--star-glow',color);
+    star.style.setProperty('--star-mid',midPx+'px');
+    star.style.setProperty('--star-far',farPx+'px');
+    star.style.setProperty('--star-end',endPx+'px');
+    header.appendChild(star);
+    // Rimuovi dopo la caduta
+    setTimeout(function(){if(star.parentNode)star.remove();},(dur+1)*1000);
+  }
+
+  // Fa cadere 2 stelle una dopo l'altra, poi ripete
+  function dropTwoStars(){
+    dropOneStar();
+    var gap=400+Math.random()*800; // 0.4-1.2s tra una e l'altra
+    setTimeout(function(){
+      dropOneStar();
+    },gap);
+    // Ripeti dopo un intervallo casuale (4-9 secondi)
+    var nextDrop=4000+Math.random()*5000;
+    setTimeout(dropTwoStars,nextDrop+gap);
+  }
+
+  // Inizia dopo 3 secondi
+  setTimeout(dropTwoStars,3000);
+})();
+// ---- FINE STELLE CADENTI GRANDI ----
 
 // Aggiorna meteo ogni 30 minuti
 setInterval(function(){fetchWeather();},1800000);
