@@ -4397,12 +4397,13 @@ fetchWeather();
 
   var isFlying=false;
   var flyAnimId=null;
+  var bflySpot=0;
 
   function setSvg(pink){
     bfly.innerHTML=pink?svgBflyPink:svgBfly;
   }
 
-  function getRestPos(){
+  function getRestPosA(){
     var dateEl=document.getElementById('headerClockDate');
     if(dateEl){
       var r=dateEl.getBoundingClientRect();
@@ -4422,6 +4423,27 @@ fetchWeather();
     return {x:80,y:40};
   }
 
+  function getRestPosB(){
+    var wEl=document.querySelector('.header-weather');
+    if(wEl){
+      var r=wEl.getBoundingClientRect();
+      var legOff=74/96*80;
+      return {x:r.left+r.width*0.5-45,y:r.top+r.height*0.5-legOff};
+    }
+    var tempEl=document.querySelector('.header-weather-temp');
+    if(tempEl){
+      var r2=tempEl.getBoundingClientRect();
+      var legOff2=74/96*80;
+      return {x:r2.left+r2.width*0.5-45,y:r2.top-r2.height*0.3-legOff2};
+    }
+    var w=window.innerWidth;
+    return {x:w-160,y:30};
+  }
+
+  function getRestPos(){
+    return bflySpot===0?getRestPosA():getRestPosB();
+  }
+
   function restOnDate(){
     if(flyAnimId){cancelAnimationFrame(flyAnimId);flyAnimId=null;}
     isFlying=false;
@@ -4439,6 +4461,7 @@ fetchWeather();
   function startFlying(){
     if(isFlying) return;
     isFlying=true;
+    bflySpot=bflySpot===0?1:0;
     var curX=parseInt(bfly.style.left)||80;
     var curY=parseInt(bfly.style.top)||40;
     bfly.style.animation='none';
