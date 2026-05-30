@@ -4805,20 +4805,22 @@ fetchWeather();
   wbDiv.style.cssText='position:fixed;pointer-events:none;z-index:9999;opacity:0;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.18))';
   document.body.appendChild(wbDiv);
 
-  // SVG bambino in piedi (stessi colori del bambino sull'altalena)
-  var wbSvgStr='<svg viewBox="0 0 24 42" width="20" height="35">'+
-    '<circle cx="12" cy="6" r="5" fill="#FFD5B8" stroke="#1a1a1a" stroke-width="0.4"/>'+
-    '<path d="M7,4.5 C7,0 17,0 17,4.5" fill="#5D3A1A"/>'+
-    '<circle cx="10" cy="6.5" r="0.6" fill="#1a1a1a"/>'+
-    '<circle cx="14" cy="6.5" r="0.6" fill="#1a1a1a"/>'+
-    '<path d="M10,9 Q12,10.5 14,9" stroke="#1a1a1a" stroke-width="0.4" fill="none" stroke-linecap="round"/>'+
-    '<path d="M8,11 L7,22 L17,22 L16,11 Z" fill="#4CAF50" stroke="#388E3C" stroke-width="0.3"/>'+
-    '<line id="wbLArm" x1="8" y1="13" x2="5" y2="20" stroke="#FFD5B8" stroke-width="1.5" stroke-linecap="round"/>'+
-    '<line id="wbRArm" x1="16" y1="13" x2="19" y2="20" stroke="#FFD5B8" stroke-width="1.5" stroke-linecap="round"/>'+
-    '<line id="wbLLeg" x1="10" y1="22" x2="8" y2="35" stroke="#FFD5B8" stroke-width="1.5" stroke-linecap="round"/>'+
-    '<line id="wbRLeg" x1="14" y1="22" x2="16" y2="35" stroke="#FFD5B8" stroke-width="1.5" stroke-linecap="round"/>'+
-    '<ellipse id="wbLShoe" cx="7" cy="36" rx="2" ry="1" fill="#333"/>'+
-    '<ellipse id="wbRShoe" cx="17" cy="36" rx="2" ry="1" fill="#333"/>'+
+  // SVG bambino in piedi - STESSE PROPORZIONI del bambino sull'altalena
+  // Il bambino sull'altalena ha: testa r=7, corpo verde, gambe lunghe, scarpe nere
+  // Occupa circa 19x35 pixel nel rendering. Noi usiamo viewBox 30x50 a 22x37px
+  var wbSvgStr='<svg viewBox="0 0 30 50" width="22" height="37">'+
+    '<circle cx="15" cy="7" r="6" fill="#FFD5B8" stroke="#1a1a1a" stroke-width="0.5"/>'+
+    '<path d="M9,5 C9,0 21,0 21,5" fill="#5D3A1A"/>'+
+    '<circle cx="12.5" cy="7.5" r="0.8" fill="#1a1a1a"/>'+
+    '<circle cx="17.5" cy="7.5" r="0.8" fill="#1a1a1a"/>'+
+    '<path d="M12.5,10 Q15,11.5 17.5,10" stroke="#1a1a1a" stroke-width="0.5" fill="none" stroke-linecap="round"/>'+
+    '<path d="M10,13 L9,25 L21,25 L20,13 Z" fill="#4CAF50" stroke="#388E3C" stroke-width="0.4"/>'+
+    '<line id="wbLArm" x1="10" y1="15" x2="6" y2="23" stroke="#FFD5B8" stroke-width="2" stroke-linecap="round"/>'+
+    '<line id="wbRArm" x1="20" y1="15" x2="24" y2="23" stroke="#FFD5B8" stroke-width="2" stroke-linecap="round"/>'+
+    '<line id="wbLLeg" x1="13" y1="25" x2="10" y2="42" stroke="#FFD5B8" stroke-width="2" stroke-linecap="round"/>'+
+    '<line id="wbRLeg" x1="17" y1="25" x2="20" y2="42" stroke="#FFD5B8" stroke-width="2" stroke-linecap="round"/>'+
+    '<ellipse id="wbLShoe" cx="9" cy="43" rx="2.5" ry="1.2" fill="#333"/>'+
+    '<ellipse id="wbRShoe" cx="21" cy="43" rx="2.5" ry="1.2" fill="#333"/>'+
   '</svg>';
   wbDiv.innerHTML=wbSvgStr;
 
@@ -4882,12 +4884,13 @@ fetchWeather();
     el.style.animation='swingBoth 3.2s ease-in-out infinite';
   }
 
-  // Posizione destra del testo Bonirola
-  function bonirolaRightPos(){
+  // Posizione Y del testo Bonirola (il bambino scende DIRITTO, stessa X dell'altalena)
+  function bonirolaTextY(){
     var sn=document.querySelector('.school-name');
     if(!sn)return null;
     var r=sn.getBoundingClientRect();
-    return{x:r.right-10, y:r.top-30};
+    // Il bambino arriva sopra la scritta (sopra il testo, non sopra)
+    return r.top-32;
   }
 
   // Centro icona scuola
@@ -4895,7 +4898,7 @@ fetchWeather();
     var ic=document.querySelector('.header-icon');
     if(!ic)return null;
     var r=ic.getBoundingClientRect();
-    return{x:r.left+r.width/2-10, y:r.top+r.height/2-6};
+    return{x:r.left+r.width/2-11, y:r.top+r.height/2-10};
   }
 
   // Mostra/nascondi bambino sull'altalena
@@ -4904,34 +4907,34 @@ fetchWeather();
     if(g)g.style.opacity=v?'1':'0';
   }
 
-  // Aggiorna ciclo di camminata (sinusoidale)
+  // Aggiorna ciclo di camminata (sinusoidale) - proporzioni viewBox 30x50
   function updateWalk(frame){
     var ph=frame*0.2;
-    var ls=Math.sin(ph)*5;
-    var as=Math.sin(ph)*4;
-    var bn=Math.abs(Math.sin(ph))*0.8;
-    wbLLeg.setAttribute('x2',String(8+ls));
-    wbLLeg.setAttribute('y2',String(35-bn));
-    wbRLeg.setAttribute('x2',String(16-ls));
-    wbRLeg.setAttribute('y2',String(35-bn));
-    wbLShoe.setAttribute('cx',String(7+ls));
-    wbLShoe.setAttribute('cy',String(36-bn));
-    wbRShoe.setAttribute('cx',String(17-ls));
-    wbRShoe.setAttribute('cy',String(36-bn));
-    wbLArm.setAttribute('x2',String(5-as));
-    wbLArm.setAttribute('y2',String(20+bn));
-    wbRArm.setAttribute('x2',String(19+as));
-    wbRArm.setAttribute('y2',String(20+bn));
+    var ls=Math.sin(ph)*6;
+    var as=Math.sin(ph)*5;
+    var bn=Math.abs(Math.sin(ph))*1;
+    wbLLeg.setAttribute('x2',String(10+ls));
+    wbLLeg.setAttribute('y2',String(42-bn));
+    wbRLeg.setAttribute('x2',String(20-ls));
+    wbRLeg.setAttribute('y2',String(42-bn));
+    wbLShoe.setAttribute('cx',String(9+ls));
+    wbLShoe.setAttribute('cy',String(43-bn));
+    wbRShoe.setAttribute('cx',String(21-ls));
+    wbRShoe.setAttribute('cy',String(43-bn));
+    wbLArm.setAttribute('x2',String(6-as));
+    wbLArm.setAttribute('y2',String(23+bn));
+    wbRArm.setAttribute('x2',String(24+as));
+    wbRArm.setAttribute('y2',String(23+bn));
   }
 
   // Reset gambe/braccia posizione riposo
   function resetWalk(){
-    wbLLeg.setAttribute('x2','8');wbLLeg.setAttribute('y2','35');
-    wbRLeg.setAttribute('x2','16');wbRLeg.setAttribute('y2','35');
-    wbLShoe.setAttribute('cx','7');wbLShoe.setAttribute('cy','36');
-    wbRShoe.setAttribute('cx','17');wbRShoe.setAttribute('cy','36');
-    wbLArm.setAttribute('x2','5');wbLArm.setAttribute('y2','20');
-    wbRArm.setAttribute('x2','19');wbRArm.setAttribute('y2','20');
+    wbLLeg.setAttribute('x2','10');wbLLeg.setAttribute('y2','42');
+    wbRLeg.setAttribute('x2','20');wbRLeg.setAttribute('y2','42');
+    wbLShoe.setAttribute('cx','9');wbLShoe.setAttribute('cy','43');
+    wbRShoe.setAttribute('cx','21');wbRShoe.setAttribute('cy','43');
+    wbLArm.setAttribute('x2','6');wbLArm.setAttribute('y2','23');
+    wbRArm.setAttribute('x2','24');wbRArm.setAttribute('y2','23');
   }
 
   // Easing in-out cubico (piu' fluido)
@@ -4941,15 +4944,16 @@ fetchWeather();
   function startBoyWalk(){
     if(wbState!==ST_IDLE)return;
     var sp=swingBoyVisualPos();
-    var bp=bonirolaRightPos();
+    var btY=bonirolaTextY();
     var ip=iconCenterPos();
-    if(!sp||!bp||!ip){setTimeout(startBoyWalk,5000);return;}
+    if(!sp||btY===null||!ip){setTimeout(startBoyWalk,5000);return;}
     // Ferma l'altalena e mettila dritta
     pauseSwing();
     // Ricalcola la posizione con altalena ferma
     sp=swingBoyVisualPos();
     wbX=sp.x;wbY=sp.y;wbOp=0;
-    wbSX=sp.x;wbSY=sp.y;wbDX=bp.x;wbDY=bp.y;
+    // La discesa e' DIRITTA: stessa X, solo Y cambia
+    wbSX=sp.x;wbSY=sp.y;wbDX=sp.x;wbDY=btY;
     wbWalkF=0;wbState=ST_DETACH;wbFrame=0;
     setSwingBoyVis(false);
     resetWalk();
@@ -4970,18 +4974,18 @@ fetchWeather();
         if(wbFrame>=FR_DET){
           wbState=ST_DESCEND;wbFrame=0;
           wbSX=wbX;wbSY=wbY;
-          var bp=bonirolaRightPos();
-          if(bp){wbDX=bp.x;wbDY=bp.y;}
+          // Scende DIRITTO: stessa X dell'altalena, Y del testo Bonirola
+          wbDX=wbX;
+          var btY=bonirolaTextY();
+          if(btY!==null)wbDY=btY;
         }
         break;
       case ST_DESCEND:
-        // Scende LENTAMENTE verso la scritta Bonirola con arco morbido
+        // Scende DIRITTO (stessa X) verso la scritta Bonirola - LENTO
         t=Math.min(1,wbFrame/FR_DESC);
         e=easeIO(t);
         wbX=wbSX+(wbDX-wbSX)*e;
-        // Arco: prima scende piano, poi piu' veloce, con curva parabolica
-        var arcH=-25*Math.sin(Math.PI*t); // arco verso il basso
-        wbY=wbSY+(wbDY-wbSY)*e+arcH;
+        wbY=wbSY+(wbDY-wbSY)*e;
         wbDiv.style.left=wbX+'px';
         wbDiv.style.top=wbY+'px';
         if(wbFrame>=FR_DESC){
