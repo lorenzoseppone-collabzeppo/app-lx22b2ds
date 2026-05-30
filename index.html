@@ -2531,41 +2531,31 @@ function render(){
   }
 
   // Version indicator - always visible
-  html+='<div style="position:fixed;bottom:4px;right:6px;font-size:9px;color:#aaa;z-index:9999;pointer-events:none;font-weight:600" id="versionBadge">v23</div>';
+  html+='<div style="position:fixed;bottom:4px;right:6px;font-size:9px;color:#aaa;z-index:9999;pointer-events:none;font-weight:600" id="versionBadge">v24</div>';
 
   if(selectedChild>=0){html+=renderChildDetail(selectedChild);}
   if(showDietModal>=0){html+=renderDietModal(showDietModal);}
 
   app.innerHTML=html;
 
-  // Animazione class-tabs: slide-in da sinistra CON PURE JS (nessuna CSS transition/keyframe - Safari non le attiva su innerHTML)
+  // Animazione class-tabs: Web Animations API (funziona su Safari con innerHTML)
   var tabs=app.querySelectorAll('.class-tabs .class-tab');
   for(var ti=0;ti<tabs.length;ti++){
     (function(tab,idx){
-      var delay=idx*120;
-      var duration=400;
-      var startX=-30;
-      var startTime=null;
-      tab.style.opacity='0';
-      tab.style.transform='translateX('+startX+'px)';
-      tab.style.transition='none';
-      setTimeout(function(){
-        function animate(ts){
-          if(!startTime) startTime=ts;
-          var elapsed=ts-startTime;
-          var progress=Math.min(elapsed/duration,1);
-          // ease-out: 1-(1-t)^2
-          var eased=1-(1-progress)*(1-progress);
-          var x=startX*(1-eased);
-          var op=eased;
-          tab.style.opacity=''+op;
-          tab.style.transform='translateX('+x+'px)';
-          if(progress<1){
-            requestAnimationFrame(animate);
-          }
-        }
-        requestAnimationFrame(animate);
-      },delay);
+      try{
+        var anim=tab.animate([
+          {opacity:0,transform:'translateX(-30px)'},
+          {opacity:1,transform:'translateX(0)'}
+        ],{
+          duration:400,
+          delay:idx*120,
+          easing:'ease-out',
+          fill:'both'
+        });
+      }catch(e){
+        // Fallback se Web Animations API non supportata
+        tab.style.opacity='1';
+      }
     })(tabs[ti],ti);
   }
 
