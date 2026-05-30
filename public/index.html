@@ -4808,7 +4808,7 @@ fetchWeather();
   // SVG bambino in piedi - STESSE DIMENSIONI del bambino sull'altalena
   // Il bambino sull'altalena ha testa r=7, corpo verde, gambe lunghe, scarpe nere
   // Scaliamo questo SVG a 28x47px per corrispondere
-  var wbSvgStr='<svg viewBox="0 0 30 50" width="28" height="47">'+
+  var wbSvgStr='<svg viewBox="0 0 30 50" width="30" height="50">'+
     '<circle cx="15" cy="7" r="6" fill="#FFD5B8" stroke="#1a1a1a" stroke-width="0.5"/>'+
     '<path d="M9,5 C9,0 21,0 21,5" fill="#5D3A1A"/>'+
     '<circle cx="12.5" cy="7.5" r="0.8" fill="#1a1a1a"/>'+
@@ -4841,7 +4841,7 @@ fetchWeather();
   var wbWalkF=0;
 
   // Frame per stato (~30fps)
-  var FR_DESC=120,FR_WALK=90,FR_CLIMB=55,FR_ENT=30,FR_INSIDE=90;
+  var FR_DESC=75,FR_WALK=90,FR_CLIMB=55,FR_ENT=30,FR_INSIDE=90;
 
   // Leggi angolo attuale dell'altalena (radianti)
   function getSwingAngle(){
@@ -4866,8 +4866,8 @@ fetchWeather();
     var cosA=Math.cos(angle), sinA=Math.sin(angle);
     var rx=dx*cosA-dy*sinA;
     var ry=dx*sinA+dy*cosA;
-    // Offset: centro testa del bambino che cammina e' a (15/30*28, 7/50*47)=(14,6.58)
-    return{x:px+rx-14, y:py+ry-7};
+    // Offset: centro testa del bambino che cammina e' a (15/30*30, 7/50*50)=(15,7)
+    return{x:px+rx-15, y:py+ry-7};
   }
 
   // Y dove il bambino atterra sulla scritta Bonirola
@@ -4883,7 +4883,7 @@ fetchWeather();
     var ic=document.querySelector('.header-icon');
     if(!ic)return null;
     var r=ic.getBoundingClientRect();
-    return{x:r.left+r.width/2-14, y:r.top+r.height/2-7};
+    return{x:r.left+r.width/2-15, y:r.top+r.height/2-7};
   }
 
   // Mostra/nascondi bambino sull'altalena
