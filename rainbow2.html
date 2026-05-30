@@ -4769,11 +4769,11 @@ setInterval(function(){
 // Arcobaleno animato: attraversa l'header in diagonale da sinistra a destra, poi scompare, poi riappare
 (function(){
   var _rbPhase=0;
-  var _rbCycleDuration=500; // frames per ciclo completo (~25 secondi a 50ms)
-  var _rbAppearFrames=200;  // frames per attraversare (da sinistra a destra)
-  var _rbPauseFrames=50;    // frames di pausa visibile
+  var _rbCycleDuration=850; // frames per ciclo completo (~42 secondi a 50ms)
+  var _rbAppearFrames=200;  // frames per attraversare (da sinistra a centro)
+  var _rbPauseFrames=300;   // frames di pausa visibile FERMO al centro (~15 secondi)
   var _rbDisappearFrames=150; // frames per scomparire (fade out verso destra)
-  // _rbHiddenFrames = 500-200-50-150 = 100 frames nascosto (~5 secondi)
+  // _rbHiddenFrames = 850-200-300-150 = 200 frames nascosto (~10 secondi)
   setInterval(function(){
     var outer=document.getElementById('headerRainbow');
     var inner=document.getElementById('headerRainbowInner');
@@ -4783,17 +4783,21 @@ setInterval(function(){
     var xPos=-120;
     
     if(_rbPhase<_rbAppearFrames){
+      // Entra da sinistra verso il centro
       var progress=_rbPhase/_rbAppearFrames;
       xPos=-120+progress*120;
       opacity=Math.min(0.85,progress*1.4);
     } else if(_rbPhase<_rbAppearFrames+_rbPauseFrames){
+      // FERMO al centro, visibile
       opacity=0.85;
       xPos=0;
     } else if(_rbPhase<_rbAppearFrames+_rbPauseFrames+_rbDisappearFrames){
+      // Esce verso destra e svanisce
       var dp=(_rbPhase-_rbAppearFrames-_rbPauseFrames)/_rbDisappearFrames;
       xPos=dp*120;
       opacity=0.85*(1-dp);
     } else {
+      // Nascosto, in attesa del prossimo ciclo
       opacity=0;
       xPos=120;
     }
