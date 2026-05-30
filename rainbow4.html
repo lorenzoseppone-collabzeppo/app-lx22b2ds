@@ -84,9 +84,9 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .card-dark .search-box input{color:white}
 .card-dark .search-box input::placeholder{color:rgba(255,255,255,0.7);font-weight:600}
 .card-dark .search-box svg{stroke:rgba(255,255,255,0.5)}
-.card-dark textarea{background:rgba(255,255,255,0.1)!important;border-color:rgba(255,255,255,0.2)!important;color:white!important}
-.card-dark textarea::placeholder{color:rgba(255,255,255,0.7)!important;font-weight:600}
-.card-dark textarea:disabled{opacity:0.5}
+.card-dark textarea{background:rgba(255,255,255,0.12)!important;border:2px solid white!important;color:white!important;font-size:14px!important;font-weight:700!important}
+.card-dark textarea::placeholder{color:white!important;font-weight:700!important;font-size:14px!important}
+.card-dark textarea:disabled{opacity:0.7}
 .card-dark .btn{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2);color:white}
 .card-dark .btn:hover{background:rgba(255,255,255,0.2)}
 .date-nav{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:8px}
@@ -2444,7 +2444,7 @@ function render(){
   var notePlaceholder=!currentUser?'Effettua il login per salvare le note':classLocked?'Sblocca la classe per scrivere note':'Note del giorno...';
   html+='<div style="margin-top:8px">';
   if(!currentUser){html+='<div style="font-size:10px;color:#dc3545;font-weight:600;margin-bottom:3px;text-align:center">⚠ Le note si salvano solo col login</div>';}
-  html+='<textarea id="dayNoteInput" placeholder="'+notePlaceholder+'" style="width:100%;min-height:36px;padding:8px 12px;border:2px solid white;border-radius:8px;font-size:14px;font-weight:700;font-family:inherit;resize:vertical;outline:none;color:white;background:rgba(255,255,255,0.1)" oninput="App.updateDayNote(this.value)" '+(noteDisabled?'disabled':'')+'>'+esc(todayNote)+'</textarea></div>';
+  html+='<textarea id="dayNoteInput" placeholder="'+notePlaceholder+'" style="width:100%;min-height:40px;padding:10px 14px;border:2px solid white;border-radius:8px;font-size:15px;font-weight:700;font-family:inherit;resize:vertical;outline:none;color:white;background:rgba(255,255,255,0.12)" oninput="App.updateDayNote(this.value)" '+(noteDisabled?'disabled':'')+'>'+esc(todayNote)+'</textarea></div>';
   html+='</div>';
 
   html+='<div class="card-dark"><div class="card-label">RICERCA BAMBINO</div>';
@@ -2741,7 +2741,7 @@ function renderChildDetail(idx){
   html+='<div class="deleghe-box" style="background:rgba(255,193,7,0.08)">';
   html+='<div class="deleghe-box-title" style="color:#ffd54f"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffd54f" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Note</div>';
   if(!currentUser){html+='<div style="font-size:10px;color:#ff6b7a;font-weight:600;margin-bottom:6px;text-align:center">⚠ Le note si salvano solo col login</div>';}
-  html+='<textarea id="childNoteInput" placeholder="'+childNotePlaceholder+'" style="width:100%;min-height:48px;padding:8px 12px;border:2px solid white;border-radius:8px;font-size:14px;font-weight:700;font-family:inherit;resize:vertical;outline:none;color:white;background:'+(childNoteDisabled?'rgba(255,255,255,0.05)':'rgba(255,255,255,0.1)')+'" oninput="App.updateChildNote('+idx+',this.value)" '+(childNoteDisabled?'disabled':'')+'>'+esc(childNote)+'</textarea>';
+  html+='<textarea id="childNoteInput" placeholder="'+childNotePlaceholder+'" style="width:100%;min-height:48px;padding:10px 14px;border:2px solid white;border-radius:8px;font-size:15px;font-weight:700;font-family:inherit;resize:vertical;outline:none;color:white;background:rgba(255,255,255,0.12)" oninput="App.updateChildNote('+idx+',this.value)" '+(childNoteDisabled?'disabled':'')+'>'+esc(childNote)+'</textarea>';
   html+='</div>';
 
   if(!locked&&!isCoordinatrice()){html+='<button class="btn btn-danger" style="width:100%;margin-top:8px;justify-content:center;background:rgba(220,53,69,0.15);border-color:rgba(220,53,69,0.4);color:#ff6b7a" onclick="App.removeChild('+idx+')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Rimuovi Bambino</button>';}
