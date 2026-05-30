@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
 <title>Registro di Classe</title>
-<meta name="version" content="2025-05-30-v68-farfalla-scroll"/>
+<meta name="version" content="2025-05-30-v69-bloccata-sopra"/>
 <meta name="description" content="Registro di Classe per la gestione della classe"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a1a2e'><path d='M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z'/></svg>"/>
 <style>
@@ -2194,7 +2194,7 @@ function render(){
     }
     html+='<div class="class-name"'+(isCoordinatrice()?' style="cursor:default"':' onclick="App.startEditClass()" title="Clicca per modificare"')+'>'+animatedName+'</div>';
   }
-  html+='<div class="class-sub">REGISTRO DI CLASSE<span style="font-size:9px;opacity:0.4;margin-left:6px">v68</span>'+(isCoordinatrice()&&regularClassCount()>0?' · '+regularClassCount()+' classi':'')+'</div>';
+  html+='<div class="class-sub">REGISTRO DI CLASSE<span style="font-size:9px;opacity:0.4;margin-left:6px">v69</span>'+(isCoordinatrice()&&regularClassCount()>0?' · '+regularClassCount()+' classi':'')+'</div>';
   html+='<div class="header-teachers">';
   if(isCoordinatrice()){
     // COORDINATRICE: un solo campo "Coordinatrice" + campo PIN
@@ -2247,6 +2247,15 @@ function render(){
 
   html+='<div id="sync-bar" class="sync-bar" style="display:none"></div>';
 
+  // Locked class banner - SOPRA la lista delle classi
+  if(classLocked){
+    html+='<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;margin-bottom:12px;background:#f8d7da;border:2px solid #dc3545;border-radius:12px">';
+    html+='<span style="font-size:24px">\ud83d\udd12</span>';
+    html+='<div style="flex:1"><div style="font-size:15px;font-weight:700;color:#721c24">Classe bloccata</div><div style="font-size:12px;color:#a83636;margin-top:2px">Inserisci il PIN per sbloccare e fare modifiche</div></div>';
+    html+='<button class="btn" style="background:#dc3545;color:white;border-color:#dc3545;font-weight:700" onclick="App.unlockClass()">\ud83d\udd13 Sblocca</button>';
+    html+='</div>';
+  }
+
   // Class tabs
   html+='<div class="class-tabs">';
   var classKeys=Object.keys(classes);
@@ -2292,15 +2301,6 @@ function render(){
   }
   html+='</div>';
   html+='</div>';
-
-  // Locked class banner
-  if(classLocked){
-    html+='<div style="display:flex;align-items:center;gap:10px;padding:12px 16px;margin-bottom:12px;background:#f8d7da;border:2px solid #dc3545;border-radius:12px">';
-    html+='<span style="font-size:24px">\ud83d\udd12</span>';
-    html+='<div style="flex:1"><div style="font-size:15px;font-weight:700;color:#721c24">Classe bloccata</div><div style="font-size:12px;color:#a83636;margin-top:2px">Inserisci il PIN per sbloccare e fare modifiche</div></div>';
-    html+='<button class="btn" style="background:#dc3545;color:white;border-color:#dc3545;font-weight:700" onclick="App.unlockClass()">\ud83d\udd13 Sblocca</button>';
-    html+='</div>';
-  }
 
   // Wrap locked content
   if(classLocked){html+='<div class="class-locked-overlay">';}
