@@ -4769,9 +4769,9 @@ setInterval(function(){
 // Arcobaleno animato: attraversa l'header in diagonale da sinistra a destra, poi scompare, poi riappare
 (function(){
   var _rbPhase=0;
-  var _rbCycleDuration=580; // frames per ciclo completo (~29 secondi a 50ms)
-  var _rbCrossFrames=380;   // frames per attraversare da sinistra a destra (senza fermarsi)
-  // _rbHiddenFrames = 580-380 = 200 frames nascosto (~10 secondi di pausa tra un passaggio e l'altro)
+  var _rbCycleDuration=320; // frames per ciclo completo (~16 secondi a 50ms)
+  var _rbCrossFrames=120;   // frames per attraversare da sinistra a destra (~6 secondi, veloce!)
+  // _rbHiddenFrames = 320-120 = 200 frames nascosto (~10 secondi di pausa)
   setInterval(function(){
     var outer=document.getElementById('headerRainbow');
     var inner=document.getElementById('headerRainbowInner');
@@ -4781,19 +4781,18 @@ setInterval(function(){
     var xPos=-120;
     
     if(_rbPhase<_rbCrossFrames){
-      // Attraversa da sinistra a destra, senza mai fermarsi
+      // Attraversa veloce da sinistra a destra
       var progress=_rbPhase/_rbCrossFrames;
-      xPos=-120+progress*240; // da -120% a +120%
-      // Fade in all'inizio e fade out alla fine
-      if(progress<0.12){
-        opacity=0.85*(progress/0.12);
-      } else if(progress>0.88){
-        opacity=0.85*(1-(progress-0.88)/0.12);
+      xPos=-120+progress*240;
+      // Fade in/out breve ai bordi
+      if(progress<0.1){
+        opacity=0.85*(progress/0.1);
+      } else if(progress>0.9){
+        opacity=0.85*(1-(progress-0.9)/0.1);
       } else {
         opacity=0.85;
       }
     } else {
-      // Nascosto, in attesa del prossimo ciclo
       opacity=0;
       xPos=120;
     }
