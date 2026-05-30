@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
 <title>Registro di Classe</title>
-<meta name="version" content="2025-05-30-v59-giostra-dx-sx"/>
+<meta name="version" content="2025-05-30-v60-giostra-piccola"/>
 <meta name="description" content="Registro di Classe per la gestione della classe"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a1a2e'><path d='M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z'/></svg>"/>
 <style>
@@ -2179,7 +2179,7 @@ function render(){
   var displayClassName=(currentClassId&&classes[currentClassId])?classes[currentClassId].name:className;
   if(editingClass&&!isCoordinatrice()){html+='<input class="class-name-input" id="classInput" value="'+esc(displayClassName.toUpperCase())+'" onblur="App.finishEditClass()" onkeydown="if(event.key===\'Enter\')App.finishEditClass()"/>';}
   else{html+='<div class="class-name"'+(isCoordinatrice()?' style="cursor:default"':' onclick="App.startEditClass()" title="Clicca per modificare"')+'>'+esc(displayClassName.toUpperCase())+'</div>';}
-  html+='<div class="class-sub">REGISTRO DI CLASSE<span style="font-size:9px;opacity:0.4;margin-left:6px">v59</span>'+(isCoordinatrice()&&regularClassCount()>0?' · '+regularClassCount()+' classi':'')+'</div>';
+  html+='<div class="class-sub">REGISTRO DI CLASSE<span style="font-size:9px;opacity:0.4;margin-left:6px">v60</span>'+(isCoordinatrice()&&regularClassCount()>0?' · '+regularClassCount()+' classi':'')+'</div>';
   html+='<div class="header-teachers">';
   if(isCoordinatrice()){
     // COORDINATRICE: un solo campo "Coordinatrice" + campo PIN
@@ -4684,7 +4684,7 @@ fetchWeather();
     horseGroups+=mkHorse(hcfg[i].bc,hcfg[i].bs,hcfg[i].mc,hcfg[i].sc);
   }
 
-  var svg='<svg viewBox="0 0 220 210" width="140" height="135" style="overflow:hidden">'+
+  var svg='<svg viewBox="0 0 220 210" width="95" height="90" style="overflow:hidden">'+
     '<defs>'+
       '<linearGradient id="gPoleG" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#D4AC0D"/><stop offset="50%" stop-color="#F7DC6F"/><stop offset="100%" stop-color="#D4AC0D"/></linearGradient>'+
       '<linearGradient id="gRoofPink" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFB6D9"/><stop offset="100%" stop-color="#FF69B4"/></linearGradient>'+
