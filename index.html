@@ -251,8 +251,6 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .class-tab-add{display:flex;align-items:center;justify-content:center;gap:4px;padding:8px 12px;border-radius:8px;border:2px dashed rgba(255,255,255,0.5);background:rgba(255,255,255,0.1);font-size:13px;font-weight:600;color:white;cursor:pointer;font-family:inherit;transition:all 0.15s;white-space:nowrap;text-align:center;width:100%}
 .class-tab-add:hover{border-color:white;background:rgba(255,255,255,0.2)}
 .class-tab-add:active{transform:scale(0.97)}
-.class-tab-anim{animation:tabPulse 3s ease-in-out infinite}
-@keyframes tabPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.03);opacity:0.85}}
 .class-tabs-label{font-size:13px;font-weight:700;color:white;text-transform:uppercase;letter-spacing:0.5px}
 .class-locked-overlay{position:relative;pointer-events:none;opacity:0.5}
 .class-locked-overlay .class-tabs,.class-locked-overlay .lock-bypass{pointer-events:auto;opacity:1}
@@ -2273,7 +2271,7 @@ function render(){
     var coorUnlocked=unlockedClasses[COORDINATRICE_ID]||!coorPin;
     var coorChildren=0;
     for(var ci2=0;ci2<classKeys.length;ci2++){if(classKeys[ci2]!==COORDINATRICE_ID) coorChildren+=(classes[classKeys[ci2]].children||[]).length;}
-    html+='<div class="class-tab class-tab-anim'+(coorActive?' active':'')+'" style="'+(coorActive?'border-color:#ffd700;background:linear-gradient(135deg,#7b2d8e,#9c27b0);color:white':'border-color:rgba(255,255,255,0.5);color:white')+'" onclick="App.switchClass(\''+COORDINATRICE_ID+'\')">';
+    html+='<div class="class-tab'+(coorActive?' active':'')+'" style="'+(coorActive?'border-color:#ffd700;background:linear-gradient(135deg,#7b2d8e,#9c27b0);color:white':'border-color:rgba(255,255,255,0.5);color:white')+'" onclick="App.switchClass(\''+COORDINATRICE_ID+'\')">';
     html+='<span style="font-size:16px">\u{1F451}</span> '+esc(coor.name.toUpperCase())+' <span style="font-size:13px;opacity:0.8">('+coorChildren+')</span>';
     if(coorPin){html+='<span style="font-size:12px;opacity:0.7" title="Classe protetta da PIN">'+(coorUnlocked?'\ud83d\udd13':'\ud83d\udd12')+'</span>';}
     html+='</div>';
@@ -2288,7 +2286,7 @@ function render(){
     var isActive=cId===currentClassId;
     var isUnlocked=unlockedClasses[cId]||!cPin;
     var tabColor=CLASS_COLORS[colorIdx%CLASS_COLORS.length];colorIdx++;
-    html+='<div class="class-tab class-tab-anim'+(isActive?' active':'')+'" style="'+(isActive?'border-color:'+tabColor+';background:'+tabColor+';color:white':'border-color:rgba(255,255,255,0.4);color:white')+'" onclick="App.switchClass(\''+cId+'\')">';
+    html+='<div class="class-tab'+(isActive?' active':'')+'" style="'+(isActive?'border-color:'+tabColor+';background:'+tabColor+';color:white':'border-color:rgba(255,255,255,0.4);color:white')+'" onclick="App.switchClass(\''+cId+'\')">';
     html+=esc(cName.toUpperCase())+' <span style="font-size:13px;opacity:0.8">('+((classes[cId].children||[]).length)+')</span>';
     if(cPin){html+='<span style="font-size:12px;opacity:0.7" title="Classe protetta da PIN">'+(isUnlocked?'\ud83d\udd13':'\ud83d\udd12')+'</span>';}
     html+='<button class="class-tab-del" onclick="event.stopPropagation();App.deleteClass(\''+cId+'\')" title="Elimina classe '+esc(cName.toUpperCase())+'">\u00d7</button>';
@@ -2533,7 +2531,7 @@ function render(){
   }
 
   // Version indicator - always visible
-  html+='<div style="position:fixed;bottom:4px;right:6px;font-size:9px;color:#aaa;z-index:9999;pointer-events:none;font-weight:600" id="versionBadge">v26</div>';
+  html+='<div style="position:fixed;bottom:4px;right:6px;font-size:9px;color:#aaa;z-index:9999;pointer-events:none;font-weight:600" id="versionBadge">v27</div>';
 
   if(selectedChild>=0){html+=renderChildDetail(selectedChild);}
   if(showDietModal>=0){html+=renderDietModal(showDietModal);}
@@ -4739,9 +4737,27 @@ setInterval(function(){
   });
 },30000);
 
+// Animazione class-tabs: setInterval modifica direttamente gli stili (come il clock)
+// Nessun CSS animation/keyframe/transition — solo JS diretto sul DOM
+(function(){
+  var _tabAnimPhase=0;
+  setInterval(function(){
+    var tabs=document.querySelectorAll('.class-tabs .class-tab');
+    if(!tabs||tabs.length===0) return;
+    _tabAnimPhase++;
+    for(var i=0;i<tabs.length;i++){
+      var offset=i*0.5;
+      var t=((_tabAnimPhase*0.08)+offset)%6.2832; // 2*PI
+      var s=1+0.04*Math.sin(t); // scale da 0.96 a 1.04
+      var y=Math.sin(t)*2;      // translateY da -2px a +2px
+      tabs[i].style.transform='scale('+s.toFixed(3)+') translateY('+y.toFixed(1)+'px)';
+    }
+  },50);
+})();
+
 // Auto-update: just save version, no redirect (redirect causes cache issues)
 (function(){
-  var CURRENT_VERSION='v26';
+  var CURRENT_VERSION='v27';
   localStorage.setItem('rp_app_version',CURRENT_VERSION);
 })();
 
