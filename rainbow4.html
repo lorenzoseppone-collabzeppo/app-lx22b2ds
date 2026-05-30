@@ -5222,6 +5222,72 @@ fetchWeather();
 
   // Prima passeggiata bambina dopo 12 secondi (sfasata dal bambino)
   setTimeout(startGirlWalk,12000);
+
+  // ---- STRADINA IMMAGINARIA ----
+  // SVG path che segue il percorso dei bambini (altalena → Bonirola → icona scuola)
+  var pathSvg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  pathSvg.style.cssText='position:absolute;pointer-events:none;z-index:0;overflow:visible;top:0;left:0;width:1px;height:1px;';
+  document.body.appendChild(pathSvg);
+
+  var pathEl=document.createElementNS('http://www.w3.org/2000/svg','path');
+  pathEl.setAttribute('fill','none');
+  pathEl.setAttribute('stroke','rgba(255,255,255,0.12)');
+  pathEl.setAttribute('stroke-width','3');
+  pathEl.setAttribute('stroke-dasharray','6,8');
+  pathEl.setAttribute('stroke-linecap','round');
+  pathSvg.appendChild(pathEl);
+
+  // Piccoli sassolini decorativi lungo il percorso
+  var stoneGroup=document.createElementNS('http://www.w3.org/2000/svg','g');
+  pathSvg.appendChild(stoneGroup);
+
+  function drawWalkingPath(){
+    var bp=bonirolaTextPos();
+    var ip=iconCenterPos();
+    if(!bp||!ip) return;
+
+    // Punto di partenza: sotto l'altalena
+    var lx=parseInt(el.style.left)||0;
+    var ly=parseInt(el.style.top)||0;
+    var startX=lx+41;
+    var startY=ly+65+4;
+
+    // Centro bambino
+    var sx=startX+13;
+    var sy=startY+36;
+
+    // Quadratic bezier: start → bonirola (control) → icon
+    var d='M '+sx.toFixed(1)+','+sy.toFixed(1)+' Q '+bp.x.toFixed(1)+','+(bp.y+10).toFixed(1)+' '+ip.x.toFixed(1)+','+ip.y.toFixed(1);
+    pathEl.setAttribute('d',d);
+
+    // Sassolini
+    while(stoneGroup.firstChild) stoneGroup.removeChild(stoneGroup.firstChild);
+    for(var i=0;i<6;i++){
+      var t=0.15+i*0.14;
+      var omt=1-t;
+      var px=omt*omt*sx+2*omt*t*bp.x+t*t*ip.x;
+      var py=omt*omt*sy+2*omt*t*(bp.y+10)+t*t*ip.y;
+      var ox=(Math.sin(i*2.7)*4);
+      var oy=(Math.cos(i*3.1)*3)+2;
+      var c=document.createElementNS('http://www.w3.org/2000/svg','ellipse');
+      c.setAttribute('cx',(px+ox).toFixed(1));
+      c.setAttribute('cy',(py+oy).toFixed(1));
+      c.setAttribute('rx',(1.5+Math.random()*1.5).toFixed(1));
+      c.setAttribute('ry',(1+Math.random()).toFixed(1));
+      c.setAttribute('fill','rgba(255,255,255,0.08)');
+      stoneGroup.appendChild(c);
+    }
+  }
+
+  // Aggiorna la stradina quando si riposiziona l'altalena
+  var origPosSwing2=positionSwing;
+  positionSwing=function(){
+    origPosSwing2();
+    setTimeout(drawWalkingPath,50);
+  };
+  window.addEventListener('resize',function(){setTimeout(drawWalkingPath,100);});
+  setInterval(drawWalkingPath,2000);
+  setTimeout(drawWalkingPath,500);
 })();
 // ---- FINE ALTALENA ----
 
