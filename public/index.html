@@ -4404,59 +4404,64 @@ fetchWeather();
   }
 
   function getRestPosA(){
-    var sx=window.pageXOffset||0, sy=window.pageYOffset||0;
+    var hdr=document.querySelector('.header');
+    if(!hdr) return {x:80,y:40};
+    var hr=hdr.getBoundingClientRect();
     var dateEl=document.getElementById('headerClockDate');
     if(dateEl){
       var r=dateEl.getBoundingClientRect();
       var text=String(dateEl.textContent||'');
       var yearPos=text.lastIndexOf('2026');
       var offset=yearPos>=0?(yearPos+2)/text.length:0.65;
-      var legY=r.top+r.height*0.55+sy;
-      var sixX=r.left+r.width*offset+sx;
+      var legY=r.top-hr.top+r.height*0.55;
+      var sixX=r.left-hr.left+r.width*offset;
       var legOff=74/96*80;
       return {x:sixX-45,y:legY-legOff};
     }
     var icon=document.querySelector('.header-icon');
     if(icon){
       var r2=icon.getBoundingClientRect();
-      return {x:r2.right-20+sx,y:r2.bottom-15+sy};
+      return {x:r2.right-hr.left-20,y:r2.bottom-hr.top-15};
     }
-    return {x:80+sx,y:40+sy};
+    return {x:80,y:40};
   }
 
   function getRestPosB(){
-    var sx=window.pageXOffset||0, sy=window.pageYOffset||0;
+    var hdr=document.querySelector('.header');
+    if(!hdr) return {x:window.innerWidth-160,y:30};
+    var hr=hdr.getBoundingClientRect();
     var wEl=document.querySelector('.header-weather');
     if(wEl){
       var r=wEl.getBoundingClientRect();
       var legOff=74/96*80;
-      return {x:r.left+r.width*0.5-45+sx,y:r.top+r.height*0.5-legOff+sy};
+      return {x:r.left-hr.left+r.width*0.5-45,y:r.top-hr.top+r.height*0.5-legOff};
     }
     var tempEl=document.querySelector('.header-weather-temp');
     if(tempEl){
       var r2=tempEl.getBoundingClientRect();
       var legOff2=74/96*80;
-      return {x:r2.left+r2.width*0.5-45+sx,y:r2.top-r2.height*0.3-legOff2+sy};
+      return {x:r2.left-hr.left+r2.width*0.5-45,y:r2.top-hr.top-r2.height*0.3-legOff2};
     }
-    var w=window.innerWidth;
-    return {x:w-160+sx,y:30+sy};
+    return {x:hr.width-160,y:30};
   }
 
   function getRestPosC(){
-    var sx=window.pageXOffset||0, sy=window.pageYOffset||0;
+    var hdr=document.querySelector('.header');
+    if(!hdr) return {x:30,y:30};
+    var hr=hdr.getBoundingClientRect();
     var icon=document.querySelector('.header-icon');
     if(icon){
       var r=icon.getBoundingClientRect();
       var legOff=74/96*80;
-      return {x:r.left+r.width*0.5-45+sx,y:r.top+r.height*0.35-legOff+sy};
+      return {x:r.left-hr.left+r.width*0.5-45,y:r.top-hr.top+r.height*0.35-legOff};
     }
     var tRow=document.querySelector('.header-teachers');
     if(tRow){
       var r2=tRow.getBoundingClientRect();
       var legOff2=74/96*80;
-      return {x:r2.left+r2.width*0.25-45+sx,y:r2.top-legOff2-4+sy};
+      return {x:r2.left-hr.left+r2.width*0.25-45,y:r2.top-hr.top-legOff2-4};
     }
-    return {x:30+sx,y:30+sy};
+    return {x:30,y:30};
   }
 
   function getRestPos(){
@@ -4495,9 +4500,9 @@ fetchWeather();
     if(svgEl){svgEl.style.transform='';svgEl.style.filter='hue-rotate(0deg) saturate(1) brightness(1)';svgEl.style.transformOrigin='center center';}
 
     requestAnimationFrame(function(){
-      var w=window.innerWidth;
-      var h=window.innerHeight;
-      var sx=window.pageXOffset||0, sy=window.pageYOffset||0;
+      var hdr=document.querySelector('.header');
+      var w=hdr?hdr.offsetWidth:window.innerWidth;
+      var h=hdr?hdr.offsetHeight:window.innerHeight;
       var startX=curX;
       var startY=curY;
       var takeoffDur=3000;
@@ -4517,40 +4522,40 @@ fetchWeather();
       var p1,p2,p3,p4;
       if(pat===0){
         // Giro ampio a destra poi a sinistra
-        p1={x:rr()*w*0.4+w*0.5+sx,y:rr()*h*0.25+h*0.05+sy};
-        p2={x:rr()*w*0.3+w*0.05+sx,y:rr()*h*0.3+h*0.15+sy};
-        p3={x:rr()*w*0.4+w*0.3+sx,y:rr()*h*0.3+h*0.25+sy};
-        p4={x:rr()*w*0.3+w*0.1+sx,y:rr()*h*0.2+h*0.1+sy};
+        p1={x:rr()*w*0.4+w*0.5,y:rr()*h*0.25+h*0.05};
+        p2={x:rr()*w*0.3+w*0.05,y:rr()*h*0.3+h*0.15};
+        p3={x:rr()*w*0.4+w*0.3,y:rr()*h*0.3+h*0.25};
+        p4={x:rr()*w*0.3+w*0.1,y:rr()*h*0.2+h*0.1};
       } else if(pat===1){
         // Volo alto al centro poi scesa
-        p1={x:rr()*w*0.3+w*0.3+sx,y:rr()*h*0.15+h*0.02+sy};
-        p2={x:rr()*w*0.4+w*0.4+sx,y:rr()*h*0.1+h*0.02+sy};
-        p3={x:rr()*w*0.3+w*0.1+sx,y:rr()*h*0.2+h*0.1+sy};
-        p4={x:rr()*w*0.3+w*0.3+sx,y:rr()*h*0.3+h*0.15+sy};
+        p1={x:rr()*w*0.3+w*0.3,y:rr()*h*0.15+h*0.02};
+        p2={x:rr()*w*0.4+w*0.4,y:rr()*h*0.1+h*0.02};
+        p3={x:rr()*w*0.3+w*0.1,y:rr()*h*0.2+h*0.1};
+        p4={x:rr()*w*0.3+w*0.3,y:rr()*h*0.3+h*0.15};
       } else if(pat===2){
         // Zig-zag sinistra-destra
-        p1={x:rr()*w*0.3+w*0.05+sx,y:rr()*h*0.2+h*0.05+sy};
-        p2={x:rr()*w*0.3+w*0.6+sx,y:rr()*h*0.15+h*0.08+sy};
-        p3={x:rr()*w*0.3+w*0.05+sx,y:rr()*h*0.2+h*0.2+sy};
-        p4={x:rr()*w*0.3+w*0.5+sx,y:rr()*h*0.15+h*0.15+sy};
+        p1={x:rr()*w*0.3+w*0.05,y:rr()*h*0.2+h*0.05};
+        p2={x:rr()*w*0.3+w*0.6,y:rr()*h*0.15+h*0.08};
+        p3={x:rr()*w*0.3+w*0.05,y:rr()*h*0.2+h*0.2};
+        p4={x:rr()*w*0.3+w*0.5,y:rr()*h*0.15+h*0.15};
       } else if(pat===3){
         // Cerchio alto in alto a destra
-        p1={x:rr()*w*0.3+w*0.6+sx,y:rr()*h*0.1+h*0.02+sy};
-        p2={x:rr()*w*0.4+w*0.3+sx,y:rr()*h*0.08+h*0.02+sy};
-        p3={x:rr()*w*0.3+w*0.1+sx,y:rr()*h*0.15+h*0.08+sy};
-        p4={x:rr()*w*0.3+w*0.4+sx,y:rr()*h*0.25+h*0.15+sy};
+        p1={x:rr()*w*0.3+w*0.6,y:rr()*h*0.1+h*0.02};
+        p2={x:rr()*w*0.4+w*0.3,y:rr()*h*0.08+h*0.02};
+        p3={x:rr()*w*0.3+w*0.1,y:rr()*h*0.15+h*0.08};
+        p4={x:rr()*w*0.3+w*0.4,y:rr()*h*0.25+h*0.15};
       } else if(pat===4){
         // Tondo largo in basso
-        p1={x:rr()*w*0.3+w*0.5+sx,y:rr()*h*0.2+h*0.25+sy};
-        p2={x:rr()*w*0.3+w*0.1+sx,y:rr()*h*0.2+h*0.3+sy};
-        p3={x:rr()*w*0.3+w*0.5+sx,y:rr()*h*0.15+h*0.15+sy};
-        p4={x:rr()*w*0.3+w*0.2+sx,y:rr()*h*0.15+h*0.1+sy};
+        p1={x:rr()*w*0.3+w*0.5,y:rr()*h*0.2+h*0.25};
+        p2={x:rr()*w*0.3+w*0.1,y:rr()*h*0.2+h*0.3};
+        p3={x:rr()*w*0.3+w*0.5,y:rr()*h*0.15+h*0.15};
+        p4={x:rr()*w*0.3+w*0.2,y:rr()*h*0.15+h*0.1};
       } else {
         // Otto orizzontale
-        p1={x:rr()*w*0.3+w*0.55+sx,y:rr()*h*0.1+h*0.05+sy};
-        p2={x:rr()*w*0.2+w*0.2+sx,y:rr()*h*0.15+h*0.2+sy};
-        p3={x:rr()*w*0.3+w*0.55+sx,y:rr()*h*0.1+h*0.2+sy};
-        p4={x:rr()*w*0.2+w*0.2+sx,y:rr()*h*0.1+h*0.05+sy};
+        p1={x:rr()*w*0.3+w*0.55,y:rr()*h*0.1+h*0.05};
+        p2={x:rr()*w*0.2+w*0.2,y:rr()*h*0.15+h*0.2};
+        p3={x:rr()*w*0.3+w*0.55,y:rr()*h*0.1+h*0.2};
+        p4={x:rr()*w*0.2+w*0.2,y:rr()*h*0.1+h*0.05};
       }
 
       function easeInOut(t){return t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;}
@@ -4694,6 +4699,16 @@ fetchWeather();
   var el=document.getElementById('altalena');
   if(!el) return;
 
+  // Sposta altalena e farfalla dentro l'header per scroll iOS corretto
+  function moveToHeader(){
+    var hdr=document.querySelector('.header');
+    if(!hdr) return;
+    if(el.parentNode!==hdr) hdr.appendChild(el);
+    var bfly=document.getElementById('bfly');
+    if(bfly && bfly.parentNode!==hdr) hdr.appendChild(bfly);
+  }
+  moveToHeader();
+
   var svg='<svg viewBox="0 0 120 95" width="96" height="76">'+
     // Asta orizzontale di sostegno
     '<rect x="8" y="0" width="104" height="4" rx="2" fill="#8B4513" stroke="#5D3A1A" stroke-width="0.5"/>'+
@@ -4775,21 +4790,23 @@ fetchWeather();
   el.style.transformOrigin='60px 2px';
 
   function positionSwing(){
-    var sx=window.pageXOffset||0, sy=window.pageYOffset||0;
+    var hdr=document.querySelector('.header');
+    if(!hdr) return;
+    var hr=hdr.getBoundingClientRect();
     var weatherEl=document.querySelector('.header-weather');
     if(!weatherEl){
       var dateEl=document.getElementById('headerClockDate');
       if(!dateEl) return;
       var r=dateEl.getBoundingClientRect();
-      el.style.left=(r.right-48+sx)+'px';
-      el.style.top=(r.bottom+2+sy)+'px';
+      el.style.left=(r.right-48-hr.left)+'px';
+      el.style.top=(r.bottom+2-hr.top)+'px';
       el.style.animation='swingBoth 3.2s ease-in-out infinite';
       return;
     }
     var wr=weatherEl.getBoundingClientRect();
-    // Appesa sotto il blocco meteo, centrata rispetto ad esso
-    el.style.left=(wr.left+wr.width/2-48+sx)+'px';
-    el.style.top=(wr.bottom+2+sy)+'px';
+    // Appesa sotto il blocco meteo, centrata rispetto ad esso - coordinate header
+    el.style.left=(wr.left+wr.width/2-48-hr.left)+'px';
+    el.style.top=(wr.bottom+2-hr.top)+'px';
     el.style.animation='swingBoth 3.2s ease-in-out infinite';
   }
 
@@ -4802,7 +4819,7 @@ fetchWeather();
   if(origRender){
     window.render=function(){
       origRender.apply(this,arguments);
-      setTimeout(positionSwing,100);
+      setTimeout(function(){ moveToHeader(); positionSwing(); },100);
     };
   }
 
@@ -4810,7 +4827,7 @@ fetchWeather();
   // Div per il bambino che cammina
   var wbDiv=document.createElement('div');
   wbDiv.style.cssText='position:absolute;pointer-events:none;z-index:9999;opacity:0;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.18))';
-  document.body.appendChild(wbDiv);
+  document.querySelector('.header').appendChild(wbDiv);
 
   // SVG bambino in piedi - STESSE DIMENSIONI del bambino sull'altalena
   var wbSvgStr='<svg viewBox="0 0 30 50" width="30" height="50">'+
@@ -4860,7 +4877,7 @@ fetchWeather();
     return 0;
   }
 
-  // Posizione VISIVA del bambino sull'altalena
+  // Posizione VISIVA del bambino sull'altalena - coordinate relative all'header
   function swingBoyVisualPos(){
     var lx=parseInt(el.style.left)||0;
     var ly=parseInt(el.style.top)||0;
@@ -4875,20 +4892,24 @@ fetchWeather();
   }
 
   function bonirolaTextPos(){
-    var sx=window.pageXOffset||0, sy=window.pageYOffset||0;
+    var hdr=document.querySelector('.header');
+    if(!hdr) return null;
+    var hr=hdr.getBoundingClientRect();
     var sn=document.querySelector('.school-name');
     if(!sn)return null;
     var r=sn.getBoundingClientRect();
-    // Centro del testo, sopra di esso - coordinate documento per position:absolute
-    return{x:r.left+r.width/2-15+sx, y:r.top-42+sy};
+    // Coordinate relative all'header
+    return{x:r.left-hr.left+r.width/2-15, y:r.top-hr.top-42};
   }
 
   function iconCenterPos(){
-    var sx=window.pageXOffset||0, sy=window.pageYOffset||0;
+    var hdr=document.querySelector('.header');
+    if(!hdr) return null;
+    var hr=hdr.getBoundingClientRect();
     var ic=document.querySelector('.header-icon');
     if(!ic)return null;
     var r=ic.getBoundingClientRect();
-    return{x:r.left+r.width/2-15+sx, y:r.top+r.height/2-7+sy};
+    return{x:r.left-hr.left+r.width/2-15, y:r.top-hr.top+r.height/2-7};
   }
 
   function setSwingBoyVis(v){
@@ -5013,7 +5034,7 @@ fetchWeather();
   // Stessa identica animazione del bambino, ma per la bambina
   var wgDiv=document.createElement('div');
   wgDiv.style.cssText='position:absolute;pointer-events:none;z-index:9999;opacity:0;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.18))';
-  document.body.appendChild(wgDiv);
+  document.querySelector('.header').appendChild(wgDiv);
 
   // SVG bambina in piedi - stesse dimensioni del bambino (30x50)
   var wgSvgStr='<svg viewBox="0 0 30 50" width="30" height="50">'+
@@ -5048,7 +5069,7 @@ fetchWeather();
   var wgState=ST_IDLE, wgFrame=0;
   var gwp0x=0,gwp0y=0,gwp1x=0,gwp1y=0,gwp2x=0,gwp2y=0;
 
-  // Posizione VISIVA della bambina sull'altalena
+  // Posizione VISIVA della bambina sull'altalena - coordinate relative all'header
   function swingGirlVisualPos(){
     var lx=parseInt(el.style.left)||0;
     var ly=parseInt(el.style.top)||0;
