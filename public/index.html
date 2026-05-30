@@ -4424,6 +4424,7 @@ fetchWeather();
 
   function restOnDate(){
     if(flyAnimId){cancelAnimationFrame(flyAnimId);flyAnimId=null;}
+    isFlying=false;
     var pos=getRestPos();
     bfly.style.left=pos.x+'px';
     bfly.style.top=pos.y+'px';
@@ -4438,7 +4439,6 @@ fetchWeather();
   function startFlying(){
     if(isFlying) return;
     isFlying=true;
-    setSvg(false);
     var curX=parseInt(bfly.style.left)||80;
     var curY=parseInt(bfly.style.top)||40;
     bfly.style.animation='none';
@@ -4520,7 +4520,8 @@ fetchWeather();
             var flutter=Math.sin(now*flutterSpeed);
             svgEl.style.transform='scaleX('+(1-flutterAmp*Math.abs(flutter))+')';
             svgEl.style.transformOrigin='center center';
-            if(et>0.3){colorAngle=(colorAngle+1.5*et)%360;svgEl.style.filter='hue-rotate('+colorAngle+'deg)';}
+            colorAngle=(colorAngle+1.2*et)%360;
+            svgEl.style.filter='hue-rotate('+colorAngle+'deg)';
           }
 
         } else if(!isLanding){
@@ -4566,8 +4567,8 @@ fetchWeather();
             var flutter=Math.sin(now*0.006*(1+elt*2));
             svgEl.style.transform='scaleX('+(1-0.7*flutterAmp*Math.abs(flutter))+')';
             svgEl.style.transformOrigin='center center';
-            var colorFade=colorAngle*(1-elt);
-            svgEl.style.filter=colorFade>1?'hue-rotate('+colorFade+'deg)':'';
+            var colorFade=colorAngle*(1-elt*elt);
+            svgEl.style.filter='hue-rotate('+colorFade+'deg)';
           }
         }
 
@@ -4582,7 +4583,6 @@ fetchWeather();
           bfly.className='bfly resting';
           bfly.style.animation='bflyRest 5s ease-in-out infinite';
           bfly.style.transform='rotate(-3deg)';
-          setSvg(true);
           if(svgEl){svgEl.style.transform='';svgEl.style.filter='';svgEl.style.transformOrigin='center center';}
           setTimeout(function(){bfly.style.transition='';},900);
         }
