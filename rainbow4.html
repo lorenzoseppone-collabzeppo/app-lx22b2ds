@@ -5287,55 +5287,69 @@ fetchWeather();
 // ---- 2 STELLE CADENTI GRANDI E VISIBILI (setInterval per Safari) ----
 (function(){
   var colors=['#ffd700','#ffec8b','#ffa500','#ffe4b5','#fffacd','#ffe066','#ffffff'];
-  var starChars=['★','✦','✶','⋆','☆'];
+  var starChars=['\u2726','\u2726','\u2733','\u2605','\u2606','\u2734'];
 
-  // Crea 2 div per le stelle cadenti grandi (position:absolute dentro header)
+  // Crea 2 div a livello body (sopravvivono a render(), non bloccati da overflow:hidden)
   var stars=[];
   for(var i=0;i<2;i++){
     var d=document.createElement('span');
-    d.style.cssText='position:absolute;pointer-events:none;z-index:11;opacity:0;font-size:28px;line-height:1;will-change:transform,left,top';
-    d.textContent=starChars[Math.floor(Math.random()*starChars.length)];
-    var header=document.querySelector('.header');
-    if(header) header.appendChild(d);
-    stars.push({el:d, active:false, t:0, startX:0, startY:0, dx:0, dy:0, dur:0, start:0, rot:0});
+    d.style.cssText='position:absolute;pointer-events:none;z-index:9997;opacity:0;font-size:28px;line-height:1';
+    document.body.appendChild(d);
+    stars.push({el:d, active:false, startX:0, startY:0, dx:0, dy:0, dur:0, start:0, rot:0});
   }
 
   function launchStar(s){
     var header=document.querySelector('.header');
     if(!header) return;
-    var hW=header.offsetWidth||300;
-    var hH=header.offsetHeight||200;
-    // Direzione diagonale casuale: parte da un lato alto e attraversa verso il basso
+    var hr=header.getBoundingClientRect();
+    var hLeft=hr.left+window.pageXOffset;
+    var hTop=hr.top+window.pageYOffset;
+    var hW=hr.width||300;
+    var hH=hr.height||200;
+
     var goRight=Math.random()>0.5;
-    s.startX=goRight? -30 : hW+10;
-    s.startY=-10-Math.random()*20;
-    s.dx=goRight? (hW+60) : -(hW+60);
-    s.dy=hH+40;
-    s.dur=2500+Math.random()*2000; // 2.5-4.5 secondi
+    var startX,startY,endX,endY;
+    if(goRight){
+      startX=hLeft-10;
+      startY=hTop-5;
+      endX=hLeft+hW+10;
+      endY=hTop+hH+5;
+    } else {
+      startX=hLeft+hW+10;
+      startY=hTop-5;
+      endX=hLeft-10;
+      endY=hTop+hH+5;
+    }
+
+    s.startX=startX;
+    s.startY=startY;
+    s.dx=endX-startX;
+    s.dy=endY-startY;
+    s.dur=2000+Math.random()*2000;
     s.start=performance.now();
     s.rot=Math.random()*360;
     s.active=true;
+
+    var color=colors[Math.floor(Math.random()*colors.length)];
     s.el.style.opacity='1';
-    s.el.style.color=colors[Math.floor(Math.random()*colors.length)];
-    s.el.style.textShadow='0 0 10px '+s.el.style.color+', 0 0 20px '+s.el.style.color;
+    s.el.style.color=color;
+    s.el.style.textShadow='0 0 10px '+color+', 0 0 20px '+color;
     s.el.textContent=starChars[Math.floor(Math.random()*starChars.length)];
     s.el.style.fontSize=(24+Math.floor(Math.random()*14))+'px';
   }
 
-  // Anima con setInterval (Safari compatibile)
   setInterval(function(){
     for(var i=0;i<stars.length;i++){
       var s=stars[i];
       if(!s.active) continue;
       var elapsed=performance.now()-s.start;
       var t=Math.min(elapsed/s.dur,1);
-      // Ease-in per caduta naturale
       var et=t*t;
       var x=s.startX+s.dx*et;
       var y=s.startY+s.dy*et;
-      var r=s.rot+t*300;
+      var r=s.rot+t*400;
       var op=1;
-      if(t>0.8) op=1-(t-0.8)/0.2; // sfuma alla fine
+      if(t>0.75) op=1-(t-0.75)/0.25;
       s.el.style.left=x+'px';
       s.el.style.top=y+'px';
       s.el.style.transform='rotate('+r+'deg)';
@@ -5347,14 +5361,12 @@ fetchWeather();
     }
   },30);
 
-  // Lancia 2 stelle una dopo l'altra, poi ripeti
   function dropTwoStars(){
     launchStar(stars[0]);
-    var gap=500+Math.random()*1000; // 0.5-1.5s tra una e l'altra
+    var gap=600+Math.random()*1000;
     setTimeout(function(){
       launchStar(stars[1]);
     },gap);
-    // Ripeti dopo intervallo casuale
     var nextDrop=5000+Math.random()*5000;
     setTimeout(dropTwoStars,nextDrop+gap);
   }
