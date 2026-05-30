@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
 <title>Registro di Classe</title>
-<meta name="version" content="2025-05-30-v58-giostra-real"/>
+<meta name="version" content="2025-05-30-v59-giostra-dx-sx"/>
 <meta name="description" content="Registro di Classe per la gestione della classe"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a1a2e'><path d='M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z'/></svg>"/>
 <style>
@@ -2179,7 +2179,7 @@ function render(){
   var displayClassName=(currentClassId&&classes[currentClassId])?classes[currentClassId].name:className;
   if(editingClass&&!isCoordinatrice()){html+='<input class="class-name-input" id="classInput" value="'+esc(displayClassName.toUpperCase())+'" onblur="App.finishEditClass()" onkeydown="if(event.key===\'Enter\')App.finishEditClass()"/>';}
   else{html+='<div class="class-name"'+(isCoordinatrice()?' style="cursor:default"':' onclick="App.startEditClass()" title="Clicca per modificare"')+'>'+esc(displayClassName.toUpperCase())+'</div>';}
-  html+='<div class="class-sub">REGISTRO DI CLASSE<span style="font-size:9px;opacity:0.4;margin-left:6px">v58</span>'+(isCoordinatrice()&&regularClassCount()>0?' · '+regularClassCount()+' classi':'')+'</div>';
+  html+='<div class="class-sub">REGISTRO DI CLASSE<span style="font-size:9px;opacity:0.4;margin-left:6px">v59</span>'+(isCoordinatrice()&&regularClassCount()>0?' · '+regularClassCount()+' classi':'')+'</div>';
   html+='<div class="header-teachers">';
   if(isCoordinatrice()){
     // COORDINATRICE: un solo campo "Coordinatrice" + campo PIN
@@ -4611,160 +4611,103 @@ fetchWeather();
 // ---- FINE ALTALENA ----
 
 // ---- GIOSTRA CON CAVALLI ----
+// I cavalli si muovono da destra a sinistra (come una giostra vera vista da lato)
 (function(){
   var el=document.getElementById('giostra');
   if(!el) return;
 
-  // Giostra vista di lato con prospettiva leggera - design classico da luna park
-  // Struttura: tetto conico a strisce + bordo smerlato + pali dorati + cavalli in posa galoppante + piattaforma circolare + base
-  var svg='<svg viewBox="0 0 220 220" width="140" height="140">'+
+  // Genera SVG di un cavallo da giostra, centrato a x=0, rivolto a sinistra
+  function mkHorse(bc,bs,mc,sc){
+    return '<g class="ghorse">'+
+      // Palo dorato (dal piano fino al tetto)
+      '<line x1="0" y1="168" x2="0" y2="75" stroke="url(#gPoleG)" stroke-width="3" stroke-linecap="round"/>'+
+      '<ellipse cx="0" cy="85" rx="3.5" ry="1.3" fill="#FFD700" stroke="#D4AC0D" stroke-width="0.4"/>'+
+      '<ellipse cx="0" cy="102" rx="3.5" ry="1.3" fill="#FFD700" stroke="#D4AC0D" stroke-width="0.4"/>'+
+      // Corpo del cavallo
+      '<ellipse cx="0" cy="130" rx="18" ry="8" fill="'+bc+'" stroke="'+bs+'" stroke-width="0.5"/>'+
+      // Collo (inclinato verso sinistra)
+      '<path d="M-14,126 C-16,116 -14,108 -8,106" fill="'+bc+'" stroke="'+bs+'" stroke-width="0.5"/>'+
+      // Testa
+      '<ellipse cx="-10" cy="103" rx="7" ry="4.5" fill="'+bc+'" stroke="'+bs+'" stroke-width="0.5" transform="rotate(-20 -10 103)"/>'+
+      // Orecchio
+      '<path d="M-12,99 L-14,93 L-9,98" fill="'+bc+'" stroke="'+bs+'" stroke-width="0.4"/>'+
+      // Occhio
+      '<circle cx="-13" cy="102" r="1.5" fill="#333"/>'+
+      '<circle cx="-12.5" cy="101.5" r="0.5" fill="white"/>'+
+      // Criniera
+      '<path d="M-12,110 C-16,114 -18,118 -16,124" fill="'+mc+'" opacity="0.8"/>'+
+      '<path d="M-10,108 C-14,112 -16,116 -14,122" fill="'+mc+'" opacity="0.8"/>'+
+      '<path d="M-8,106 C-12,110 -14,114 -12,120" fill="'+mc+'" opacity="0.8"/>'+
+      // Zampe anteriori alzate (galoppo!)
+      '<line x1="-10" y1="137" x2="-18" y2="148" stroke="'+bc+'" stroke-width="3.5" stroke-linecap="round"/>'+
+      '<line x1="-8" y1="137" x2="-14" y2="146" stroke="'+bc+'" stroke-width="3.5" stroke-linecap="round"/>'+
+      // Zampe posteriori (giù verso la piattaforma)
+      '<line x1="10" y1="137" x2="12" y2="157" stroke="'+bc+'" stroke-width="3.5" stroke-linecap="round"/>'+
+      '<line x1="8" y1="137" x2="6" y2="157" stroke="'+bc+'" stroke-width="3.5" stroke-linecap="round"/>'+
+      // Zoccoli
+      '<ellipse cx="-18" cy="149" rx="2" ry="1.5" fill="#5D3A1A"/>'+
+      '<ellipse cx="-14" cy="147" rx="2" ry="1.5" fill="#5D3A1A"/>'+
+      '<ellipse cx="12" cy="158" rx="2" ry="1.2" fill="#5D3A1A"/>'+
+      '<ellipse cx="6" cy="158" rx="2" ry="1.2" fill="#5D3A1A"/>'+
+      // Sella
+      '<ellipse cx="0" cy="125" rx="8" ry="3.5" fill="'+sc+'" opacity="0.9"/>'+
+      '<path d="M-4,125 L-5,131 L5,131 L4,125" fill="'+sc+'" opacity="0.7"/>'+
+      // Coda
+      '<path d="M16,128 C22,124 24,132 20,136" fill="'+mc+'" opacity="0.7"/>'+
+      // Finimenti dorati
+      '<path d="M-6,125 L6,125" stroke="#FFD700" stroke-width="1" fill="none"/>'+
+    '</g>';
+  }
+
+  // Configurazione cavalli: colore corpo, bordo, criniera, sella, fase dondolio
+  var hcfg=[
+    {bc:'#FFFFFF',bs:'#DDD',mc:'#FF69B4',sc:'#FF69B4',bp:0},
+    {bc:'#A0693D',bs:'#8B5E2B',mc:'#5DADE2',sc:'#5DADE2',bp:1.2},
+    {bc:'#B8B8B8',bs:'#999',mc:'#E74C3C',sc:'#E74C3C',bp:2.4},
+    {bc:'#F5D6A8',bs:'#D4A56A',mc:'#9B59B6',sc:'#9B59B6',bp:3.6},
+    {bc:'#D4E6F1',bs:'#AED6F1',mc:'#F39C12',sc:'#F39C12',bp:4.8}
+  ];
+
+  var NUM=hcfg.length;
+  var TRACK_W=260; // larghezza totale del percorso (con margine per wrap-around)
+  var spacing=TRACK_W/NUM; // distanza tra i cavalli
+
+  // Posizioni iniziali X dei cavalli (spaziati lungo il percorso)
+  var horseX=[];
+  for(var i=0;i<NUM;i++){
+    horseX.push(220-i*spacing);
+  }
+
+  // Costruisci gruppi SVG dei cavalli
+  var horseGroups='';
+  for(var i=0;i<NUM;i++){
+    horseGroups+=mkHorse(hcfg[i].bc,hcfg[i].bs,hcfg[i].mc,hcfg[i].sc);
+  }
+
+  var svg='<svg viewBox="0 0 220 210" width="140" height="135" style="overflow:hidden">'+
     '<defs>'+
       '<linearGradient id="gPoleG" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#D4AC0D"/><stop offset="50%" stop-color="#F7DC6F"/><stop offset="100%" stop-color="#D4AC0D"/></linearGradient>'+
-      '<linearGradient id="gPinkG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FF69B4"/><stop offset="100%" stop-color="#E91E8C"/></linearGradient>'+
       '<linearGradient id="gRoofPink" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFB6D9"/><stop offset="100%" stop-color="#FF69B4"/></linearGradient>'+
       '<linearGradient id="gRoofCream" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFF8E7"/><stop offset="100%" stop-color="#F5E6CC"/></linearGradient>'+
       '<linearGradient id="gBaseG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FF69B4"/><stop offset="100%" stop-color="#D63384"/></linearGradient>'+
       '<radialGradient id="gPlateG" cx="50%" cy="50%"><stop offset="0%" stop-color="#FFD6EC"/><stop offset="100%" stop-color="#FF69B4"/></radialGradient>'+
     '</defs>'+
 
-    // === BASE (ellisse, non ruota) ===
+    // === BASE (fissa) ===
     '<ellipse cx="110" cy="195" rx="85" ry="15" fill="url(#gBaseG)" stroke="#C0256E" stroke-width="1.5"/>'+
-    // Bordo decorativo base
     '<ellipse cx="110" cy="195" rx="65" ry="11" fill="none" stroke="#FFD700" stroke-width="0.8" stroke-dasharray="3,2"/>'+
 
-    // === PIATTAFORMA ROTANTE ===
-    '<g id="giostraPlatform">'+
+    // === PIATTAFORMA (fissa, i cavalli scorrono sopra) ===
+    '<ellipse cx="110" cy="170" rx="75" ry="13" fill="url(#gPlateG)" stroke="#E91E8C" stroke-width="1"/>'+
+    '<ellipse cx="110" cy="170" rx="60" ry="10" fill="none" stroke="#FFD700" stroke-width="0.8"/>'+
 
-      // Piattaforma - disco visto in prospettiva
-      '<ellipse cx="110" cy="170" rx="75" ry="13" fill="url(#gPlateG)" stroke="#E91E8C" stroke-width="1"/>'+
-      // Bordo dorato piattaforma
-      '<ellipse cx="110" cy="170" rx="60" ry="10" fill="none" stroke="#FFD700" stroke-width="0.8"/>'+
-      '<ellipse cx="110" cy="170" rx="38" ry="6" fill="none" stroke="#FFD700" stroke-width="0.5"/>'+
-      // Fiori decorativi sulla piattaforma
-      '<circle cx="55" cy="168" r="2" fill="#FFD700"/>'+
-      '<circle cx="80" cy="165" r="2" fill="#FF69B4"/>'+
-      '<circle cx="110" cy="164" r="2" fill="#5DADE2"/>'+
-      '<circle cx="140" cy="165" r="2" fill="#2ECC71"/>'+
-      '<circle cx="165" cy="168" r="2" fill="#FFD700"/>'+
+    // === CAVALLI (si muovono da destra a sinistra) ===
+    '<g id="giostraHorses">'+
+    horseGroups+
+    '</g>'+
 
-      // === CAVALLO 1 (destra, primo piano) - BIANCO con sella rosa ===
-      '<g class="ghorse" data-bob-delay="0">'+
-        // Palo dorato
-        '<line x1="168" y1="168" x2="168" y2="72" stroke="url(#gPoleG)" stroke-width="3" stroke-linecap="round"/>'+
-        // Anelli decorativi palo
-        '<ellipse cx="168" cy="82" rx="3.5" ry="1.3" fill="#FFD700" stroke="#D4AC0D" stroke-width="0.4"/>'+
-        '<ellipse cx="168" cy="100" rx="3.5" ry="1.3" fill="#FFD700" stroke="#D4AC0D" stroke-width="0.4"/>'+
-        // CAVALLO: corpo profilato che galoppa (zampe anteriori alzate)
-        '<path d="M148,130 C148,122 152,118 158,116 C162,115 168,116 172,118 C176,120 178,124 178,130 C178,136 174,140 168,140 C162,140 156,138 152,135 C150,133 148,132 148,130Z" fill="white" stroke="#DDD" stroke-width="0.6"/>'+
-        // Collo
-        '<path d="M158,118 C156,112 155,106 157,100 C159,96 163,94 167,95" fill="white" stroke="#DDD" stroke-width="0.6"/>'+
-        // Testa
-        '<path d="M165,95 C168,93 172,93 174,96 C175,98 174,101 172,102 C170,103 166,102 164,100 C163,98 163,96 165,95Z" fill="white" stroke="#DDD" stroke-width="0.6"/>'+
-        // Orecchio
-        '<path d="M166,94 L165,89 L168,93" fill="white" stroke="#DDD" stroke-width="0.5"/>'+
-        // Occhio
-        '<circle cx="170" cy="97" r="1.5" fill="#333"/>'+
-        '<circle cx="170.5" cy="96.5" r="0.5" fill="white"/>'+
-        // Narice
-        '<circle cx="174" cy="100" r="0.7" fill="#E8A0A0"/>'+
-        // Bocca
-        '<path d="M171,102 Q173,103 174,102" stroke="#CCC" stroke-width="0.4" fill="none"/>'+
-        // Criniera rosa
-        '<path d="M159,108 C157,104 156,100 157,96 C159,98 160,102 160,106" fill="#FF69B4" stroke="#E91E8C" stroke-width="0.3"/>'+
-        '<path d="M161,106 C159,102 158,98 159,94 C161,96 162,100 162,104" fill="#FF69B4" stroke="#E91E8C" stroke-width="0.3"/>'+
-        '<path d="M163,104 C161,100 161,96 162,92 C164,94 164,98 164,102" fill="#FF69B4" stroke="#E91E8C" stroke-width="0.3"/>'+
-        // Coda
-        '<path d="M176,126 C180,124 184,120 183,116 C182,118 180,122 178,124" fill="#FF69B4" stroke="#E91E8C" stroke-width="0.3"/>'+
-        // Zampe anteriori alzate (galoppo!)
-        '<path d="M155,132 L148,122 L146,118" stroke="white" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'+
-        '<path d="M158,134 L152,124 L150,119" stroke="white" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'+
-        // Zampe posteriori a terra
-        '<path d="M170,138 L172,150 L173,156" stroke="white" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'+
-        '<path d="M166,138 L164,150 L163,156" stroke="white" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'+
-        // Zoccoli
-        '<ellipse cx="146" cy="117" rx="2" ry="1.5" fill="#8B4513"/>'+
-        '<ellipse cx="150" cy="118" rx="2" ry="1.5" fill="#8B4513"/>'+
-        '<ellipse cx="173" cy="157" rx="2" ry="1.2" fill="#8B4513"/>'+
-        '<ellipse cx="163" cy="157" rx="2" ry="1.2" fill="#8B4513"/>'+
-        // Sella rosa
-        '<ellipse cx="164" cy="120" rx="10" ry="4" fill="#FF69B4" stroke="#E91E8C" stroke-width="0.5"/>'+
-        '<path d="M160,120 L159,126 L169,126 L168,120" fill="#E91E8C"/>'+
-        // Finimenti dorati
-        '<path d="M157,120 L171,120" stroke="#FFD700" stroke-width="1.2" fill="none"/>'+
-        // Staffe
-        '<path d="M159,126 L158,132 L161,132 L160,126" stroke="#FFD700" stroke-width="0.8" fill="none"/>'+
-        '<path d="M168,126 L167,132 L170,132 L169,126" stroke="#FFD700" stroke-width="0.8" fill="none"/>'+
-      '</g>'+
-
-      // === CAVALLO 2 (sinistra, primo piano) - MARRONE con sella blu ===
-      '<g class="ghorse" data-bob-delay="400">'+
-        '<line x1="52" y1="168" x2="52" y2="72" stroke="url(#gPoleG)" stroke-width="3" stroke-linecap="round"/>'+
-        '<ellipse cx="52" cy="82" rx="3.5" ry="1.3" fill="#FFD700" stroke="#D4AC0D" stroke-width="0.4"/>'+
-        '<ellipse cx="52" cy="100" rx="3.5" ry="1.3" fill="#FFD700" stroke="#D4AC0D" stroke-width="0.4"/>'+
-        // Cavallo marrone (specchiato, galoppa verso sinistra)
-        '<path d="M72,130 C72,122 68,118 62,116 C58,115 52,116 48,118 C44,120 42,124 42,130 C42,136 46,140 52,140 C58,140 64,138 68,135 C70,133 72,132 72,130Z" fill="#A0693D" stroke="#8B5E2B" stroke-width="0.6"/>'+
-        // Collo
-        '<path d="M62,118 C64,112 65,106 63,100 C61,96 57,94 53,95" fill="#A0693D" stroke="#8B5E2B" stroke-width="0.6"/>'+
-        // Testa
-        '<path d="M55,95 C52,93 48,93 46,96 C45,98 46,101 48,102 C50,103 54,102 56,100 C57,98 57,96 55,95Z" fill="#A0693D" stroke="#8B5E2B" stroke-width="0.6"/>'+
-        '<path d="M54,94 L55,89 L52,93" fill="#A0693D" stroke="#8B5E2B" stroke-width="0.5"/>'+
-        '<circle cx="50" cy="97" r="1.5" fill="#333"/>'+
-        '<circle cx="49.5" cy="96.5" r="0.5" fill="white"/>'+
-        '<circle cx="46" cy="100" r="0.7" fill="#C08080"/>'+
-        // Criniera blu
-        '<path d="M61,108 C63,104 64,100 63,96 C61,98 60,102 60,106" fill="#5DADE2" stroke="#2E86C1" stroke-width="0.3"/>'+
-        '<path d="M59,106 C61,102 62,98 61,94 C59,96 58,100 58,104" fill="#5DADE2" stroke="#2E86C1" stroke-width="0.3"/>'+
-        // Coda
-        '<path d="M44,126 C40,124 36,120 37,116 C38,118 40,122 42,124" fill="#5DADE2" stroke="#2E86C1" stroke-width="0.3"/>'+
-        // Zampe anteriori alzate
-        '<path d="M65,132 L72,122 L74,118" stroke="#A0693D" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'+
-        '<path d="M62,134 L68,124 L70,119" stroke="#A0693D" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'+
-        // Zampe posteriori
-        '<path d="M50,138 L48,150 L47,156" stroke="#A0693D" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'+
-        '<path d="M54,138 L56,150 L57,156" stroke="#A0693D" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'+
-        '<ellipse cx="74" cy="117" rx="2" ry="1.5" fill="#5D3A1A"/>'+
-        '<ellipse cx="70" cy="118" rx="2" ry="1.5" fill="#5D3A1A"/>'+
-        '<ellipse cx="47" cy="157" rx="2" ry="1.2" fill="#5D3A1A"/>'+
-        '<ellipse cx="57" cy="157" rx="2" ry="1.2" fill="#5D3A1A"/>'+
-        // Sella blu
-        '<ellipse cx="56" cy="120" rx="10" ry="4" fill="#5DADE2" stroke="#2E86C1" stroke-width="0.5"/>'+
-        '<path d="M60,120 L61,126 L51,126 L52,120" fill="#2E86C1"/>'+
-        '<path d="M49,120 L63,120" stroke="#FFD700" stroke-width="1.2" fill="none"/>'+
-        '<path d="M61,126 L62,132 L59,132 L60,126" stroke="#FFD700" stroke-width="0.8" fill="none"/>'+
-        '<path d="M52,126 L51,132 L54,132 L53,126" stroke="#FFD700" stroke-width="0.8" fill="none"/>'+
-      '</g>'+
-
-      // === CAVALLO 3 (dietro, al centro) - GRIGIO con sella rossa ===
-      '<g class="ghorse" data-bob-delay="800" style="opacity:0.65">'+
-        '<line x1="110" y1="168" x2="110" y2="68" stroke="url(#gPoleG)" stroke-width="2.5" stroke-linecap="round"/>'+
-        '<ellipse cx="110" cy="78" rx="3" ry="1.1" fill="#FFD700" stroke="#D4AC0D" stroke-width="0.4"/>'+
-        // Cavallo grigio visto da dietro (più piccolo, prospettiva)
-        '<ellipse cx="110" cy="115" rx="14" ry="7" fill="#B8B8B8" stroke="#999" stroke-width="0.6"/>'+
-        // Collo
-        '<path d="M103,113 C102,106 103,100 107,97" fill="#B8B8B8" stroke="#999" stroke-width="0.6"/>'+
-        '<path d="M117,113 C118,106 117,100 113,97" fill="#B8B8B8" stroke="#999" stroke-width="0.6"/>'+
-        // Testa
-        '<ellipse cx="110" cy="96" rx="5" ry="4" fill="#B8B8B8" stroke="#999" stroke-width="0.6"/>'+
-        '<circle cx="108" cy="95" r="1" fill="#333"/>'+
-        '<circle cx="112" cy="95" r="1" fill="#333"/>'+
-        // Criniera rossa
-        '<path d="M106,102 C104,99 104,97 105,94 C106,96 107,99 107,101" fill="#E74C3C" stroke="#C0392B" stroke-width="0.3"/>'+
-        '<path d="M114,102 C116,99 116,97 115,94 C114,96 113,99 113,101" fill="#E74C3C" stroke="#C0392B" stroke-width="0.3"/>'+
-        // Gambe
-        '<line x1="103" y1="121" x2="102" y2="135" stroke="#B8B8B8" stroke-width="2.5" stroke-linecap="round"/>'+
-        '<line x1="117" y1="121" x2="118" y2="135" stroke="#B8B8B8" stroke-width="2.5" stroke-linecap="round"/>'+
-        '<ellipse cx="102" cy="136" rx="1.5" ry="1" fill="#666"/>'+
-        '<ellipse cx="118" cy="136" rx="1.5" ry="1" fill="#666"/>'+
-        // Sella rossa
-        '<ellipse cx="110" cy="111" rx="8" ry="3" fill="#E74C3C" stroke="#C0392B" stroke-width="0.4"/>'+
-      '</g>'+
-
-    '</g>'+ // fine piattaforma rotante
-
-    // === TETTO CONICO A STRISCE ALTERNE (sopra la piattaforma, non ruota) ===
-    // Forma conica del tetto
+    // === TETTO CONICO A STRISCE (fisso, sopra i cavalli) ===
     '<path d="M110,20 L32,82 L188,82 Z" fill="url(#gRoofPink)" stroke="#E91E8C" stroke-width="1"/>'+
-    // Strisce alternate rosa/crema
     '<path d="M110,20 L71,51 L62,56 L110,20" fill="url(#gRoofCream)" opacity="0.7"/>'+
     '<path d="M110,20 L83,62 L74,67 L110,20" fill="url(#gRoofCream)" opacity="0.7"/>'+
     '<path d="M110,20 L95,73 L86,78 L110,20" fill="url(#gRoofCream)" opacity="0.7"/>'+
@@ -4772,12 +4715,11 @@ fetchWeather();
     '<path d="M110,20 L137,62 L146,67 L110,20" fill="url(#gRoofCream)" opacity="0.7"/>'+
     '<path d="M110,20 L149,51 L158,56 L110,20" fill="url(#gRoofCream)" opacity="0.7"/>'+
 
-    // === BORDO SMERLATO DEL TETTO (caratteristica delle giostre vere!) ===
+    // === BORDO SMERLATO DEL TETTO ===
     '<path d="M32,82 Q38,76 44,82 Q50,76 56,82 Q62,76 68,82 Q74,76 80,82 Q86,76 92,82 Q98,76 104,82 Q110,76 116,82 Q122,76 128,82 Q134,76 140,82 Q146,76 152,82 Q158,76 164,82 Q170,76 176,82 Q182,76 188,82" fill="none" stroke="#FFD700" stroke-width="2"/>'+
-    // Sottobordo rosa
     '<path d="M34,84 Q40,78 46,84 Q52,78 58,84 Q64,78 70,84 Q76,78 82,84 Q88,78 94,84 Q100,78 106,84 Q112,78 118,84 Q124,78 130,84 Q136,78 142,84 Q148,78 154,84 Q160,78 166,84 Q172,78 178,84 Q184,78 186,84" fill="#FF69B4" stroke="none" opacity="0.5"/>'+
 
-    // Lucine lungo il bordo del tetto
+    // Lucine bordo tetto
     '<circle class="glight" cx="44" cy="82" r="2" fill="#FFD700"/>'+
     '<circle class="glight" cx="56" cy="82" r="2" fill="#5DADE2"/>'+
     '<circle class="glight" cx="68" cy="82" r="2" fill="#FF69B4"/>'+
@@ -4791,13 +4733,12 @@ fetchWeather();
     '<circle class="glight" cx="164" cy="82" r="2" fill="#5DADE2"/>'+
     '<circle class="glight" cx="176" cy="82" r="2" fill="#2ECC71"/>'+
 
-    // === PUNTALE SUPERIORE (pallina dorata) ===
+    // === PUNTALE SUPERIORE ===
     '<circle cx="110" cy="20" r="5" fill="#FFD700" stroke="#D4AC0D" stroke-width="1"/>'+
-    // Bandierina
     '<line x1="110" y1="15" x2="110" y2="5" stroke="#D4AC0D" stroke-width="1.5"/>'+
     '<path d="M110,5 L122,9 L110,13 Z" fill="#E74C3C" stroke="#C0392B" stroke-width="0.5"/>'+
 
-    // Luci lampeggianti sulla base
+    // Luci base
     '<circle class="glight" cx="40" cy="195" r="2" fill="#FFD700"/>'+
     '<circle class="glight" cx="60" cy="199" r="2" fill="#FF69B4"/>'+
     '<circle class="glight" cx="80" cy="201" r="2" fill="#5DADE2"/>'+
@@ -4810,33 +4751,39 @@ fetchWeather();
 
   el.innerHTML=svg;
 
-  // === ANIMAZIONE GIRO + BOB + LUCI via JavaScript puro ===
+  // === ANIMAZIONE: cavalli scorrono da destra a sinistra + dondolio + luci ===
   var svgEl=el.querySelector('svg');
-  var platform=svgEl?svgEl.querySelector('#giostraPlatform'):null;
-  var horses=svgEl?svgEl.querySelectorAll('.ghorse'):[];
+  var gHorses=svgEl?svgEl.querySelectorAll('.ghorse'):[];
   var lights=svgEl?svgEl.querySelectorAll('.glight'):[];
-  var startTime=performance.now();
+  var SPEED=28; // pixel al secondo (velocità orizzontale)
+  var lastTime=performance.now();
+
+  // Imposta posizione iniziale di ogni cavallo
+  for(var i=0;i<gHorses.length;i++){
+    gHorses[i].setAttribute('transform','translate('+horseX[i]+',0)');
+  }
 
   function animateGiostra(now){
-    var elapsed=now-startTime;
-    // Rotazione piattaforma: senso orario, 10 secondi per giro (lenta e maestosa)
-    if(platform){
-      var angle=(elapsed/10000)*360;
-      platform.setAttribute('transform','rotate('+angle+' 110 170)');
+    var dt=(now-lastTime)/1000;
+    if(dt>0.1)dt=0.1; // evita salti se la tab è in background
+    lastTime=now;
+
+    // Muovi ogni cavallo da destra a sinistra
+    for(var i=0;i<gHorses.length;i++){
+      horseX[i]-=SPEED*dt;
+      // Wrap-around: quando esce a sinistra, riappare a destra
+      if(horseX[i]<-30) horseX[i]+=TRACK_W;
+      // Dondolio su e giù (come le giostre vere!)
+      var bob=Math.sin(now/600+hcfg[i].bp)*6;
+      gHorses[i].setAttribute('transform','translate('+horseX[i]+','+bob+')');
     }
-    // Cavalli dondolano su e giù (come nelle giostre vere)
-    for(var i=0;i<horses.length;i++){
-      var delay=parseInt(horses[i].getAttribute('data-bob-delay'))||0;
-      var t=((elapsed-delay)%2000)/2000;
-      var bob=Math.sin(t*Math.PI*2)*6;
-      horses[i].setAttribute('transform','translate(0,'+bob+')');
-    }
+
     // Luci lampeggianti alternate
     for(var j=0;j<lights.length;j++){
-      var phase=(elapsed+j*150)%1000;
-      var op=phase<500?0.9:0.25;
-      lights[j].setAttribute('opacity',op);
+      var phase=(now+j*150)%1000;
+      lights[j].setAttribute('opacity',phase<500?0.9:0.25);
     }
+
     requestAnimationFrame(animateGiostra);
   }
   requestAnimationFrame(animateGiostra);
