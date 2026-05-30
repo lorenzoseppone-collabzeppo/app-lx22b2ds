@@ -4699,6 +4699,7 @@ fetchWeather();
     '<line x1="50" y1="4" x2="50" y2="60" stroke="#A0522D" stroke-width="1.5" stroke-linecap="round"/>'+
     // Sedile
     '<rect x="20" y="58" width="36" height="5" rx="2" fill="#8B4513" stroke="#5D3A1A" stroke-width="0.5"/>'+
+    '<g id="swingBoyGroup">'+
     // Testa
     '<circle cx="38" cy="40" r="7" fill="#FFD5B8" stroke="#1a1a1a" stroke-width="0.6"/>'+
     // Capelli castani
@@ -4722,6 +4723,7 @@ fetchWeather();
     // Gambe piegate
     '<line x1="30" y1="74" x2="34" y2="66" stroke="#FFD5B8" stroke-width="2" stroke-linecap="round"/>'+
     '<line x1="46" y1="74" x2="42" y2="66" stroke="#FFD5B8" stroke-width="2" stroke-linecap="round"/>'+
+    '</g>'+
 
     // === BAMBINA (destra, x=52-110) ===
     // Corde
@@ -4796,6 +4798,233 @@ fetchWeather();
       setTimeout(positionSwing,100);
     };
   }
+
+  // ---- BAMBINO CHE CAMMINA ----
+  // Div per il bambino che cammina
+  var wbDiv=document.createElement('div');
+  wbDiv.style.cssText='position:fixed;pointer-events:none;z-index:9999;opacity:0;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.18))';
+  document.body.appendChild(wbDiv);
+
+  // SVG bambino in piedi (stessi colori del bambino sull'altalena)
+  var wbSvgStr='<svg viewBox="0 0 24 42" width="20" height="35">'+
+    '<circle cx="12" cy="6" r="5" fill="#FFD5B8" stroke="#1a1a1a" stroke-width="0.4"/>'+
+    '<path d="M7,4.5 C7,0 17,0 17,4.5" fill="#5D3A1A"/>'+
+    '<circle cx="10" cy="6.5" r="0.6" fill="#1a1a1a"/>'+
+    '<circle cx="14" cy="6.5" r="0.6" fill="#1a1a1a"/>'+
+    '<path d="M10,9 Q12,10.5 14,9" stroke="#1a1a1a" stroke-width="0.4" fill="none" stroke-linecap="round"/>'+
+    '<path d="M8,11 L7,22 L17,22 L16,11 Z" fill="#4CAF50" stroke="#388E3C" stroke-width="0.3"/>'+
+    '<line id="wbLArm" x1="8" y1="13" x2="5" y2="20" stroke="#FFD5B8" stroke-width="1.5" stroke-linecap="round"/>'+
+    '<line id="wbRArm" x1="16" y1="13" x2="19" y2="20" stroke="#FFD5B8" stroke-width="1.5" stroke-linecap="round"/>'+
+    '<line id="wbLLeg" x1="10" y1="22" x2="8" y2="35" stroke="#FFD5B8" stroke-width="1.5" stroke-linecap="round"/>'+
+    '<line id="wbRLeg" x1="14" y1="22" x2="16" y2="35" stroke="#FFD5B8" stroke-width="1.5" stroke-linecap="round"/>'+
+    '<ellipse id="wbLShoe" cx="7" cy="36" rx="2" ry="1" fill="#333"/>'+
+    '<ellipse id="wbRShoe" cx="17" cy="36" rx="2" ry="1" fill="#333"/>'+
+  '</svg>';
+  wbDiv.innerHTML=wbSvgStr;
+
+  // Riferimenti agli elementi SVG del bambino che cammina
+  var wbSvgEl=wbDiv.querySelector('svg');
+  var wbLArm=wbSvgEl.querySelector('#wbLArm');
+  var wbRArm=wbSvgEl.querySelector('#wbRArm');
+  var wbLLeg=wbSvgEl.querySelector('#wbLLeg');
+  var wbRLeg=wbSvgEl.querySelector('#wbRLeg');
+  var wbLShoe=wbSvgEl.querySelector('#wbLShoe');
+  var wbRShoe=wbSvgEl.querySelector('#wbRShoe');
+
+  // Stati dell'animazione
+  var ST_IDLE=0,ST_DETACH=1,ST_DESCEND=2,ST_WALK=3,ST_CLIMB=4,ST_ENTER=5,ST_INSIDE=6,ST_REATTACH=7;
+  var wbState=ST_IDLE,wbFrame=0;
+  var wbX=0,wbY=0,wbOp=0,wbSc=1;
+  var wbSX=0,wbSY=0,wbDX=0,wbDY=0;
+  var wbWalkF=0;
+
+  // Frame per stato (~30fps)
+  var FR_DET=25,FR_DESC=55,FR_WALK=80,FR_CLIMB=40,FR_ENT=25,FR_INSIDE=90,FR_REAT=25;
+
+  // Posizione del bambino sull'altalena (schermo)
+  function swingBoyPos(){
+    var lx=parseInt(el.style.left)||0;
+    var ly=parseInt(el.style.top)||0;
+    // Centro bambino in SVG: x=38, y=40 (viewBox 120x95, render 96x76)
+    return{x:lx+(38/120)*96-10, y:ly+(40/95)*76-6};
+  }
+
+  // Posizione destra del testo Bonirola
+  function bonirolaRightPos(){
+    var sn=document.querySelector('.school-name');
+    if(!sn)return null;
+    var r=sn.getBoundingClientRect();
+    return{x:r.right-10, y:r.top-30};
+  }
+
+  // Centro icona scuola
+  function iconCenterPos(){
+    var ic=document.querySelector('.header-icon');
+    if(!ic)return null;
+    var r=ic.getBoundingClientRect();
+    return{x:r.left+r.width/2-10, y:r.top+r.height/2-6};
+  }
+
+  // Mostra/nascondi bambino sull'altalena
+  function setSwingBoyVis(v){
+    var g=el.querySelector('#swingBoyGroup');
+    if(g)g.style.opacity=v?'1':'0';
+  }
+
+  // Aggiorna ciclo di camminata (sinusoidale)
+  function updateWalk(frame){
+    var ph=frame*0.25;
+    var ls=Math.sin(ph)*5;
+    var as=Math.sin(ph)*4;
+    var bn=Math.abs(Math.sin(ph))*0.8;
+    wbLLeg.setAttribute('x2',String(8+ls));
+    wbLLeg.setAttribute('y2',String(35-bn));
+    wbRLeg.setAttribute('x2',String(16-ls));
+    wbRLeg.setAttribute('y2',String(35-bn));
+    wbLShoe.setAttribute('cx',String(7+ls));
+    wbLShoe.setAttribute('cy',String(36-bn));
+    wbRShoe.setAttribute('cx',String(17-ls));
+    wbRShoe.setAttribute('cy',String(36-bn));
+    wbLArm.setAttribute('x2',String(5-as));
+    wbLArm.setAttribute('y2',String(20+bn));
+    wbRArm.setAttribute('x2',String(19+as));
+    wbRArm.setAttribute('y2',String(20+bn));
+  }
+
+  // Reset gambe/braccia posizione riposo
+  function resetWalk(){
+    wbLLeg.setAttribute('x2','8');wbLLeg.setAttribute('y2','35');
+    wbRLeg.setAttribute('x2','16');wbRLeg.setAttribute('y2','35');
+    wbLShoe.setAttribute('cx','7');wbLShoe.setAttribute('cy','36');
+    wbRShoe.setAttribute('cx','17');wbRShoe.setAttribute('cy','36');
+    wbLArm.setAttribute('x2','5');wbLArm.setAttribute('y2','20');
+    wbRArm.setAttribute('x2','19');wbRArm.setAttribute('y2','20');
+  }
+
+  // Easing in-out
+  function easeIO(t){return t<0.5?2*t*t:-1+(4-2*t)*t;}
+
+  // Avvia passeggiata del bambino
+  function startBoyWalk(){
+    if(wbState!==ST_IDLE)return;
+    var sp=swingBoyPos();
+    var bp=bonirolaRightPos();
+    var ip=iconCenterPos();
+    if(!sp||!bp||!ip){setTimeout(startBoyWalk,5000);return;}
+    wbX=sp.x;wbY=sp.y;wbOp=0;wbSc=1;
+    wbSX=sp.x;wbSY=sp.y;wbDX=bp.x;wbDY=bp.y;
+    wbWalkF=0;wbState=ST_DETACH;wbFrame=0;
+    setSwingBoyVis(false);
+    resetWalk();
+  }
+
+  // Loop animazione ~30fps
+  setInterval(function(){
+    wbFrame++;
+    var t,e;
+    switch(wbState){
+      case ST_DETACH:
+        // Fade in bambino che cammina sopra l'altalena
+        wbOp=Math.min(1,wbFrame/FR_DET);
+        wbDiv.style.opacity=wbOp;
+        wbDiv.style.left=wbX+'px';
+        wbDiv.style.top=wbY+'px';
+        wbDiv.style.transform='scale(1)';
+        if(wbFrame>=FR_DET){
+          wbState=ST_DESCEND;wbFrame=0;
+          wbSX=wbX;wbSY=wbY;
+          var bp=bonirolaRightPos();
+          if(bp){wbDX=bp.x;wbDY=bp.y;}
+        }
+        break;
+      case ST_DESCEND:
+        // Scende verso la scritta Bonirola
+        t=Math.min(1,wbFrame/FR_DESC);
+        e=easeIO(t);
+        wbX=wbSX+(wbDX-wbSX)*e;
+        wbY=wbSY+(wbDY-wbSY)*e;
+        wbDiv.style.left=wbX+'px';
+        wbDiv.style.top=wbY+'px';
+        if(wbFrame>=FR_DESC){
+          wbState=ST_WALK;wbFrame=0;wbWalkF=0;
+          wbSX=wbX;
+          var ip=iconCenterPos();
+          if(ip){wbDX=ip.x;wbDY=wbY;}
+        }
+        break;
+      case ST_WALK:
+        // Cammina verso sinistra lungo la scritta
+        t=Math.min(1,wbFrame/FR_WALK);
+        e=easeIO(t);
+        wbX=wbSX+(wbDX-wbSX)*e;
+        wbDiv.style.left=wbX+'px';
+        wbWalkF++;
+        updateWalk(wbWalkF);
+        if(wbFrame>=FR_WALK){
+          wbState=ST_CLIMB;wbFrame=0;
+          var ip2=iconCenterPos();
+          if(ip2){wbDX=ip2.x;wbDY=ip2.y;}
+          wbSX=wbX;wbSY=wbY;
+        }
+        break;
+      case ST_CLIMB:
+        // Risale verso l'icona della scuola
+        t=Math.min(1,wbFrame/FR_CLIMB);
+        e=easeIO(t);
+        wbX=wbSX+(wbDX-wbSX)*e;
+        wbY=wbSY+(wbDY-wbSY)*e;
+        wbDiv.style.left=wbX+'px';
+        wbDiv.style.top=wbY+'px';
+        wbWalkF++;
+        updateWalk(wbWalkF);
+        if(wbFrame>=FR_CLIMB){
+          wbState=ST_ENTER;wbFrame=0;
+        }
+        break;
+      case ST_ENTER:
+        // Rimpicciolisce e scompare nell'icona
+        t=Math.min(1,wbFrame/FR_ENT);
+        wbSc=1-t*0.85;
+        wbOp=1-t;
+        wbDiv.style.transform='scale('+wbSc+')';
+        wbDiv.style.opacity=wbOp;
+        if(wbFrame>=FR_ENT){
+          wbState=ST_INSIDE;wbFrame=0;
+          wbDiv.style.opacity=0;
+        }
+        break;
+      case ST_INSIDE:
+        // Pausa dentro la scuola
+        if(wbFrame>=FR_INSIDE){
+          wbState=ST_REATTACH;wbFrame=0;
+          var sp=swingBoyPos();
+          if(sp){wbX=sp.x;wbY=sp.y;}
+          wbSc=0.3;wbOp=0;
+          resetWalk();
+        }
+        break;
+      case ST_REATTACH:
+        // Riappare sull'altalena
+        var sp2=swingBoyPos();
+        if(sp2){wbX=sp2.x;wbY=sp2.y;}
+        wbOp=Math.min(1,wbFrame/FR_REAT);
+        wbSc=Math.min(1,0.3+0.7*(wbFrame/FR_REAT));
+        wbDiv.style.left=wbX+'px';
+        wbDiv.style.top=wbY+'px';
+        wbDiv.style.transform='scale('+wbSc+')';
+        wbDiv.style.opacity=wbOp;
+        if(wbFrame>=FR_REAT){
+          wbState=ST_IDLE;wbFrame=0;
+          wbDiv.style.opacity=0;
+          setSwingBoyVis(true);
+          setTimeout(startBoyWalk,20000+Math.random()*20000);
+        }
+        break;
+    }
+  },33);
+
+  // Prima passeggiata dopo 15 secondi
+  setTimeout(startBoyWalk,15000);
 })();
 // ---- FINE ALTALENA ----
 
