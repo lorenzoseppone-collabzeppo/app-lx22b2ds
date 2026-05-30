@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
 <title>Registro di Classe</title>
-<meta name="version" content="2026-05-31-v75-fixed-paths"/>
+<meta name="version" content="2026-05-31-v76-correct-arcs"/>
 <meta name="description" content="Registro di Classe per la gestione della classe"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a1a2e'><path d='M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z'/></svg>"/>
 <style>
@@ -5392,26 +5392,25 @@ fetchWeather();
     var hW=header.offsetWidth||300;
     var hH=header.offsetHeight||200;
 
-    // 4 traiettorie fisse come da foto (linee rosse)
-    // Ogni traiettoria: sx,sy,ex,ey in % dell'header + curvatura
-    // Tutte vanno da sinistra a destra, in diagonale, con curva a destra
+    // 4 traiettorie come da foto 0333: sinistra→destra, in discesa, arco ∩ leggero
+    // Tutte con curva SOPRA la linea retta (arco ∩ molto delicato)
     var paths=[
-      {sx:0,  sy:0.15, ex:1,   ey:0.35, curve:0.30, dir:1 },  // alta: 15%→35%, curva molto pronunciata
-      {sx:0,  sy:0.30, ex:1,   ey:0.60, curve:0.28, dir:1 },  // media: 30%→60%, curva molto pronunciata
-      {sx:0,  sy:0.55, ex:1,   ey:0.85, curve:0.25, dir:1 },  // bassa: 55%→85%, curva molto pronunciata
-      {sx:0,  sy:0.75, ex:1,   ey:0.98, curve:0.10, dir:1 }   // bassissima: 75%→98%, curva poco pronunciata
+      {sx:0,  sy:0.10, ex:1,   ey:0.30, curve:0.06, dir:-1},  // alta: 10%→30%, arco ∩ delicato
+      {sx:0,  sy:0.25, ex:1,   ey:0.50, curve:0.05, dir:-1},  // media: 25%→50%, arco ∩ delicato
+      {sx:0,  sy:0.40, ex:1,   ey:0.70, curve:0.05, dir:-1},  // bassa: 40%→70%, arco ∩ delicato
+      {sx:0,  sy:0.60, ex:1,   ey:0.90, curve:0.04, dir:-1}   // bassissima: 60%→90%, arco ∩ quasi retta
     ];
     var p=paths[Math.floor(Math.random()*paths.length)];
 
     var sx=p.sx*hW, sy=p.sy*hH;
     var ex=p.ex*hW, ey=p.ey*hH;
 
-    // Punto di controllo per l'arco: curva a destra (perpendicolare sotto la retta)
+    // Punto di controllo bezier: arco ∩ (SOPRA la linea retta)
     var midX=(sx+ex)/2, midY=(sy+ey)/2;
     var dx=ex-sx, dy=ey-sy;
-    var perpX=-dy, perpY=dx;
+    // Perpendicolare verso l'alto (per arco ∩): (dy, -dx) con dir=-1
+    var perpX=dy, perpY=-dx;
     var pLen=Math.sqrt(perpX*perpX+perpY*perpY)||1;
-    // curve = quanto la curva si discosta (in frazione della lunghezza percorso)
     var curveAmt=p.curve*pLen*p.dir;
     var cx=midX+perpX/pLen*curveAmt;
     var cy=midY+perpY/pLen*curveAmt;
