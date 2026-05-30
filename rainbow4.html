@@ -5380,15 +5380,17 @@ fetchWeather();
     }
   },16);
 
-  function dropTwoMeteors(){
-    launchMeteor(meteors[0]);
-    var gap=300+Math.random()*700;
-    setTimeout(function(){launchMeteor(meteors[1]);},gap);
-    var nextDrop=4000+Math.random()*6000;
-    setTimeout(dropTwoMeteors,nextDrop+gap);
+  // Ogni meteor parte indipendentemente a tempi casuali
+  function scheduleMeteor(m){
+    var delay=2000+Math.random()*8000; // 2-10 secondi, molto variabile
+    setTimeout(function(){
+      if(!m.active) launchMeteor(m);
+      scheduleMeteor(m);
+    },delay);
   }
 
-  setTimeout(dropTwoMeteors,3000);
+  scheduleMeteor(meteors[0]);
+  setTimeout(function(){scheduleMeteor(meteors[1]);},1500);
 })();
 // ---- FINE SAETTE METEORE ----
 
