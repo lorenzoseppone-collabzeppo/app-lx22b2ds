@@ -4407,7 +4407,7 @@ fetchWeather();
     for(var i=0;i<animEls.length;i++){
       // Non ripristinare opacity per elementi che la gestiscono diversamente
       var el=animEls[i];
-      if(el.id==='bfly'){if(!window._bflyIsFlying) el.style.opacity='';}
+      if(el.id==='bfly'){el.style.opacity='';}
       else if(el.id==='altalena'){el.style.opacity='';}
       else{el.style.opacity='';}
       // Ripristina transition dopo un tick
