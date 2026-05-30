@@ -5224,66 +5224,84 @@ fetchWeather();
   setTimeout(startGirlWalk,12000);
 
   // ---- STRADINA IMMAGINARIA ----
-  // Striscia gialla continua: parte da icona scuola → sale verso altalena
-  // Come nella foto: gialla, continua, curva, in salita, più larga alla partenza
+  // Striscia gialla: parte dove i bambini si staccano dall'altalena → segue il loro percorso → arriva alla scuola
+  // Usa la STESSA curva di Bezier quadratica dei bambini: P0=altalena, P1=bonirola, P2=scuola
   var pathSvg=document.createElementNS('http://www.w3.org/2000/svg','svg');
   pathSvg.style.cssText='position:absolute;pointer-events:none;z-index:0;overflow:visible;top:0;left:0;width:1px;height:1px;';
   document.body.appendChild(pathSvg);
 
-  // Striscia gialla - due path per fare l'effetto "strada" con bordi
-  // Bordo scuro
+  // Striscia gialla - stile strada con bordi
+  // Bordo scuro (ombra/bordo strada)
   var pathBorder=document.createElementNS('http://www.w3.org/2000/svg','path');
   pathBorder.setAttribute('fill','none');
-  pathBorder.setAttribute('stroke','rgba(180,150,0,0.25)');
-  pathBorder.setAttribute('stroke-width','8');
+  pathBorder.setAttribute('stroke','rgba(160,130,0,0.3)');
+  pathBorder.setAttribute('stroke-width','9');
   pathBorder.setAttribute('stroke-linecap','round');
   pathBorder.setAttribute('stroke-linejoin','round');
   pathSvg.appendChild(pathBorder);
 
-  // Striscia gialla principale
+  // Striscia gialla principale (giallo vivo come nella foto)
   var pathEl=document.createElementNS('http://www.w3.org/2000/svg','path');
   pathEl.setAttribute('fill','none');
-  pathEl.setAttribute('stroke','rgba(255,215,0,0.35)');
-  pathEl.setAttribute('stroke-width','5');
+  pathEl.setAttribute('stroke','rgba(255,200,0,0.5)');
+  pathEl.setAttribute('stroke-width','6');
   pathEl.setAttribute('stroke-linecap','round');
   pathEl.setAttribute('stroke-linejoin','round');
   pathSvg.appendChild(pathEl);
 
-  // Linea chiara interna
+  // Linea chiara interna (centro strada)
   var pathInner=document.createElementNS('http://www.w3.org/2000/svg','path');
   pathInner.setAttribute('fill','none');
-  pathInner.setAttribute('stroke','rgba(255,240,100,0.25)');
+  pathInner.setAttribute('stroke','rgba(255,235,80,0.35)');
   pathInner.setAttribute('stroke-width','2');
   pathInner.setAttribute('stroke-linecap','round');
   pathSvg.appendChild(pathInner);
+
+  // Tratteggio centrale bianco (linea di mezzeria come nelle strade vere)
+  var pathDash=document.createElementNS('http://www.w3.org/2000/svg','path');
+  pathDash.setAttribute('fill','none');
+  pathDash.setAttribute('stroke','rgba(255,255,255,0.35)');
+  pathDash.setAttribute('stroke-width','1');
+  pathDash.setAttribute('stroke-linecap','round');
+  pathDash.setAttribute('stroke-dasharray','6,8');
+  pathSvg.appendChild(pathDash);
 
   function drawWalkingPath(){
     var bp=bonirolaTextPos();
     var ip=iconCenterPos();
     if(!bp||!ip) return;
 
-    // Partenza: sotto icona scuola (basso)
-    var sx=ip.x+13;
-    var sy=ip.y+43;
-
-    // Arrivo: sotto altalena (alto - in salita!)
+    // PERCORSO UGUALE AI BAMBINI che camminano!
+    // P0 = dove i bambini si staccano dall'altalena
     var lx=parseInt(el.style.left)||0;
     var ly=parseInt(el.style.top)||0;
-    var endX=lx+41+13;
-    var endY=ly+65+4;
+    var startAngle=getSwingAngle();
+    // Calcola posizione visiva del bambino sull'altalena (quando è al centro)
+    var bx=lx+(38/120)*82;
+    var by=ly+(40/95)*65;
+    var px=lx+41;
+    var py=ly+1.6;
+    var ddx=bx-px, ddy=by-py;
+    var cosA=Math.cos(startAngle), sinA=Math.sin(startAngle);
+    var sx=px+ddx*cosA-ddy*sinA;
+    var sy=py+ddx*sinA+ddy*cosA+6; // +6 come wp0y del bambino
 
-    // Bezier cubica per curva naturale in salita
-    // Punto di controllo 1: sale dalla scuola verso Bonirola
-    var cp1x=sx+30;
-    var cp1y=sy-40;
-    // Punto di controllo 2: curva verso l'altalena
-    var cp2x=endX-40;
-    var cp2y=endY+20;
+    // P1 = scritta Bonirola (punto di controllo bezier - uguale ai bambini)
+    var cpx=bp.x;
+    var cpy=bp.y;
 
-    var d='M '+sx.toFixed(1)+','+sy.toFixed(1)+' C '+cp1x.toFixed(1)+','+cp1y.toFixed(1)+' '+cp2x.toFixed(1)+','+cp2y.toFixed(1)+' '+endX.toFixed(1)+','+endY.toFixed(1);
+    // P2 = icona scuola (arrivo - uguale ai bambini)
+    var ex=ip.x;
+    var ey=ip.y;
+
+    // Bezier quadratica IDENTICA a quella dei bambini:
+    // B(t) = (1-t)²·P0 + 2(1-t)t·P1 + t²·P2
+    // Partenza dall'altalena → curva verso Bonirola → arriva alla scuola
+    var d='M '+sx.toFixed(1)+','+sy.toFixed(1)+' Q '+cpx.toFixed(1)+','+cpy.toFixed(1)+' '+ex.toFixed(1)+','+ey.toFixed(1);
     pathBorder.setAttribute('d',d);
     pathEl.setAttribute('d',d);
     pathInner.setAttribute('d',d);
+    pathDash.setAttribute('d',d);
   }
 
   // Aggiorna la stradina quando si riposiziona l'altalena
