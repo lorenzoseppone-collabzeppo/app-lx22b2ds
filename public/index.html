@@ -4431,6 +4431,7 @@ fetchWeather();
     bfly.className='bfly resting';
     bfly.style.animation='bflyRest 5s ease-in-out infinite';
     bfly.style.transform='rotate(-3deg)';
+    setSvg(true);
     var svgEl=bfly.querySelector('svg');
     if(svgEl){svgEl.style.animation='';svgEl.style.transform='';svgEl.style.filter='hue-rotate(0deg) saturate(1) brightness(1)';svgEl.style.transformOrigin='center center';}
   }
