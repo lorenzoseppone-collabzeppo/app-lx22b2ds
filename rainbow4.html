@@ -5164,10 +5164,14 @@ fetchWeather();
     wbDiv.style.opacity='0';
     wgDiv.style.opacity='0';
     el.style.opacity='0'; // nascondi anche l'altalena
+    var bflyEl=document.getElementById('bfly');
+    if(bflyEl) bflyEl.style.opacity='0'; // nascondi farfalla
   }
   function restoreWalkKids(){
     _scrollHidden=false;
     el.style.opacity='1'; // ripristina altalena
+    var bflyEl=document.getElementById('bfly');
+    if(bflyEl) bflyEl.style.opacity='1'; // ripristina farfalla
     if(wbState===ST_JOURNEY){
       var et2=1-Math.pow(1-Math.min(1,wbFrame/TOTAL_FRAMES),2);
       wbDiv.style.opacity=et2>0.85?String(1-((et2-0.85)/0.15)*0.7):'1';
