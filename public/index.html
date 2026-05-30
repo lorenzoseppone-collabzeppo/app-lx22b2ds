@@ -172,7 +172,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .diet-modal-close{width:100%;padding:10px;border:none;border-radius:8px;background:#1a1a2e;color:white;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px;font-family:inherit}
 [data-theme="dark"] .diet-modal-close{background:#2a2a4a}
 .diet-modal-close:active{transform:scale(0.97)}
-.diet-custom-input{width:100%;padding:8px 12px;border:2px solid var(--diet-input-border);border-radius:8px;font-size:13px;font-family:inherit;outline:none;margin-bottom:8px;background:var(--bg-input);color:var(--text-main)}
+.diet-custom-input{width:100%;padding:8px 12px;border:2px solid white;border-radius:8px;font-size:14px;font-weight:700;font-family:inherit;outline:none;margin-bottom:8px;background:rgba(255,255,255,0.1);color:white}
+.diet-custom-input::placeholder{color:rgba(255,255,255,0.6);font-weight:600}
 .diet-custom-input:focus{border-color:var(--diet-input-focus)}
 .child-detail-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px}
 .child-detail{background:#1a1a2e;color:white;border-radius:16px;padding:20px;max-width:400px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,0.3);max-height:85vh;overflow-y:auto}
@@ -205,8 +206,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .deleghe-item-remove{width:22px;height:22px;border-radius:50%;border:none;background:rgba(255,255,255,0.1);cursor:pointer;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.5);font-size:14px;font-weight:600;font-family:inherit;transition:all 0.15s;padding:0}
 .deleghe-item-remove:hover{background:#dc3545;color:white}
 .deleghe-add{display:flex;gap:6px;margin-top:8px}
-.deleghe-add input{flex:1;padding:8px 12px;border:2px solid white;border-radius:8px;font-size:13px;font-family:inherit;outline:none;background:rgba(255,255,255,0.1);color:#ffd700}
-.deleghe-add input::placeholder{color:rgba(255,215,0,0.4)}
+.deleghe-add input{flex:1;padding:8px 12px;border:2px solid white;border-radius:8px;font-size:14px;font-weight:700;font-family:inherit;outline:none;background:rgba(255,255,255,0.1);color:white}
+.deleghe-add input::placeholder{color:rgba(255,255,255,0.6);font-weight:600}
 .deleghe-add input:focus{border-color:#ffd700}
 .deleghe-add button{padding:8px 14px;border:none;border-radius:8px;background:rgba(255,255,255,0.15);color:white;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all 0.15s}
 .deleghe-add button:hover{background:rgba(255,255,255,0.25)}
@@ -223,8 +224,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .contatto-item-name-row .deleghe-item-name{flex-shrink:0}
 .contatto-item-contacts{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .contatto-add{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
-.contatto-add input{flex:1;min-width:80px;padding:8px 12px;border:2px solid white;border-radius:8px;font-size:13px;font-family:inherit;outline:none;background:rgba(255,255,255,0.1);color:#ffd700}
-.contatto-add input::placeholder{color:rgba(255,215,0,0.4)}
+.contatto-add input{flex:1;min-width:80px;padding:8px 12px;border:2px solid white;border-radius:8px;font-size:14px;font-weight:700;font-family:inherit;outline:none;background:rgba(255,255,255,0.1);color:white}
+.contatto-add input::placeholder{color:rgba(255,255,255,0.6);font-weight:600}
 .contatto-add input:focus{border-color:#ffd700}
 .contatto-add button{padding:8px 14px;border:none;border-radius:8px;background:rgba(255,255,255,0.15);color:white;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all 0.15s}
 .contatto-add button:hover{background:rgba(255,255,255,0.25)}
@@ -279,15 +280,15 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .msg-item-del{width:18px;height:18px;border-radius:50%;border:none;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.4);font-size:12px;font-weight:700;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s;line-height:1}
 .msg-item-del:hover{background:#dc3545;color:white}
 .msg-input-row{display:flex;gap:6px;margin-top:6px}
-.msg-input-row input{flex:1;padding:6px 10px;border:1.5px solid white;border-radius:8px;background:rgba(255,255,255,0.08);color:#ffd700;font-size:12px;font-family:inherit;outline:none}
-.msg-input-row input::placeholder{color:rgba(255,215,0,0.4)}
+.msg-input-row input{flex:1;padding:8px 12px;border:2px solid white;border-radius:8px;background:rgba(255,255,255,0.1);color:white;font-size:14px;font-weight:700;font-family:inherit;outline:none}
+.msg-input-row input::placeholder{color:rgba(255,255,255,0.6);font-weight:600}
 .msg-input-row input:focus{border-color:#ffd700}
 .msg-input-row button{padding:6px 12px;border:none;border-radius:8px;background:#ffd700;color:#1a1a2e;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all 0.15s}
 .msg-input-row button:hover{background:#ffe44d}
 .msg-input-row button:active{transform:scale(0.97)}
 .msg-received-section{background:#1a1a2e;border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
 .msg-received-label{font-size:12px;font-weight:600;color:#64b5f6;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;display:flex;align-items:center;gap:6px}
-.msg-empty{font-size:12px;color:rgba(255,255,255,0.3);font-style:italic;text-align:center;padding:8px 0}
+.msg-empty{font-size:14px;font-weight:700;color:rgba(255,255,255,0.7);text-align:center;padding:10px 0;letter-spacing:0.3px}
 @media print{body{background:white!important;background-image:none!important}.btn,.btn-row,.auth-bar,.sync-bar,.search-box,.arrow-btn,.diet-btn{display:none!important}.header-icon,.user-badge{display:none!important}.card,.roster,.stat-card,.msg-section,.msg-received-section{box-shadow:none!important;border:1px solid #eee}}
 @media(min-width:768px){.app{max-width:900px;padding:24px}.header{padding:28px 32px}.header-icon{width:72px;height:72px}.header-clock-time{font-size:36px}.header-clock-date{font-size:13px}.header-weather-icon{font-size:32px}.header-weather-temp{font-size:22px}.school-name{font-size:15px}.class-name{font-size:26px}.class-sub{font-size:15px}.teacher-name{font-size:15px}.teacher-field{font-size:15px}.child-name-badge{font-size:15px;padding:8px 14px}.age-circle{width:30px;height:30px;font-size:14px}.roster-header{grid-template-columns:1fr 36px 52px 56px 56px 56px;gap:6px;padding:12px 16px}.child-row{grid-template-columns:1fr 36px 52px 56px 56px 56px;gap:6px;padding:10px 16px}.pre-btn,.post-btn{width:48px;font-size:11px;padding:5px 6px}.diet-btn{width:28px;height:28px;font-size:14px}.check-cell input[type=checkbox]{width:20px;height:20px}.btn{padding:10px 18px;font-size:14px}.stat-value{font-size:42px}.card{padding:20px}}
 @media(max-width:400px){.roster-header{grid-template-columns:1fr 26px 36px 40px 40px 40px}.child-row{grid-template-columns:1fr 26px 36px 40px 40px 40px}.child-name-badge{font-size:12px;padding:5px 4px}.age-circle{width:22px;height:22px;font-size:8px}.pre-btn,.post-btn{width:34px;font-size:8px;padding:3px 3px}.diet-btn{width:20px;height:20px;font-size:10px}.check-cell input[type=checkbox]{width:14px;height:14px}}
@@ -2352,7 +2353,7 @@ function render(){
         }
       }
       html+='<div class="msg-input-row">';
-      html+='<input id="msgInput_'+mcId+'" style="color:#ffd700" placeholder="Scrivi comunicazione per '+esc(mcName.toUpperCase())+'..." onkeydown="if(event.key===\'Enter\')App.sendMessage(\''+mcId+'\')"/>';
+      html+='<input id="msgInput_'+mcId+'" placeholder="Scrivi comunicazione per '+esc(mcName.toUpperCase())+'..." onkeydown="if(event.key===\'Enter\')App.sendMessage(\''+mcId+'\')"/>';
       html+='<button onclick="App.sendMessage(\''+mcId+'\')">Invia</button>';
       html+='</div>';
       html+='</div>';
@@ -2409,7 +2410,7 @@ function render(){
       }
       // Input per rispondere alla coordinatrice
       html+='<div class="msg-input-row" style="margin-top:10px">';
-      html+='<input id="replyInput" style="color:#ffd700" placeholder="Rispondi alla coordinatrice..." onkeydown="if(event.key===\'Enter\')App.replyToCoordinatrice()"/>';
+      html+='<input id="replyInput" placeholder="Rispondi alla coordinatrice..." onkeydown="if(event.key===\'Enter\')App.replyToCoordinatrice()"/>';
       html+='<button onclick="App.replyToCoordinatrice()">Rispondi</button>';
       html+='</div>';
     }
@@ -2443,7 +2444,7 @@ function render(){
   var notePlaceholder=!currentUser?'Effettua il login per salvare le note':classLocked?'Sblocca la classe per scrivere note':'Note del giorno...';
   html+='<div style="margin-top:8px">';
   if(!currentUser){html+='<div style="font-size:10px;color:#dc3545;font-weight:600;margin-bottom:3px;text-align:center">⚠ Le note si salvano solo col login</div>';}
-  html+='<textarea id="dayNoteInput" placeholder="'+notePlaceholder+'" style="width:100%;min-height:36px;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:12px;font-family:inherit;resize:vertical;outline:none;color:#333;background:'+(noteDisabled?'#f5f5f5':'white')+'" oninput="App.updateDayNote(this.value)" '+(noteDisabled?'disabled':'')+'>'+esc(todayNote)+'</textarea></div>';
+  html+='<textarea id="dayNoteInput" placeholder="'+notePlaceholder+'" style="width:100%;min-height:36px;padding:8px 12px;border:2px solid white;border-radius:8px;font-size:14px;font-weight:700;font-family:inherit;resize:vertical;outline:none;color:white;background:rgba(255,255,255,0.1)" oninput="App.updateDayNote(this.value)" '+(noteDisabled?'disabled':'')+'>'+esc(todayNote)+'</textarea></div>';
   html+='</div>';
 
   html+='<div class="card-dark"><div class="card-label">RICERCA BAMBINO</div>';
@@ -2707,7 +2708,7 @@ function renderChildDetail(idx){
   }else{
     html+='<div class="deleghe-empty">Nessuna delega aggiunta</div>';
   }
-  if(!locked){html+='<div class="deleghe-add">';html+='<input type="text" id="delegaInput" style="color:#ffd700" placeholder="Nome delegato..." onkeydown="if(event.key===\'Enter\')App.addDelega('+idx+')"/>';html+='<button onclick="App.addDelega('+idx+')">Aggiungi</button>';html+='</div>';}
+  if(!locked){html+='<div class="deleghe-add">';html+='<input type="text" id="delegaInput" placeholder="Nome delegato..." onkeydown="if(event.key===\'Enter\')App.addDelega('+idx+')"/>';html+='<button onclick="App.addDelega('+idx+')">Aggiungi</button>';html+='</div>';}
   html+='</div>';
 
   // Contatti box
@@ -2730,7 +2731,7 @@ function renderChildDetail(idx){
   }else{
     html+='<div class="deleghe-empty">Nessun contatto aggiunto</div>';
   }
-  if(!locked){html+='<div class="contatto-add">';html+='<input type="text" id="contattoNome" style="color:#ffd700" placeholder="Nome (es. Mamma)..." onkeydown="if(event.key===\'Enter\')App.addContatto('+idx+')"/>';html+='<input type="tel" id="contattoTelefono" style="color:#ffd700" placeholder="Numero..." onkeydown="if(event.key===\'Enter\')App.addContatto('+idx+')"/>';html+='<input type="email" id="contattoEmail" style="color:#ffd700" placeholder="Email..." onkeydown="if(event.key===\'Enter\')App.addContatto('+idx+')"/>';html+='<button onclick="App.addContatto('+idx+')">Aggiungi</button>';html+='</div>';}
+  if(!locked){html+='<div class="contatto-add">';html+='<input type="text" id="contattoNome" placeholder="Nome (es. Mamma)..." onkeydown="if(event.key===\'Enter\')App.addContatto('+idx+')"/>';html+='<input type="tel" id="contattoTelefono" placeholder="Numero..." onkeydown="if(event.key===\'Enter\')App.addContatto('+idx+')"/>';html+='<input type="email" id="contattoEmail" placeholder="Email..." onkeydown="if(event.key===\'Enter\')App.addContatto('+idx+')"/>';html+='<button onclick="App.addContatto('+idx+')">Aggiungi</button>';html+='</div>';}
   html+='</div>';
 
   // Note per bambino
@@ -2740,7 +2741,7 @@ function renderChildDetail(idx){
   html+='<div class="deleghe-box" style="background:rgba(255,193,7,0.08)">';
   html+='<div class="deleghe-box-title" style="color:#ffd54f"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffd54f" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Note</div>';
   if(!currentUser){html+='<div style="font-size:10px;color:#ff6b7a;font-weight:600;margin-bottom:6px;text-align:center">⚠ Le note si salvano solo col login</div>';}
-  html+='<textarea id="childNoteInput" placeholder="'+childNotePlaceholder+'" style="width:100%;min-height:48px;padding:8px 10px;border:1px solid rgba(255,255,255,0.2);border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;outline:none;color:white;background:'+(childNoteDisabled?'rgba(255,255,255,0.05)':'rgba(255,255,255,0.1)')+'" oninput="App.updateChildNote('+idx+',this.value)" '+(childNoteDisabled?'disabled':'')+'>'+esc(childNote)+'</textarea>';
+  html+='<textarea id="childNoteInput" placeholder="'+childNotePlaceholder+'" style="width:100%;min-height:48px;padding:8px 12px;border:2px solid white;border-radius:8px;font-size:14px;font-weight:700;font-family:inherit;resize:vertical;outline:none;color:white;background:'+(childNoteDisabled?'rgba(255,255,255,0.05)':'rgba(255,255,255,0.1)')+'" oninput="App.updateChildNote('+idx+',this.value)" '+(childNoteDisabled?'disabled':'')+'>'+esc(childNote)+'</textarea>';
   html+='</div>';
 
   if(!locked&&!isCoordinatrice()){html+='<button class="btn btn-danger" style="width:100%;margin-top:8px;justify-content:center;background:rgba(220,53,69,0.15);border-color:rgba(220,53,69,0.4);color:#ff6b7a" onclick="App.removeChild('+idx+')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg> Rimuovi Bambino</button>';}
