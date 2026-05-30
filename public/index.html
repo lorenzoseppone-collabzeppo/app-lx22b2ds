@@ -15,7 +15,7 @@
   --bg-body:#f0eef5;--bg-dots:#d5d0e0;--text-main:#333;--text-muted:#888;--text-light:#aaa;--bg-card:white;--bg-card-dark:#1a1a2e;--bg-input:white;--bg-search:#e8e4f0;--bg-sort:#e8e4f0;--border-light:#ddd;--border-input:#bbb;--bg-btn:white;--text-btn:#333;--hover-date:#e8e4f0;--bg-overlay:rgba(0,0,0,0.5);--shadow-card:0 1px 3px rgba(0,0,0,0.08);--modal-bg:white;--modal-text:#1a1a2e;--modal-border:#eee;--modal-hover:#fafafa;--diet-input-border:#ddd;--diet-input-focus:#007bff
 }
 [data-theme="dark"]{
-  --bg-body:#0d0d1a;--bg-dots:#1a1a2e;--text-main:#e0e0e0;--text-muted:#999;--text-light:#777;--bg-card:#1a1a2e;--bg-card-dark:#0d0d1a;--bg-input:#2a2a4a;--bg-search:#1e1e3a;--bg-sort:#1e1e3a;--border-light:#333;--border-input:#444;--bg-btn:#2a2a4a;--text-btn:#e0e0e0;--hover-date:#2a2a4a;--bg-overlay:rgba(0,0,0,0.7);--shadow-card:0 1px 3px rgba(0,0,0,0.3);--modal-bg:#1a1a2e;--modal-text:#e0e0e0;--modal-border:#333;--modal-hover:#2a2a4a;--diet-input-border:#444;--diet-input-focus:#007bff
+  --bg-body:#0d0d1a;--bg-dots:#1a1a2e;--text-main:#ffffff;--text-muted:#cccccc;--text-light:#bbbbbb;--bg-card:#1a1a2e;--bg-card-dark:#0d0d1a;--bg-input:#2a2a4a;--bg-search:#1e1e3a;--bg-sort:#1e1e3a;--border-light:#64b5f6;--border-input:#64b5f6;--bg-btn:#2a2a4a;--text-btn:#ffffff;--hover-date:#2a2a4a;--bg-overlay:rgba(0,0,0,0.7);--shadow-card:0 1px 3px rgba(0,0,0,0.3);--modal-bg:#1a1a2e;--modal-text:#ffffff;--modal-border:#64b5f6;--modal-hover:#2a2a4a;--diet-input-border:#64b5f6;--diet-input-focus:#64b5f6
 }
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background-color:var(--bg-body);background-image:radial-gradient(circle,var(--bg-dots) 1px,transparent 1px);background-size:20px 20px;color:var(--text-main);-webkit-font-smoothing:antialiased;transition:background-color 0.3s,color 0.3s}
@@ -82,18 +82,18 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .card-dark .badge-blue .dot{background:#64b5f6}
 .card-dark .search-box{border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.1)}
 .card-dark .search-box input{color:white}
-.card-dark .search-box input::placeholder{color:rgba(255,255,255,0.4)}
+.card-dark .search-box input::placeholder{color:rgba(255,255,255,0.7);font-weight:600}
 .card-dark .search-box svg{stroke:rgba(255,255,255,0.5)}
 .card-dark textarea{background:rgba(255,255,255,0.1)!important;border-color:rgba(255,255,255,0.2)!important;color:white!important}
-.card-dark textarea::placeholder{color:rgba(255,255,255,0.4)!important}
+.card-dark textarea::placeholder{color:rgba(255,255,255,0.7)!important;font-weight:600}
 .card-dark textarea:disabled{opacity:0.5}
 .card-dark .btn{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2);color:white}
 .card-dark .btn:hover{background:rgba(255,255,255,0.2)}
 .date-nav{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:8px}
 .date-text{font-size:18px;font-weight:600;color:var(--text-main);cursor:pointer;padding:4px 8px;border-radius:6px;transition:background 0.15s}
-.arrow-btn{width:32px;height:32px;border-radius:50%;border:1px solid var(--border-light);background:var(--bg-btn);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-muted);transition:all 0.15s}
+.arrow-btn{width:32px;height:32px;border-radius:50%;border:2px solid #64b5f6;background:rgba(100,181,246,0.15);display:flex;align-items:center;justify-content:center;cursor:pointer;color:white;transition:all 0.15s}
 .date-text:hover{background:var(--hover-date)}
-.date-full{text-align:center;font-size:13px;color:var(--text-muted);margin-bottom:10px}
+.date-full{text-align:center;font-size:14px;font-weight:600;color:#cccccc;margin-bottom:10px}
 .badge-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
 .badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:12px;font-size:12px;font-weight:500}
 .badge .dot{width:6px;height:6px;border-radius:50%}
@@ -101,12 +101,12 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .badge-orange{background:#fff3cd;color:#856404}.badge-orange .dot{background:#e67e00}
 .badge-blue{background:#cce5ff;color:#004085}.badge-blue .dot{background:#007bff}
 .search-box{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--border-input);border-radius:8px;background:var(--bg-search);margin-bottom:10px}
-.search-box input{border:none;outline:none;background:transparent;font-size:14px;color:var(--text-main);width:100%;font-family:inherit}
-[data-theme="dark"] .search-box input::placeholder{color:rgba(255,255,255,0.4)}
+.search-box input{border:none;outline:none;background:transparent;font-size:14px;font-weight:700;color:white;width:100%;font-family:inherit}
+[data-theme="dark"] .search-box input::placeholder{color:rgba(255,255,255,0.7);font-weight:600}
 .search-box svg{flex-shrink:0}
 .roster{background:#1a1a2e;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08);margin-bottom:12px;border:2px solid #64b5f6}
 .roster-header{display:grid;grid-template-columns:1fr 30px 42px 48px 48px 48px;align-items:center;padding:10px 10px;background:rgba(255,255,255,0.05);border-bottom:1px solid rgba(255,255,255,0.1);gap:3px}
-.roster-header span{font-size:11px;font-weight:600;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:0.3px}
+.roster-header span{font-size:11px;font-weight:700;color:white;text-transform:uppercase;letter-spacing:0.3px}
 .roster-col{display:flex;flex-direction:column;align-items:center;gap:4px}
 .roster-col label{font-size:11px;font-weight:700;text-transform:uppercase;cursor:pointer;letter-spacing:0.3px}
 .label-name{color:#5b9bd5}
@@ -121,7 +121,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .coor-group-header:first-child{border-top:none}
 .coor-group-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
 .coor-group-name{font-size:13px;font-weight:700;color:white;letter-spacing:0.5px;text-transform:uppercase}
-.coor-group-count{font-size:11px;font-weight:500;color:rgba(255,255,255,0.5);margin-left:auto}
+.coor-group-count{font-size:11px;font-weight:600;color:rgba(255,255,255,0.8);margin-left:auto}
 .child-info{display:flex;align-items:center;min-width:0}
 .child-name-badge{display:flex;align-items:center;justify-content:center;padding:7px 6px;border-radius:8px;background:#1a1a2e;color:white;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;width:100%;letter-spacing:0.3px;line-height:1.1}
 .child-name-badge.male{background:#5b9bd5}
@@ -181,9 +181,9 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .child-detail-avatar{width:48px;height:48px;border-radius:50%;background:#444;color:white;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0;cursor:pointer}
 .child-detail-avatar.male{background:#5b9bd5}
 .child-detail-avatar.female{background:#e87da0}
-.gender-hint{font-size:10px;color:#888;margin-top:2px;font-style:italic}
+.gender-hint{font-size:10px;color:rgba(255,255,255,0.7);margin-top:2px;font-style:italic}
 .child-detail-name{font-size:22px;font-weight:700;color:white}
-.child-detail-diet{font-size:15px;color:rgba(255,255,255,0.7);margin-top:4px;font-weight:600}
+.child-detail-diet{font-size:15px;color:rgba(255,255,255,0.9);margin-top:4px;font-weight:700}
 .child-detail-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px}
 .child-detail-stat{border-radius:12px;padding:14px 8px;text-align:center}
 .child-detail-stat.val{font-size:36px;font-weight:700;line-height:1}
@@ -192,7 +192,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .child-detail-day{display:flex;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.08);gap:8px}
 .child-detail-day:last-child{border-bottom:none}
 .child-detail-day-date{font-size:14px;font-weight:700;color:white;width:58px;flex-shrink:0}
-.child-detail-day-name{font-size:13px;color:rgba(255,255,255,0.5);width:36px;flex-shrink:0}
+.child-detail-day-name{font-size:13px;font-weight:600;color:rgba(255,255,255,0.8);width:36px;flex-shrink:0}
 .child-detail-day-badges{display:flex;gap:5px;flex-wrap:wrap}
 .child-detail-day-badge{font-size:12px;font-weight:700;padding:3px 10px;border-radius:10px}
 .child-detail-close{width:100%;padding:10px;border:none;border-radius:8px;background:#1a1a2e;color:white;font-size:14px;font-weight:600;cursor:pointer;margin-top:12px;font-family:inherit}
@@ -203,7 +203,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .deleghe-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.08)}
 .deleghe-item:last-child{border-bottom:none}
 .deleghe-item-name{flex:1;font-size:15px;color:rgba(255,255,255,0.9);font-weight:600}
-.deleghe-item-remove{width:22px;height:22px;border-radius:50%;border:none;background:rgba(255,255,255,0.1);cursor:pointer;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.5);font-size:14px;font-weight:600;font-family:inherit;transition:all 0.15s;padding:0}
+.deleghe-item-remove{width:22px;height:22px;border-radius:50%;border:none;background:rgba(255,255,255,0.12);cursor:pointer;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.7);font-size:14px;font-weight:600;font-family:inherit;transition:all 0.15s;padding:0}
 .deleghe-item-remove:hover{background:#dc3545;color:white}
 .deleghe-add{display:flex;gap:6px;margin-top:8px}
 .deleghe-add input{flex:1;padding:8px 12px;border:2px solid white;border-radius:8px;font-size:14px;font-weight:700;font-family:inherit;outline:none;background:rgba(255,255,255,0.1);color:white}
@@ -212,7 +212,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .deleghe-add button{padding:8px 14px;border:none;border-radius:8px;background:rgba(255,255,255,0.15);color:white;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all 0.15s}
 .deleghe-add button:hover{background:rgba(255,255,255,0.25)}
 .deleghe-add button:active{transform:scale(0.97)}
-.deleghe-empty{font-size:14px;color:rgba(255,255,255,0.4);font-style:italic;text-align:center;padding:6px 0}
+.deleghe-empty{font-size:14px;font-weight:600;color:rgba(255,255,255,0.7);text-align:center;padding:6px 0}
 .contatto-call-btn{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:8px;background:#007bff;color:white;font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap;transition:all 0.15s;cursor:pointer}
 .contatto-call-btn:hover{background:#0056b3}
 .contatto-call-btn:active{transform:scale(0.97)}
@@ -237,7 +237,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .btn-section .btn-danger-fill{background:#dc3545;color:white;border-color:#dc3545}
 .btn-section .btn-success-fill{background:#28a745;color:white;border-color:#28a745}
 .sort-bar{display:flex;align-items:center;gap:6px;padding:10px 14px;margin-bottom:10px;flex-wrap:wrap;background:var(--bg-sort);border-radius:12px;box-shadow:var(--shadow-card);transition:background 0.3s}
-.sort-label{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.3px;margin-right:2px}
+.sort-label{font-size:12px;font-weight:700;color:#ffd700;text-transform:uppercase;letter-spacing:0.3px;margin-right:2px}
 .sort-btn{padding:5px 10px;border-radius:8px;border:1.5px solid var(--border-light);background:var(--bg-btn);font-size:11px;font-weight:600;color:var(--text-btn);cursor:pointer;font-family:inherit;transition:all 0.15s;white-space:nowrap}
 .sort-btn:hover{border-color:#999;color:var(--text-main)}
 .sort-btn.active{border-color:#1a1a2e;background:#1a1a2e;color:white}
@@ -262,8 +262,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .edit-name-btn:active{transform:scale(0.97)}
 .child-detail-name-row{display:flex;align-items:center;gap:8px}
 .stat-card{background:var(--bg-card);border-radius:12px;padding:16px;box-shadow:var(--shadow-card);display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;transition:background 0.3s}
-.stat-label{font-size:12px;color:var(--text-muted);font-weight:500}
-.stat-sub{font-size:11px;color:var(--text-light)}
+.stat-label{font-size:12px;color:#cccccc;font-weight:600}
+.stat-sub{font-size:11px;color:#bbbbbb;font-weight:600}
 .stat-value{font-size:36px;font-weight:700;line-height:1}
 .google-icon{display:inline-flex;vertical-align:middle}
 .msg-section{background:#1a1a2e;border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.08);border:2px solid #64b5f6}
@@ -272,12 +272,12 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .msg-box:last-child{margin-bottom:0}
 .msg-box-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
 .msg-box-class{font-size:13px;font-weight:700;color:white;letter-spacing:0.3px}
-.msg-box-count{font-size:10px;font-weight:600;color:rgba(255,255,255,0.4)}
+.msg-box-count{font-size:10px;font-weight:700;color:rgba(255,255,255,0.8)}
 .msg-item{display:flex;align-items:flex-start;gap:8px;padding:6px 8px;background:rgba(255,255,255,0.05);border-radius:8px;margin-bottom:4px;font-size:12px;color:rgba(255,255,255,0.9);line-height:1.4}
 .msg-item:last-child{margin-bottom:0}
 .msg-item-text{flex:1;word-break:break-word}
-.msg-item-time{font-size:10px;color:rgba(255,255,255,0.35);white-space:nowrap;flex-shrink:0;margin-top:1px}
-.msg-item-del{width:18px;height:18px;border-radius:50%;border:none;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.4);font-size:12px;font-weight:700;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s;line-height:1}
+.msg-item-time{font-size:10px;font-weight:600;color:rgba(255,255,255,0.7);white-space:nowrap;flex-shrink:0;margin-top:1px}
+.msg-item-del{width:18px;height:18px;border-radius:50%;border:none;background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);font-size:12px;font-weight:700;cursor:pointer;padding:0;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s;line-height:1}
 .msg-item-del:hover{background:#dc3545;color:white}
 .msg-input-row{display:flex;gap:6px;margin-top:6px}
 .msg-input-row input{flex:1;padding:8px 12px;border:2px solid white;border-radius:8px;background:rgba(255,255,255,0.1);color:white;font-size:14px;font-weight:700;font-family:inherit;outline:none}
@@ -2448,10 +2448,10 @@ function render(){
   html+='</div>';
 
   html+='<div class="card-dark"><div class="card-label">RICERCA BAMBINO</div>';
-  html+='<div class="search-box"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#aaa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="searchInput" placeholder="Cerca per nome o cognome..." value="'+esc(search)+'" oninput="App.setSearchLive(this.value)"/>';
-  html+='<button id="searchClearBtn" style="background:none;border:none;cursor:pointer;padding:2px;margin-left:4px'+(search?'':';display:none')+'" onclick="App.clearSearchLive()" title="Cancella ricerca"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
+  html+='<div class="search-box"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="searchInput" placeholder="Cerca per nome o cognome..." value="'+esc(search)+'" oninput="App.setSearchLive(this.value)"/>';
+  html+='<button id="searchClearBtn" style="background:none;border:none;cursor:pointer;padding:2px;margin-left:4px'+(search?'':';display:none')+'" onclick="App.clearSearchLive()" title="Cancella ricerca"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
   html+='</div>';
-  html+='<div id="searchNoResult" style="padding:8px 12px;font-size:13px;color:#888;display:none">Nessun bambino trovato</div>';
+  html+='<div id="searchNoResult" style="padding:8px 12px;font-size:14px;font-weight:700;color:white;display:none">Nessun bambino trovato</div>';
   html+='</div>';
 
   // Sort buttons
@@ -2480,7 +2480,7 @@ function render(){
   html+='<div class="roster-col"><label class="label-post">Post</label>'+(noEdit?'':'<input type="checkbox" class="select-all-check" '+(totalPost===children.length&&children.length>0?'checked':'')+' onchange="App.selectAllPost(this.checked)"/>')+'</div>';
   }
   html+='</div>';
-  if(dayOff){html+='<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.5);font-size:13px;font-style:italic">'+(isWeekend()?'Weekend \u2014 nessuna presenza':'Giorno festivo \u2014 nessuna presenza')+'</div>';}
+  if(dayOff){html+='<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.8);font-size:14px;font-weight:700">'+(isWeekend()?'Weekend \u2014 nessuna presenza':'Giorno festivo \u2014 nessuna presenza')+'</div>';}
   else if(locked){html+='<div style="text-align:center;padding:20px;color:#dc3545;font-size:13px;font-weight:600">\ud83d\udd12 Classe bloccata \u2014 Inserisci il PIN per modificare le presenze</div>';}
 
   var filtered=getFilteredChildren();
@@ -2574,7 +2574,7 @@ function render(){
   }
 
   // Version indicator - always visible
-  html+='<div style="position:fixed;bottom:4px;right:6px;font-size:9px;color:#aaa;z-index:9999;pointer-events:none;font-weight:600" id="versionBadge">v27</div>';
+  html+='<div style="position:fixed;bottom:4px;right:6px;font-size:9px;color:rgba(255,255,255,0.7);z-index:9999;pointer-events:none;font-weight:600" id="versionBadge">v27</div>';
 
   if(selectedChild>=0){html+=renderChildDetail(selectedChild);}
   if(showDietModal>=0){html+=renderDietModal(showDietModal);}
@@ -2648,7 +2648,7 @@ function renderChildDetail(idx){
   html+='<div class="child-detail-avatar '+gClassD+'" '+(locked?'':'onclick="App.toggleGender('+idx+')" ')+'title="'+(locked?'':'Clicca per cambiare genere')+'">'+getInitials(childName)+'</div>';
   html+='<div style="flex:1;min-width:0"><div class="child-detail-name-row"><span class="child-detail-name">'+esc(childName)+'</span>';
   var gLabel=getGender(idx)==='f'?'Femmina':'Maschio';
-  if(!locked&&!isCoordinatrice()){html+='<button class="edit-name-btn" onclick="App.toggleGender('+idx+')" title="Cambia genere">'+(getGender(idx)==='f'?'👧':'👦')+' '+gLabel+'</button>';html+='<button class="edit-name-btn" onclick="App.editChildFromDetail('+idx+')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Modifica</button>';}else{html+='<span style="font-size:12px;color:rgba(255,255,255,0.5)">'+(getGender(idx)==='f'?'👧':'👦')+' '+gLabel+'</span>';}
+  if(!locked&&!isCoordinatrice()){html+='<button class="edit-name-btn" onclick="App.toggleGender('+idx+')" title="Cambia genere">'+(getGender(idx)==='f'?'👧':'👦')+' '+gLabel+'</button>';html+='<button class="edit-name-btn" onclick="App.editChildFromDetail('+idx+')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Modifica</button>';}else{html+='<span style="font-size:12px;font-weight:600;color:rgba(255,255,255,0.8)">'+(getGender(idx)==='f'?'👧':'👦')+' '+gLabel+'</span>';}
   html+='</div>';
   if(hasDiet){html+='<div class="child-detail-diet">🍽 '+esc(dietInfo)+(childDiets[idx].note?' - '+esc(childDiets[idx].note):'')+'</div>';}
   var badgeAge=childAge[idx]||'';
@@ -2672,7 +2672,7 @@ function renderChildDetail(idx){
   html+='<div class="child-detail-stat" style="background:rgba(0,123,255,0.15)"><div class="val" style="color:#64b5f6">'+stats.post+'</div><div class="lbl" style="color:#64b5f6">Post</div><div style="font-size:13px;font-weight:700;color:#64b5f6;margin-top:2px">'+pctPost+'%</div></div>';
   html+='</div>';
 
-  html+='<div style="text-align:center;font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:14px">'+esc(monthLabel)+' · su '+schoolDaysSoFar+' giorni scolastici</div>';
+  html+='<div style="text-align:center;font-size:12px;font-weight:700;color:rgba(255,255,255,0.8);margin-bottom:14px">'+esc(monthLabel)+' · su '+schoolDaysSoFar+' giorni scolastici</div>';
 
   if(stats.days.length>0){
     html+='<div class="child-detail-sub">Giorni con registrazione</div>';
@@ -2691,7 +2691,7 @@ function renderChildDetail(idx){
       html+='</div></div>';
     }
   }else{
-    html+='<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.4);font-size:13px">Nessuna registrazione per questo mese</div>';
+    html+='<div style="text-align:center;padding:20px;color:rgba(255,255,255,0.8);font-size:14px;font-weight:700">Nessuna registrazione per questo mese</div>';
   }
 
   // Deleghe box
