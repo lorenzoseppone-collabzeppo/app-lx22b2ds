@@ -4769,9 +4769,9 @@ setInterval(function(){
 // Arcobaleno animato: attraversa l'header in diagonale da sinistra a destra, poi scompare, poi riappare
 (function(){
   var _rbPhase=0;
-  var _rbCycleDuration=320; // frames per ciclo completo (~16 secondi a 50ms)
-  var _rbCrossFrames=120;   // frames per attraversare da sinistra a destra (~6 secondi, veloce!)
-  // _rbHiddenFrames = 320-120 = 200 frames nascosto (~10 secondi di pausa)
+  var _rbCycleDuration=540; // frames per ciclo completo (~27 secondi a 50ms)
+  var _rbCrossFrames=340;   // frames per attraversare da sinistra a destra (~17 secondi)
+  // _rbHiddenFrames = 540-340 = 200 frames nascosto (~10 secondi di pausa)
   setInterval(function(){
     var outer=document.getElementById('headerRainbow');
     var inner=document.getElementById('headerRainbowInner');
