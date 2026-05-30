@@ -5153,6 +5153,34 @@ fetchWeather();
 
   // Prima passeggiata bambina dopo 12 secondi (sfasata dal bambino)
   setTimeout(startGirlWalk,12000);
+
+  // ---- PREVENZIONE SCROLL: nascondi bambini durante lo scroll iOS ----
+  var _scrollTimer=null;
+  var _scrollActive=false;
+  // Salva opacity originale dei bambini
+  function getWbRealOp(){ return wbState===ST_JOURNEY?1:0; }
+  function getWgRealOp(){ return wgState===ST_JOURNEY?1:0; }
+
+  window.addEventListener('scroll',function(){
+    if(!_scrollActive){
+      _scrollActive=true;
+      wbDiv.style.opacity='0';
+      wgDiv.style.opacity='0';
+    }
+    clearTimeout(_scrollTimer);
+    _scrollTimer=setTimeout(function(){
+      _scrollActive=false;
+      // Ripristina opacity solo se sono in viaggio
+      if(wbState===ST_JOURNEY){
+        var et2=1-Math.pow(1-Math.min(1,wbFrame/TOTAL_FRAMES),2);
+        wbDiv.style.opacity=et2>0.85?String(1-((et2-0.85)/0.15)*0.7):'1';
+      }
+      if(wgState===ST_JOURNEY){
+        var et3=1-Math.pow(1-Math.min(1,wgFrame/TOTAL_FRAMES),2);
+        wgDiv.style.opacity=et3>0.85?String(1-((et3-0.85)/0.15)*0.7):'1';
+      }
+    },150);
+  },{passive:true});
 })();
 // ---- FINE ALTALENA ----
 
