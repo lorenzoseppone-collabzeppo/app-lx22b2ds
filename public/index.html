@@ -5392,28 +5392,30 @@ fetchWeather();
     var hW=header.offsetWidth||300;
     var hH=header.offsetHeight||200;
 
-    // 4 traiettorie: sinistra→destra, SCENDONO AD ARCO ∩ (come meteora che cade)
-    // dir=+1 → punto di controllo SOPRA la retta → arco ∩ che scende
+    // 4 traiettorie: sinistra→destra, AD ARCO che scende come meteora
+    // La curva passa SOPRA la linea retta: la saetta si alza leggermente poi ricade
     var paths=[
-      {sx:0,  sy:0.10, ex:1,   ey:0.30, curve:0.06, dir:1 },  // alta: 10%→30%
-      {sx:0,  sy:0.25, ex:1,   ey:0.50, curve:0.05, dir:1 },  // media: 25%→50%
-      {sx:0,  sy:0.40, ex:1,   ey:0.70, curve:0.05, dir:1 },  // bassa: 40%→70%
-      {sx:0,  sy:0.60, ex:1,   ey:0.90, curve:0.04, dir:1 }   // bassissima: 60%→90%
+      {sx:0,  sy:0.10, ex:1,   ey:0.30, curve:0.07 },  // alta: 10%→30%
+      {sx:0,  sy:0.25, ex:1,   ey:0.50, curve:0.06 },  // media: 25%→50%
+      {sx:0,  sy:0.40, ex:1,   ey:0.70, curve:0.05 },  // bassa: 40%→70%
+      {sx:0,  sy:0.60, ex:1,   ey:0.90, curve:0.04 }   // bassissima: 60%→90%
     ];
     var p=paths[Math.floor(Math.random()*paths.length)];
 
     var sx=p.sx*hW, sy=p.sy*hH;
     var ex=p.ex*hW, ey=p.ey*hH;
 
-    // Punto di controllo: SOPRA la linea retta → arco ∩ che SCENDE
-    // Perpendicolare verso l'alto = (-dy, dx)
+    // Punto di controllo SOPRA la linea retta → la curva passa sopra → arco naturale
+    // Direzione perpendicolare verso l'alto per un vettore (dx,dy) che va a destra-in basso:
+    // Il punto di controllo deve avere Y MINORE del midpoint (piu in alto sullo schermo)
     var midX=(sx+ex)/2, midY=(sy+ey)/2;
     var dx=ex-sx, dy=ey-sy;
-    var perpX=-dy, perpY=dx;
-    var pLen=Math.sqrt(perpX*perpX+perpY*perpY)||1;
-    var curveAmt=p.curve*pLen*p.dir;
-    var cx=midX+perpX/pLen*curveAmt;
-    var cy=midY+perpY/pLen*curveAmt;
+    // Spostiamo il control point verso l'alto: cy = midY - curveAmt
+    var pLen=Math.sqrt(dx*dx+dy*dy)||1;
+    var curveAmt=p.curve*pLen;
+    // Il punto di controllo e' al centro X ma spostato verso l'alto (Y minore)
+    var cx=midX;
+    var cy=midY-curveAmt;
 
     m.p0x=sx;m.p0y=sy;
     m.p1x=cx;m.p1y=cy;
