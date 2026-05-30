@@ -5401,7 +5401,10 @@ fetchWeather();
       {sx:0,  sy:0.45, ex:1,   ey:0.75, curve:0.05 },  // bassa: 45%→75%
       {sx:0,  sy:0.02, ex:1,   ey:0.20, curve:0.08 },  // angolo alto-sinistra → destra
       {sx:0,  sy:0.60, ex:1,   ey:0.95, curve:0.04 },  // sinistra → angolo basso-destra
-      {sx:0,  sy:0.05, ex:0.8, ey:0.98, curve:0.06 }   // angolo alto-sinistra → basso
+      {sx:0,  sy:0.05, ex:0.8, ey:0.98, curve:0.06 },  // angolo alto-sinistra → basso
+      {sx:0,  sy:0.02, ex:1,   ey:0.10, curve:0.10 },  // ALTA ALTA - zona meteo (2%→10%)
+      {sx:0,  sy:0.80, ex:1,   ey:0.98, curve:0.03 },  // BASSA BASSA - zona login (80%→98%)
+      {sx:0,  sy:0.35, ex:1,   ey:0.58, curve:0.05 }   // media-centrale (35%→58%)
     ];
     var p=paths[Math.floor(Math.random()*paths.length)];
 
