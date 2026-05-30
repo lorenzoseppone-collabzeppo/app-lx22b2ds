@@ -2352,7 +2352,7 @@ function render(){
         }
       }
       html+='<div class="msg-input-row">';
-      html+='<input id="msgInput_'+mcId+'" placeholder="Scrivi comunicazione per '+esc(mcName.toUpperCase())+'..." onkeydown="if(event.key===\'Enter\')App.sendMessage(\''+mcId+'\')"/>';
+      html+='<input id="msgInput_'+mcId+'" style="color:#ffd700" placeholder="Scrivi comunicazione per '+esc(mcName.toUpperCase())+'..." onkeydown="if(event.key===\'Enter\')App.sendMessage(\''+mcId+'\')"/>';
       html+='<button onclick="App.sendMessage(\''+mcId+'\')">Invia</button>';
       html+='</div>';
       html+='</div>';
@@ -2409,7 +2409,7 @@ function render(){
       }
       // Input per rispondere alla coordinatrice
       html+='<div class="msg-input-row" style="margin-top:10px">';
-      html+='<input id="replyInput" placeholder="Rispondi alla coordinatrice..." onkeydown="if(event.key===\'Enter\')App.replyToCoordinatrice()"/>';
+      html+='<input id="replyInput" style="color:#ffd700" placeholder="Rispondi alla coordinatrice..." onkeydown="if(event.key===\'Enter\')App.replyToCoordinatrice()"/>';
       html+='<button onclick="App.replyToCoordinatrice()">Rispondi</button>';
       html+='</div>';
     }
@@ -2707,7 +2707,7 @@ function renderChildDetail(idx){
   }else{
     html+='<div class="deleghe-empty">Nessuna delega aggiunta</div>';
   }
-  if(!locked){html+='<div class="deleghe-add">';html+='<input type="text" id="delegaInput" placeholder="Nome delegato..." onkeydown="if(event.key===\'Enter\')App.addDelega('+idx+')"/>';html+='<button onclick="App.addDelega('+idx+')">Aggiungi</button>';html+='</div>';}
+  if(!locked){html+='<div class="deleghe-add">';html+='<input type="text" id="delegaInput" style="color:#ffd700" placeholder="Nome delegato..." onkeydown="if(event.key===\'Enter\')App.addDelega('+idx+')"/>';html+='<button onclick="App.addDelega('+idx+')">Aggiungi</button>';html+='</div>';}
   html+='</div>';
 
   // Contatti box
@@ -2730,7 +2730,7 @@ function renderChildDetail(idx){
   }else{
     html+='<div class="deleghe-empty">Nessun contatto aggiunto</div>';
   }
-  if(!locked){html+='<div class="contatto-add">';html+='<input type="text" id="contattoNome" placeholder="Nome (es. Mamma)..." onkeydown="if(event.key===\'Enter\')App.addContatto('+idx+')"/>';html+='<input type="tel" id="contattoTelefono" placeholder="Numero..." onkeydown="if(event.key===\'Enter\')App.addContatto('+idx+')"/>';html+='<input type="email" id="contattoEmail" placeholder="Email..." onkeydown="if(event.key===\'Enter\')App.addContatto('+idx+')"/>';html+='<button onclick="App.addContatto('+idx+')">Aggiungi</button>';html+='</div>';}
+  if(!locked){html+='<div class="contatto-add">';html+='<input type="text" id="contattoNome" style="color:#ffd700" placeholder="Nome (es. Mamma)..." onkeydown="if(event.key===\'Enter\')App.addContatto('+idx+')"/>';html+='<input type="tel" id="contattoTelefono" style="color:#ffd700" placeholder="Numero..." onkeydown="if(event.key===\'Enter\')App.addContatto('+idx+')"/>';html+='<input type="email" id="contattoEmail" style="color:#ffd700" placeholder="Email..." onkeydown="if(event.key===\'Enter\')App.addContatto('+idx+')"/>';html+='<button onclick="App.addContatto('+idx+')">Aggiungi</button>';html+='</div>';}
   html+='</div>';
 
   // Note per bambino
