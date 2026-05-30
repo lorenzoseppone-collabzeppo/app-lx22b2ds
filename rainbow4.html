@@ -5284,7 +5284,7 @@ fetchWeather();
   });
 })();
 
-// ---- 2 SAETTE METEORE con scia CSS che si dissolve ----
+// ---- 2 SAETTE METEORE con scia CSS che si dissolve — percorso ad arco ----
 // Contenitore dentro l'header con overflow:hidden → visibili SOLO nell'header
 (function(){
   var fadeTrails=[];
@@ -5294,14 +5294,11 @@ fetchWeather();
   function getContainer(){
     var header=document.querySelector('.header');
     if(!header) return null;
-    // Se il contenitore esiste ancora dentro l'header, riutilizzalo
     if(meteorContainer&&meteorContainer.parentNode===header) return meteorContainer;
-    // Altrimenti ricrealo (l'header è stato re-renderizzato)
     meteorContainer=document.createElement('div');
     meteorContainer.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden;pointer-events:none;z-index:50;border-radius:16px;';
     header.style.position='relative';
     header.appendChild(meteorContainer);
-    // Ri-attacha gli elementi meteora
     for(var i=0;i<meteors.length;i++){
       if(meteors[i].el.parentNode!==meteorContainer){
         meteorContainer.appendChild(meteors[i].el);
@@ -5310,19 +5307,47 @@ fetchWeather();
     return meteorContainer;
   }
 
-  function createFadeTrail(sx,sy,len,angle){
+  // Punto su curva bezier quadratica: B(t) = (1-t)²·P0 + 2(1-t)t·P1 + t²·P2
+  function bezierPt(t,p0x,p0y,p1x,p1y,p2x,p2y){
+    var u=1-t;
+    return {
+      x: u*u*p0x + 2*u*t*p1x + t*t*p2x,
+      y: u*u*p0y + 2*u*t*p1y + t*t*p2y
+    };
+  }
+
+  // Crea pezzetti di scia lungo la curva bezier (arc trail)
+  function createArcTrail(sx,sy,cx,cy,ex,ey){
     var c=getContainer();
     if(!c) return;
-    var d=document.createElement('div');
-    d.style.cssText='position:absolute;pointer-events:none;z-index:1;'+
-      'left:'+sx+'px;top:'+sy+'px;'+
-      'width:'+Math.round(len)+'px;height:3px;'+
-      'background:linear-gradient(to right,transparent 0%,rgba(255,255,255,0.55) 10%,rgba(255,255,240,0.9) 45%,rgba(255,255,255,1) 100%);'+
-      'transform:rotate('+angle+'deg);transform-origin:0 50%;'+
-      'opacity:0.95;border-radius:1px;'+
-      'box-shadow:0 0 10px 4px rgba(255,255,255,0.5),0 0 20px 6px rgba(255,255,200,0.25)';
-    c.appendChild(d);
-    fadeTrails.push({el:d, born:performance.now(), life:2200});
+    // Crea ~12-16 segmentetti lungo la curva
+    var segs=12+Math.floor(Math.random()*5);
+    for(var i=0;i<segs;i++){
+      var t0=i/segs;
+      var t1=(i+1)/segs;
+      var p0=bezierPt(t0,sx,sy,cx,cy,ex,ey);
+      var p1=bezierPt(t1,sx,sy,cx,cy,ex,ey);
+      var sdx=p1.x-p0.x, sdy=p1.y-p0.y;
+      var sLen=Math.sqrt(sdx*sdx+sdy*sdy);
+      if(sLen<1) continue;
+      var sAngle=Math.atan2(sdy,sdx)*180/Math.PI;
+
+      // Intensità: più forte vicino alla testa (t alto), più debole vicino alla coda (t basso)
+      var intensity=0.3+0.7*(i/segs);
+      var op=0.55+0.4*(i/segs);
+      var h=1.5+1.5*(i/segs); // spessore cresce verso la testa
+
+      var d=document.createElement('div');
+      d.style.cssText='position:absolute;pointer-events:none;z-index:1;'+
+        'left:'+p0.x.toFixed(1)+'px;top:'+p0.y.toFixed(1)+'px;'+
+        'width:'+Math.round(sLen+2)+'px;height:'+h.toFixed(1)+'px;'+
+        'background:linear-gradient(to right,transparent 0%,rgba(255,255,255,'+(intensity*0.4).toFixed(2)+') 15%,rgba(255,255,240,'+(intensity*0.8).toFixed(2)+') 50%,rgba(255,255,255,'+intensity.toFixed(2)+') 100%);'+
+        'transform:rotate('+sAngle.toFixed(1)+'deg);transform-origin:0 50%;'+
+        'opacity:'+op.toFixed(2)+';border-radius:1px;'+
+        'box-shadow:0 0 6px 2px rgba(255,255,255,'+(intensity*0.35).toFixed(2)+'),0 0 12px 4px rgba(255,255,200,'+(intensity*0.15).toFixed(2)+')';
+      c.appendChild(d);
+      fadeTrails.push({el:d, born:performance.now()+i*30, life:2400});
+    }
   }
 
   // Dissolvenza scie
@@ -5331,24 +5356,29 @@ fetchWeather();
     for(var i=fadeTrails.length-1;i>=0;i--){
       var tr=fadeTrails[i];
       var age=now-tr.born;
+      if(age<0) continue; // non ancora nato (delay per effetto progressivo)
       var t=Math.min(age/tr.life,1);
-      var op=0.95*(1-t*t);
+      var op=parseFloat(tr.el.getAttribute('data-base-op')||tr.el.style.opacity||'0.9');
+      if(!tr.el.getAttribute('data-base-op')){
+        tr.el.setAttribute('data-base-op',tr.el.style.opacity);
+      }
+      var newOp=op*(1-t*t);
       if(t>=1){
         if(tr.el.parentNode) tr.el.remove();
         fadeTrails.splice(i,1);
       } else {
-        tr.el.style.opacity=String(op);
+        tr.el.style.opacity=String(newOp);
       }
     }
   },40);
 
-  // Meteore (non appendiamo ancora — verranno messe nel contenitore al primo lancio)
+  // Meteore
   var meteors=[];
   for(var i=0;i<2;i++){
     var d=document.createElement('div');
     d.style.cssText='position:absolute;pointer-events:none;z-index:2;opacity:0';
     d.innerHTML='<svg width="180" height="14" viewBox="0 0 180 14" style="display:block;overflow:visible"><defs><linearGradient id="mt'+i+'" x1="0%" y1="50%" x2="100%" y2="50%"><stop offset="0%" stop-color="#ffffff" stop-opacity="0"/><stop offset="15%" stop-color="#fff8e1" stop-opacity="0.45"/><stop offset="40%" stop-color="#fffde7" stop-opacity="0.8"/><stop offset="70%" stop-color="#ffffff" stop-opacity="0.97"/><stop offset="100%" stop-color="#ffffff" stop-opacity="1"/></linearGradient><filter id="mg'+i+'" x="-150%" y="-150%" width="400%" height="400%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><line x1="0" y1="7" x2="140" y2="7" stroke="url(#mt'+i+')" stroke-width="4" stroke-linecap="round" filter="url(#mg'+i+')"/><circle cx="155" cy="7" r="5.5" fill="#ffffff" filter="url(#mg'+i+')"/></svg>';
-    meteors.push({el:d, svg:d.querySelector('svg'), active:false, startX:0, startY:0, dx:0, dy:0, dur:0, start:0, sx:0, sy:0, angle:0, len:0});
+    meteors.push({el:d, svg:d.querySelector('svg'), active:false, dur:0, start:0, p0x:0,p0y:0,p1x:0,p1y:0,p2x:0,p2y:0});
   }
 
   function launchMeteor(m){
@@ -5357,10 +5387,8 @@ fetchWeather();
     var header=c.parentElement;
     if(!header) return;
 
-    // Assicurati che la saetta sia nel contenitore
     if(m.el.parentNode!==c) c.appendChild(m.el);
 
-    // Coordinate relative all'header (0,0 = angolo alto-sinistra dell'header)
     var hW=header.offsetWidth||300;
     var hH=header.offsetHeight||200;
 
@@ -5369,40 +5397,44 @@ fetchWeather();
     var sx,sy,ex,ey;
 
     if(pathType===0){
-      // Ripida: alto-sinistra verso basso-destra (~50-60 gradi)
       sx=-10;sy=-Math.random()*hH*0.08;
       ex=hW*0.5+Math.random()*hW*0.3;ey=hH+10;
     } else if(pathType===1){
-      // Media: parte dall'alto e scende diagonalmente (~40 gradi)
       sx=Math.random()*hW*0.2-10;sy=-Math.random()*hH*0.08;
       ex=hW*0.6+Math.random()*hW*0.3;ey=hH+10;
     } else if(pathType===2){
-      // Più inclinata: parte da sinistra e attraversa tutto (~35 gradi)
       sx=-10;sy=hH*0.05+Math.random()*hH*0.1;
       ex=hW+10;ey=hH*0.7+Math.random()*hH*0.25;
     } else {
-      // Molto ripida: quasi verticale ma diagonale (~65-70 gradi)
       sx=Math.random()*hW*0.6;sy=-Math.random()*hH*0.08;
       ex=sx+hW*0.15+Math.random()*hW*0.15;ey=hH+10;
     }
 
-    var dx=ex-sx,dy=ey-sy;
-    var len=Math.sqrt(dx*dx+dy*dy);
-    var angle=Math.atan2(dy,dx)*180/Math.PI;
+    // Punto di controllo per l'arco: spostato perpendicolarmente rispetto alla retta
+    var midX=(sx+ex)/2, midY=(sy+ey)/2;
+    var dx=ex-sx, dy=ey-sy;
+    var perpX=-dy, perpY=dx; // perpendicolare
+    var pLen=Math.sqrt(perpX*perpX+perpY*perpY)||1;
+    // Curvatura casuale: 15-35% della lunghezza, direzione casuale (sinistra o destra)
+    var curveAmt=(0.15+Math.random()*0.2)*(Math.random()<0.5?1:-1)*pLen;
+    var cx=midX+perpX/pLen*curveAmt;
+    var cy=midY+perpY/pLen*curveAmt;
 
-    m.startX=sx;m.startY=sy;
-    m.sx=sx;m.sy=sy;m.angle=angle;m.len=len;
-    m.dx=dx;m.dy=dy;
+    m.p0x=sx;m.p0y=sy;
+    m.p1x=cx;m.p1y=cy;
+    m.p2x=ex;m.p2y=ey;
     m.dur=700+Math.random()*500;
     m.start=performance.now();
     m.active=true;
 
-    m.svg.style.transform='rotate('+angle+'deg)';
+    // Angolo iniziale per orientare la SVG
+    var initAngle=Math.atan2(cy-sy,cx-sx)*180/Math.PI;
+    m.svg.style.transform='rotate('+initAngle.toFixed(1)+'deg)';
     m.svg.style.transformOrigin='155px 7px';
     m.el.style.opacity='1';
 
-    // Crea la scia subito
-    createFadeTrail(sx,sy,len,angle);
+    // Crea la scia ad arco
+    createArcTrail(sx,sy,cx,cy,ex,ey);
   }
 
   setInterval(function(){
@@ -5411,13 +5443,20 @@ fetchWeather();
       if(!m.active) continue;
       var elapsed=performance.now()-m.start;
       var t=Math.min(elapsed/m.dur,1);
-      var et=1-Math.pow(1-t,2);
-      var x=m.startX+m.dx*et;
-      var y=m.startY+m.dy*et;
+      var et=1-Math.pow(1-t,2); // ease-out
+
+      // Posizione sulla curva bezier
+      var pt=bezierPt(et,m.p0x,m.p0y,m.p1x,m.p1y,m.p2x,m.p2y);
+      m.el.style.left=pt.x.toFixed(1)+'px';
+      m.el.style.top=pt.y.toFixed(1)+'px';
+
+      // Ruota la SVG seguendo la tangente della curva
+      var pt2=bezierPt(Math.min(et+0.02,1),m.p0x,m.p0y,m.p1x,m.p1y,m.p2x,m.p2y);
+      var angle=Math.atan2(pt2.y-pt.y,pt2.x-pt.x)*180/Math.PI;
+      m.svg.style.transform='rotate('+angle.toFixed(1)+'deg)';
+
       var op=1;
       if(t>0.6) op=1-(t-0.6)/0.4;
-      m.el.style.left=x+'px';
-      m.el.style.top=y+'px';
       m.el.style.opacity=String(op);
       if(t>=1){m.active=false;m.el.style.opacity='0';}
     }
