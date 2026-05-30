@@ -5392,24 +5392,23 @@ fetchWeather();
     var hW=header.offsetWidth||300;
     var hH=header.offsetHeight||200;
 
-    // 4 traiettorie fisse come da foto (linee rosse)
-    // dir: -1 = arco ∩ (ponte, sale poi scende), +1 = valle ∪ (scende poi risale)
-    // curve: 0.05=poco, 0.10=medio, 0.15=molto
+    // 4 traiettorie come da foto 0333: sinistra→destra, in discesa, arco ∩ leggero
+    // Tutte con curva SOPRA la linea retta (arco ∩ molto delicato)
     var paths=[
-      {sx:0,  sy:0.12, ex:1,   ey:0.32, curve:0.06, dir:-1},  // alta: 12%→32%, arco ∩ poco
-      {sx:0,  sy:0.28, ex:1,   ey:0.55, curve:0.10, dir:-1},  // media: 28%→55%, arco ∩ medio
-      {sx:0,  sy:0.50, ex:1,   ey:0.80, curve:0.10, dir:1 },  // bassa: 50%→80%, valle ∪ medio
-      {sx:0,  sy:0.70, ex:1,   ey:0.95, curve:0.08, dir:1 }   // bassissima: 70%→95%, valle ∪ medio
+      {sx:0,  sy:0.10, ex:1,   ey:0.30, curve:0.06, dir:-1},  // alta: 10%→30%, arco ∩ delicato
+      {sx:0,  sy:0.25, ex:1,   ey:0.50, curve:0.05, dir:-1},  // media: 25%→50%, arco ∩ delicato
+      {sx:0,  sy:0.40, ex:1,   ey:0.70, curve:0.05, dir:-1},  // bassa: 40%→70%, arco ∩ delicato
+      {sx:0,  sy:0.60, ex:1,   ey:0.90, curve:0.04, dir:-1}   // bassissima: 60%→90%, arco ∩ quasi retta
     ];
     var p=paths[Math.floor(Math.random()*paths.length)];
 
     var sx=p.sx*hW, sy=p.sy*hH;
     var ex=p.ex*hW, ey=p.ey*hH;
 
-    // Punto di controllo per l'arco bezier
+    // Punto di controllo bezier: arco ∩ (SOPRA la linea retta)
     var midX=(sx+ex)/2, midY=(sy+ey)/2;
     var dx=ex-sx, dy=ey-sy;
-    // Perpendicolare: dir=-1 sposta sopra (∩), dir=+1 sposta sotto (∪)
+    // Perpendicolare verso l'alto (per arco ∩): (dy, -dx) con dir=-1
     var perpX=dy, perpY=-dx;
     var pLen=Math.sqrt(perpX*perpX+perpY*perpY)||1;
     var curveAmt=p.curve*pLen*p.dir;
