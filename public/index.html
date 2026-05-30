@@ -5285,20 +5285,44 @@ fetchWeather();
 })();
 
 // ---- 2 SAETTE METEORE con scia CSS che si dissolve ----
+// Contenitore dentro l'header con overflow:hidden → visibili SOLO nell'header
 (function(){
-  // Scie: div con gradiente CSS (affidabile su Safari)
   var fadeTrails=[];
+  var meteorContainer=null;
+
+  // Crea/ritrova il contenitore di clipping dentro l'header
+  function getContainer(){
+    var header=document.querySelector('.header');
+    if(!header) return null;
+    // Se il contenitore esiste ancora dentro l'header, riutilizzalo
+    if(meteorContainer&&meteorContainer.parentNode===header) return meteorContainer;
+    // Altrimenti ricrealo (l'header è stato re-renderizzato)
+    meteorContainer=document.createElement('div');
+    meteorContainer.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;overflow:hidden;pointer-events:none;z-index:50;border-radius:16px;';
+    header.style.position='relative';
+    header.appendChild(meteorContainer);
+    // Ri-attacha gli elementi meteora
+    for(var i=0;i<meteors.length;i++){
+      if(meteors[i].el.parentNode!==meteorContainer){
+        meteorContainer.appendChild(meteors[i].el);
+      }
+    }
+    return meteorContainer;
+  }
 
   function createFadeTrail(sx,sy,len,angle){
+    var c=getContainer();
+    if(!c) return;
     var d=document.createElement('div');
-    d.style.cssText='position:absolute;pointer-events:none;z-index:9996;'+
+    d.style.cssText='position:absolute;pointer-events:none;z-index:1;'+
       'left:'+sx+'px;top:'+sy+'px;'+
-      'width:'+Math.round(len)+'px;height:2px;'+
-      'background:linear-gradient(to right,transparent 0%,rgba(255,255,255,0.3) 15%,rgba(255,255,200,0.6) 50%,rgba(255,255,255,0.85) 100%);'+
+      'width:'+Math.round(len)+'px;height:3px;'+
+      'background:linear-gradient(to right,transparent 0%,rgba(255,255,255,0.55) 10%,rgba(255,255,240,0.9) 45%,rgba(255,255,255,1) 100%);'+
       'transform:rotate('+angle+'deg);transform-origin:0 50%;'+
-      'opacity:0.7;border-radius:1px';
-    document.body.appendChild(d);
-    fadeTrails.push({el:d, born:performance.now(), life:1800});
+      'opacity:0.95;border-radius:1px;'+
+      'box-shadow:0 0 10px 4px rgba(255,255,255,0.5),0 0 20px 6px rgba(255,255,200,0.25)';
+    c.appendChild(d);
+    fadeTrails.push({el:d, born:performance.now(), life:2200});
   }
 
   // Dissolvenza scie
@@ -5308,7 +5332,7 @@ fetchWeather();
       var tr=fadeTrails[i];
       var age=now-tr.born;
       var t=Math.min(age/tr.life,1);
-      var op=0.7*(1-t*t);
+      var op=0.95*(1-t*t);
       if(t>=1){
         if(tr.el.parentNode) tr.el.remove();
         fadeTrails.splice(i,1);
@@ -5318,24 +5342,27 @@ fetchWeather();
     }
   },40);
 
-  // Meteore
+  // Meteore (non appendiamo ancora — verranno messe nel contenitore al primo lancio)
   var meteors=[];
   for(var i=0;i<2;i++){
     var d=document.createElement('div');
-    d.style.cssText='position:absolute;pointer-events:none;z-index:9997;opacity:0';
-    d.innerHTML='<svg width="160" height="10" viewBox="0 0 160 10" style="display:block;overflow:visible"><defs><linearGradient id="mt'+i+'" x1="0%" y1="50%" x2="100%" y2="50%"><stop offset="0%" stop-color="#ffffff" stop-opacity="0"/><stop offset="20%" stop-color="#ffe4b5" stop-opacity="0.3"/><stop offset="50%" stop-color="#fffacd" stop-opacity="0.7"/><stop offset="80%" stop-color="#ffffff" stop-opacity="0.95"/><stop offset="100%" stop-color="#ffffff" stop-opacity="1"/></linearGradient><filter id="mg'+i+'" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><line x1="0" y1="5" x2="130" y2="5" stroke="url(#mt'+i+')" stroke-width="3" stroke-linecap="round"/><circle cx="140" cy="5" r="4" fill="#ffffff" filter="url(#mg'+i+')"/></svg>';
-    document.body.appendChild(d);
+    d.style.cssText='position:absolute;pointer-events:none;z-index:2;opacity:0';
+    d.innerHTML='<svg width="180" height="14" viewBox="0 0 180 14" style="display:block;overflow:visible"><defs><linearGradient id="mt'+i+'" x1="0%" y1="50%" x2="100%" y2="50%"><stop offset="0%" stop-color="#ffffff" stop-opacity="0"/><stop offset="15%" stop-color="#fff8e1" stop-opacity="0.45"/><stop offset="40%" stop-color="#fffde7" stop-opacity="0.8"/><stop offset="70%" stop-color="#ffffff" stop-opacity="0.97"/><stop offset="100%" stop-color="#ffffff" stop-opacity="1"/></linearGradient><filter id="mg'+i+'" x="-150%" y="-150%" width="400%" height="400%"><feGaussianBlur stdDeviation="6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><line x1="0" y1="7" x2="140" y2="7" stroke="url(#mt'+i+')" stroke-width="4" stroke-linecap="round" filter="url(#mg'+i+')"/><circle cx="155" cy="7" r="5.5" fill="#ffffff" filter="url(#mg'+i+')"/></svg>';
     meteors.push({el:d, svg:d.querySelector('svg'), active:false, startX:0, startY:0, dx:0, dy:0, dur:0, start:0, sx:0, sy:0, angle:0, len:0});
   }
 
   function launchMeteor(m){
-    var header=document.querySelector('.header');
+    var c=getContainer();
+    if(!c) return;
+    var header=c.parentElement;
     if(!header) return;
-    var hr=header.getBoundingClientRect();
-    var hLeft=hr.left+window.pageXOffset;
-    var hTop=hr.top+window.pageYOffset;
-    var hW=hr.width||300;
-    var hH=hr.height||200;
+
+    // Assicurati che la saetta sia nel contenitore
+    if(m.el.parentNode!==c) c.appendChild(m.el);
+
+    // Coordinate relative all'header (0,0 = angolo alto-sinistra dell'header)
+    var hW=header.offsetWidth||300;
+    var hH=header.offsetHeight||200;
 
     // Percorsi casuali: sempre dall'alto al basso in diagonale
     var pathType=Math.floor(Math.random()*4);
@@ -5343,20 +5370,20 @@ fetchWeather();
 
     if(pathType===0){
       // Ripida: alto-sinistra verso basso-destra (~50-60 gradi)
-      sx=hLeft-40;sy=hTop-Math.random()*hH*0.1;
-      ex=hLeft+hW*0.5+Math.random()*hW*0.3;ey=hTop+hH+10;
+      sx=-10;sy=-Math.random()*hH*0.08;
+      ex=hW*0.5+Math.random()*hW*0.3;ey=hH+10;
     } else if(pathType===1){
       // Media: parte dall'alto e scende diagonalmente (~40 gradi)
-      sx=hLeft+Math.random()*hW*0.2-40;sy=hTop-Math.random()*hH*0.1;
-      ex=hLeft+hW*0.6+Math.random()*hW*0.3;ey=hTop+hH+10;
+      sx=Math.random()*hW*0.2-10;sy=-Math.random()*hH*0.08;
+      ex=hW*0.6+Math.random()*hW*0.3;ey=hH+10;
     } else if(pathType===2){
       // Più inclinata: parte da sinistra e attraversa tutto (~35 gradi)
-      sx=hLeft-40;sy=hTop+hH*0.05+Math.random()*hH*0.1;
-      ex=hLeft+hW+40;ey=hTop+hH*0.7+Math.random()*hH*0.25;
+      sx=-10;sy=hH*0.05+Math.random()*hH*0.1;
+      ex=hW+10;ey=hH*0.7+Math.random()*hH*0.25;
     } else {
       // Molto ripida: quasi verticale ma diagonale (~65-70 gradi)
-      sx=hLeft+Math.random()*hW*0.6;sy=hTop-Math.random()*hH*0.1;
-      ex=sx+hW*0.15+Math.random()*hW*0.15;ey=hTop+hH+10;
+      sx=Math.random()*hW*0.6;sy=-Math.random()*hH*0.08;
+      ex=sx+hW*0.15+Math.random()*hW*0.15;ey=hH+10;
     }
 
     var dx=ex-sx,dy=ey-sy;
@@ -5371,10 +5398,10 @@ fetchWeather();
     m.active=true;
 
     m.svg.style.transform='rotate('+angle+'deg)';
-    m.svg.style.transformOrigin='140px 5px';
+    m.svg.style.transformOrigin='155px 7px';
     m.el.style.opacity='1';
 
-    // Crea la scia subito (sotto la saetta, visibile mentre passa)
+    // Crea la scia subito
     createFadeTrail(sx,sy,len,angle);
   }
 
@@ -5396,9 +5423,9 @@ fetchWeather();
     }
   },16);
 
-  // Ogni meteor parte indipendentemente a tempi casuali
+  // Ogni meteor parte indipendentemente a tempi casuali (molto rilassato)
   function scheduleMeteor(m){
-    var delay=6000+Math.random()*12000; // 6-18 secondi, più rilassato
+    var delay=12000+Math.random()*20000; // 12-32 secondi
     setTimeout(function(){
       if(!m.active) launchMeteor(m);
       scheduleMeteor(m);
@@ -5406,7 +5433,7 @@ fetchWeather();
   }
 
   scheduleMeteor(meteors[0]);
-  setTimeout(function(){scheduleMeteor(meteors[1]);},1500);
+  setTimeout(function(){scheduleMeteor(meteors[1]);},8000);
 })();
 // ---- FINE SAETTE METEORE ----
 
