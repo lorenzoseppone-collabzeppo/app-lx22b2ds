@@ -5284,33 +5284,31 @@ fetchWeather();
   });
 })();
 
-// ---- 2 SAETTE METEORE con scia continua che si dissolve ----
+// ---- 2 SAETTE METEORE con scia CSS che si dissolve ----
 (function(){
-  // Scie persistenti: una per ogni meteor, linea continua che svanisce
+  // Scie: div con gradiente CSS (affidabile su Safari)
   var fadeTrails=[];
 
-  function createFadeTrail(sx,sy,ex,ey,angle){
-    var len=Math.sqrt((ex-sx)*(ex-sx)+(ey-sy)*(ey-sy));
+  function createFadeTrail(sx,sy,len,angle){
     var d=document.createElement('div');
-    d.style.cssText='position:absolute;pointer-events:none;z-index:9996;left:'+sx+'px;top:'+sy+'px;opacity:0.8';
-    // SVG: una linea bianca sottile con gradiente che svanisce
-    d.innerHTML='<svg width="'+Math.round(len+10)+'" height="6" viewBox="0 0 '+Math.round(len+10)+' 6" style="display:block;overflow:visible"><defs><linearGradient id="ft'+fadeTrails.length+'" x1="0%" y1="50%" x2="100%" y2="50%"><stop offset="0%" stop-color="#ffffff" stop-opacity="0"/><stop offset="15%" stop-color="#ffffff" stop-opacity="0.2"/><stop offset="60%" stop-color="#fffacd" stop-opacity="0.5"/><stop offset="100%" stop-color="#ffffff" stop-opacity="0.7"/></linearGradient></defs><line x1="0" y1="3" x2="'+Math.round(len)+'" y2="3" stroke="url(#ft'+fadeTrails.length+')" stroke-width="1.5" stroke-linecap="round"/></svg>';
-    var svg=d.querySelector('svg');
-    svg.style.transform='rotate('+angle+'deg)';
-    svg.style.transformOrigin='0px 3px';
+    d.style.cssText='position:absolute;pointer-events:none;z-index:9996;'+
+      'left:'+sx+'px;top:'+sy+'px;'+
+      'width:'+Math.round(len)+'px;height:2px;'+
+      'background:linear-gradient(to right,transparent 0%,rgba(255,255,255,0.1) 10%,rgba(255,255,200,0.35) 50%,rgba(255,255,255,0.55) 100%);'+
+      'transform:rotate('+angle+'deg);transform-origin:0 50%;'+
+      'opacity:0.7;border-radius:1px';
     document.body.appendChild(d);
-    fadeTrails.push({el:d, born:performance.now(), life:1500});
+    fadeTrails.push({el:d, born:performance.now(), life:1800});
   }
 
-  // Anima dissolvenza scie
+  // Dissolvenza scie
   setInterval(function(){
     var now=performance.now();
     for(var i=fadeTrails.length-1;i>=0;i--){
       var tr=fadeTrails[i];
       var age=now-tr.born;
       var t=Math.min(age/tr.life,1);
-      // Dissolvenza dolce
-      var op=0.8*(1-t*t);
+      var op=0.7*(1-t*t);
       if(t>=1){
         if(tr.el.parentNode) tr.el.remove();
         fadeTrails.splice(i,1);
@@ -5318,7 +5316,7 @@ fetchWeather();
         tr.el.style.opacity=String(op);
       }
     }
-  },30);
+  },40);
 
   // Meteore
   var meteors=[];
@@ -5327,7 +5325,7 @@ fetchWeather();
     d.style.cssText='position:absolute;pointer-events:none;z-index:9997;opacity:0';
     d.innerHTML='<svg width="140" height="8" viewBox="0 0 140 8" style="display:block;overflow:visible"><defs><linearGradient id="mt'+i+'" x1="0%" y1="50%" x2="100%" y2="50%"><stop offset="0%" stop-color="#ffffff" stop-opacity="0"/><stop offset="30%" stop-color="#ffe4b5" stop-opacity="0.15"/><stop offset="70%" stop-color="#fffacd" stop-opacity="0.6"/><stop offset="90%" stop-color="#ffffff" stop-opacity="0.9"/><stop offset="100%" stop-color="#ffffff" stop-opacity="1"/></linearGradient><filter id="mg'+i+'" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><line x1="0" y1="4" x2="120" y2="4" stroke="url(#mt'+i+')" stroke-width="2.5" stroke-linecap="round"/><circle cx="130" cy="4" r="3" fill="#ffffff" filter="url(#mg'+i+')"/></svg>';
     document.body.appendChild(d);
-    meteors.push({el:d, svg:d.querySelector('svg'), active:false, startX:0, startY:0, dx:0, dy:0, dur:0, start:0, sx:0, sy:0, ex:0, ey:0});
+    meteors.push({el:d, svg:d.querySelector('svg'), active:false, startX:0, startY:0, dx:0, dy:0, dur:0, start:0, sx:0, sy:0, angle:0, len:0});
   }
 
   function launchMeteor(m){
@@ -5345,17 +5343,23 @@ fetchWeather();
     var ex=hLeft+hW+40;
     var ey=sy+hH*0.3+Math.random()*hH*0.3;
 
+    var dx=ex-sx,dy=ey-sy;
+    var len=Math.sqrt(dx*dx+dy*dy);
+    var angle=Math.atan2(dy,dx)*180/Math.PI;
+
     m.startX=sx;m.startY=sy;
-    m.sx=sx;m.sy=sy;m.ex=ex;m.ey=ey;
-    m.dx=ex-sx;m.dy=ey-sy;
+    m.sx=sx;m.sy=sy;m.angle=angle;m.len=len;
+    m.dx=dx;m.dy=dy;
     m.dur=700+Math.random()*500;
     m.start=performance.now();
     m.active=true;
 
-    var angle=Math.atan2(m.dy,m.dx)*180/Math.PI;
     m.svg.style.transform='rotate('+angle+'deg)';
     m.svg.style.transformOrigin='130px 4px';
     m.el.style.opacity='1';
+
+    // Crea la scia subito (sotto la saetta, visibile mentre passa)
+    createFadeTrail(sx,sy,len,angle);
   }
 
   setInterval(function(){
@@ -5372,13 +5376,7 @@ fetchWeather();
       m.el.style.left=x+'px';
       m.el.style.top=y+'px';
       m.el.style.opacity=String(op);
-      if(t>=1){
-        m.active=false;
-        m.el.style.opacity='0';
-        // Lascia la scia che si dissolve
-        var angle=Math.atan2(m.dy,m.dx)*180/Math.PI;
-        createFadeTrail(m.sx,m.sy,m.ex,m.ey,angle);
-      }
+      if(t>=1){m.active=false;m.el.style.opacity='0';}
     }
   },16);
 
