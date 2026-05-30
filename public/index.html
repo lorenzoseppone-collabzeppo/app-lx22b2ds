@@ -5392,8 +5392,8 @@ fetchWeather();
     var hW=header.offsetWidth||300;
     var hH=header.offsetHeight||200;
 
-    // 3 traiettorie come da foto 0333: sinistra→destra, VALLE ∪ (curva verso il basso)
-    // Il centro della curva è PIÙ IN BASSO dei bordi
+    // Traiettorie AD ARCO ∩: parte sinistra alta → arriva destra bassa, curva ad arco
+    // Il centro della curva è PIÙ IN ALTO dei bordi (arco, non sorriso)
     var paths=[
       {sx:0,  sy:0.10, ex:1,   ey:0.30, curve:0.07 },  // alta: 10%→30%
       {sx:0,  sy:0.25, ex:1,   ey:0.50, curve:0.06 },  // media: 25%→50%
@@ -5404,15 +5404,15 @@ fetchWeather();
     var sx=p.sx*hW, sy=p.sy*hH;
     var ex=p.ex*hW, ey=p.ey*hH;
 
-    // Punto di controllo SOTTO la linea retta → VALLE ∪ (curva verso il basso)
-    // Il control point ha Y MAGGIORE del midpoint (piu in basso sullo schermo)
+    // Punto di controllo SOPRA la linea retta → ARCO ∩ (curva verso l'alto)
+    // Il control point ha Y MINORE del midpoint (piu in alto sullo schermo)
     var midX=(sx+ex)/2, midY=(sy+ey)/2;
     var dx=ex-sx, dy=ey-sy;
     var pLen=Math.sqrt(dx*dx+dy*dy)||1;
     var curveAmt=p.curve*pLen;
-    // Control point al centro X ma SOTTO (Y maggiore = piu in basso sullo schermo)
+    // Control point al centro X ma SOPRA (Y minore = piu in alto sullo schermo)
     var cx=midX;
-    var cy=midY+curveAmt;
+    var cy=midY-curveAmt;
 
     m.p0x=sx;m.p0y=sy;
     m.p1x=cx;m.p1y=cy;
