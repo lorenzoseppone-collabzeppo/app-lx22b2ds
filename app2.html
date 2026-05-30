@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
 <title>Registro di Classe</title>
-<meta name="version" content="2025-05-30-v62-giostra-sotto-header"/>
+<meta name="version" content="2025-05-30-v63-senza-giostra"/>
 <meta name="description" content="Registro di Classe per la gestione della classe"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a1a2e'><path d='M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z'/></svg>"/>
 <style>
@@ -306,10 +306,6 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .altalena svg{display:block;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.15))}
 @keyframes colorShift{0%{filter:drop-shadow(0 2px 6px rgba(0,0,0,0.18)) hue-rotate(0deg)}33%{filter:drop-shadow(0 2px 6px rgba(0,0,0,0.18)) hue-rotate(90deg)}66%{filter:drop-shadow(0 2px 6px rgba(0,0,0,0.18)) hue-rotate(200deg)}100%{filter:drop-shadow(0 2px 6px rgba(0,0,0,0.18)) hue-rotate(360deg)}}
 
-.giostra{position:fixed;pointer-events:none;z-index:9997}
-.giostra svg{display:block;filter:drop-shadow(0 3px 10px rgba(0,0,0,0.2))}
-@keyframes giostraSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-@keyframes giostraHorseBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 .falling-star{position:absolute;pointer-events:none;z-index:1;color:#ffd700;opacity:0;animation:starFall var(--star-dur,5s) ease-in var(--star-delay,0s) infinite;font-size:var(--star-size,14px);text-shadow:0 0 8px var(--star-glow,#ffd700)}
 @keyframes starFall{0%{opacity:0;transform:translateY(-10px) rotate(0deg) scale(0.3)}8%{opacity:1;transform:translateY(10px) rotate(40deg) scale(1)}30%{opacity:0.85;transform:translateY(var(--star-mid,80px)) rotate(150deg) scale(0.95)}70%{opacity:0.5;transform:translateY(var(--star-far,160px)) rotate(300deg) scale(0.8)}90%{opacity:0.15;transform:translateY(var(--star-end,220px)) rotate(350deg) scale(0.5)}100%{opacity:0;transform:translateY(var(--star-end,220px)) rotate(360deg) scale(0.2)}}
 </style>
@@ -317,7 +313,6 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 <body>
 <div class="bfly resting" id="bfly"></div>
 <div class="altalena" id="altalena"></div>
-<div class="giostra" id="giostra"></div>
 <div id="app" class="app"></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
@@ -2179,7 +2174,7 @@ function render(){
   var displayClassName=(currentClassId&&classes[currentClassId])?classes[currentClassId].name:className;
   if(editingClass&&!isCoordinatrice()){html+='<input class="class-name-input" id="classInput" value="'+esc(displayClassName.toUpperCase())+'" onblur="App.finishEditClass()" onkeydown="if(event.key===\'Enter\')App.finishEditClass()"/>';}
   else{html+='<div class="class-name"'+(isCoordinatrice()?' style="cursor:default"':' onclick="App.startEditClass()" title="Clicca per modificare"')+'>'+esc(displayClassName.toUpperCase())+'</div>';}
-  html+='<div class="class-sub">REGISTRO DI CLASSE<span style="font-size:9px;opacity:0.4;margin-left:6px">v62</span>'+(isCoordinatrice()&&regularClassCount()>0?' · '+regularClassCount()+' classi':'')+'</div>';
+  html+='<div class="class-sub">REGISTRO DI CLASSE<span style="font-size:9px;opacity:0.4;margin-left:6px">v63</span>'+(isCoordinatrice()&&regularClassCount()>0?' · '+regularClassCount()+' classi':'')+'</div>';
   html+='<div class="header-teachers">';
   if(isCoordinatrice()){
     // COORDINATRICE: un solo campo "Coordinatrice" + campo PIN
@@ -4610,209 +4605,6 @@ fetchWeather();
 })();
 // ---- FINE ALTALENA ----
 
-// ---- GIOSTRA CON CAVALLI ----
-// I cavalli si muovono da destra a sinistra (come una giostra vera vista da lato)
-(function(){
-  var el=document.getElementById('giostra');
-  if(!el) return;
-
-  // Genera SVG di un cavallo da giostra, centrato a x=0, rivolto a sinistra
-  function mkHorse(bc,bs,mc,sc){
-    return '<g class="ghorse">'+
-      // Palo dorato (dal piano fino al tetto)
-      '<line x1="0" y1="168" x2="0" y2="75" stroke="url(#gPoleG)" stroke-width="3" stroke-linecap="round"/>'+
-      '<ellipse cx="0" cy="85" rx="3.5" ry="1.3" fill="#FFD700" stroke="#D4AC0D" stroke-width="0.4"/>'+
-      '<ellipse cx="0" cy="102" rx="3.5" ry="1.3" fill="#FFD700" stroke="#D4AC0D" stroke-width="0.4"/>'+
-      // Corpo del cavallo
-      '<ellipse cx="0" cy="130" rx="18" ry="8" fill="'+bc+'" stroke="'+bs+'" stroke-width="0.5"/>'+
-      // Collo (inclinato verso sinistra)
-      '<path d="M-14,126 C-16,116 -14,108 -8,106" fill="'+bc+'" stroke="'+bs+'" stroke-width="0.5"/>'+
-      // Testa
-      '<ellipse cx="-10" cy="103" rx="7" ry="4.5" fill="'+bc+'" stroke="'+bs+'" stroke-width="0.5" transform="rotate(-20 -10 103)"/>'+
-      // Orecchio
-      '<path d="M-12,99 L-14,93 L-9,98" fill="'+bc+'" stroke="'+bs+'" stroke-width="0.4"/>'+
-      // Occhio
-      '<circle cx="-13" cy="102" r="1.5" fill="#333"/>'+
-      '<circle cx="-12.5" cy="101.5" r="0.5" fill="white"/>'+
-      // Criniera
-      '<path d="M-12,110 C-16,114 -18,118 -16,124" fill="'+mc+'" opacity="0.8"/>'+
-      '<path d="M-10,108 C-14,112 -16,116 -14,122" fill="'+mc+'" opacity="0.8"/>'+
-      '<path d="M-8,106 C-12,110 -14,114 -12,120" fill="'+mc+'" opacity="0.8"/>'+
-      // Zampe anteriori alzate (galoppo!)
-      '<line x1="-10" y1="137" x2="-18" y2="148" stroke="'+bc+'" stroke-width="3.5" stroke-linecap="round"/>'+
-      '<line x1="-8" y1="137" x2="-14" y2="146" stroke="'+bc+'" stroke-width="3.5" stroke-linecap="round"/>'+
-      // Zampe posteriori (giù verso la piattaforma)
-      '<line x1="10" y1="137" x2="12" y2="157" stroke="'+bc+'" stroke-width="3.5" stroke-linecap="round"/>'+
-      '<line x1="8" y1="137" x2="6" y2="157" stroke="'+bc+'" stroke-width="3.5" stroke-linecap="round"/>'+
-      // Zoccoli
-      '<ellipse cx="-18" cy="149" rx="2" ry="1.5" fill="#5D3A1A"/>'+
-      '<ellipse cx="-14" cy="147" rx="2" ry="1.5" fill="#5D3A1A"/>'+
-      '<ellipse cx="12" cy="158" rx="2" ry="1.2" fill="#5D3A1A"/>'+
-      '<ellipse cx="6" cy="158" rx="2" ry="1.2" fill="#5D3A1A"/>'+
-      // Sella
-      '<ellipse cx="0" cy="125" rx="8" ry="3.5" fill="'+sc+'" opacity="0.9"/>'+
-      '<path d="M-4,125 L-5,131 L5,131 L4,125" fill="'+sc+'" opacity="0.7"/>'+
-      // Coda
-      '<path d="M16,128 C22,124 24,132 20,136" fill="'+mc+'" opacity="0.7"/>'+
-      // Finimenti dorati
-      '<path d="M-6,125 L6,125" stroke="#FFD700" stroke-width="1" fill="none"/>'+
-    '</g>';
-  }
-
-  // Configurazione cavalli: colore corpo, bordo, criniera, sella, fase dondolio
-  var hcfg=[
-    {bc:'#FFFFFF',bs:'#DDD',mc:'#FF69B4',sc:'#FF69B4',bp:0},
-    {bc:'#A0693D',bs:'#8B5E2B',mc:'#5DADE2',sc:'#5DADE2',bp:1.2},
-    {bc:'#B8B8B8',bs:'#999',mc:'#E74C3C',sc:'#E74C3C',bp:2.4},
-    {bc:'#F5D6A8',bs:'#D4A56A',mc:'#9B59B6',sc:'#9B59B6',bp:3.6},
-    {bc:'#D4E6F1',bs:'#AED6F1',mc:'#F39C12',sc:'#F39C12',bp:4.8}
-  ];
-
-  var NUM=hcfg.length;
-  var TRACK_W=260; // larghezza totale del percorso (con margine per wrap-around)
-  var spacing=TRACK_W/NUM; // distanza tra i cavalli
-
-  // Posizioni iniziali X dei cavalli (spaziati lungo il percorso)
-  var horseX=[];
-  for(var i=0;i<NUM;i++){
-    horseX.push(220-i*spacing);
-  }
-
-  // Costruisci gruppi SVG dei cavalli
-  var horseGroups='';
-  for(var i=0;i<NUM;i++){
-    horseGroups+=mkHorse(hcfg[i].bc,hcfg[i].bs,hcfg[i].mc,hcfg[i].sc);
-  }
-
-  var svg='<svg viewBox="0 0 220 210" width="95" height="90" style="overflow:hidden">'+
-    '<defs>'+
-      '<linearGradient id="gPoleG" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#D4AC0D"/><stop offset="50%" stop-color="#F7DC6F"/><stop offset="100%" stop-color="#D4AC0D"/></linearGradient>'+
-      '<linearGradient id="gRoofPink" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFB6D9"/><stop offset="100%" stop-color="#FF69B4"/></linearGradient>'+
-      '<linearGradient id="gRoofCream" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFF8E7"/><stop offset="100%" stop-color="#F5E6CC"/></linearGradient>'+
-      '<linearGradient id="gBaseG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FF69B4"/><stop offset="100%" stop-color="#D63384"/></linearGradient>'+
-      '<radialGradient id="gPlateG" cx="50%" cy="50%"><stop offset="0%" stop-color="#FFD6EC"/><stop offset="100%" stop-color="#FF69B4"/></radialGradient>'+
-    '</defs>'+
-
-    // === BASE (fissa) ===
-    '<ellipse cx="110" cy="195" rx="85" ry="15" fill="url(#gBaseG)" stroke="#C0256E" stroke-width="1.5"/>'+
-    '<ellipse cx="110" cy="195" rx="65" ry="11" fill="none" stroke="#FFD700" stroke-width="0.8" stroke-dasharray="3,2"/>'+
-
-    // === PIATTAFORMA (fissa, i cavalli scorrono sopra) ===
-    '<ellipse cx="110" cy="170" rx="75" ry="13" fill="url(#gPlateG)" stroke="#E91E8C" stroke-width="1"/>'+
-    '<ellipse cx="110" cy="170" rx="60" ry="10" fill="none" stroke="#FFD700" stroke-width="0.8"/>'+
-
-    // === CAVALLI (si muovono da destra a sinistra) ===
-    '<g id="giostraHorses">'+
-    horseGroups+
-    '</g>'+
-
-    // === TETTO CONICO A STRISCE (fisso, sopra i cavalli) ===
-    '<path d="M110,20 L32,82 L188,82 Z" fill="url(#gRoofPink)" stroke="#E91E8C" stroke-width="1"/>'+
-    '<path d="M110,20 L71,51 L62,56 L110,20" fill="url(#gRoofCream)" opacity="0.7"/>'+
-    '<path d="M110,20 L83,62 L74,67 L110,20" fill="url(#gRoofCream)" opacity="0.7"/>'+
-    '<path d="M110,20 L95,73 L86,78 L110,20" fill="url(#gRoofCream)" opacity="0.7"/>'+
-    '<path d="M110,20 L125,73 L134,78 L110,20" fill="url(#gRoofCream)" opacity="0.7"/>'+
-    '<path d="M110,20 L137,62 L146,67 L110,20" fill="url(#gRoofCream)" opacity="0.7"/>'+
-    '<path d="M110,20 L149,51 L158,56 L110,20" fill="url(#gRoofCream)" opacity="0.7"/>'+
-
-    // === BORDO SMERLATO DEL TETTO ===
-    '<path d="M32,82 Q38,76 44,82 Q50,76 56,82 Q62,76 68,82 Q74,76 80,82 Q86,76 92,82 Q98,76 104,82 Q110,76 116,82 Q122,76 128,82 Q134,76 140,82 Q146,76 152,82 Q158,76 164,82 Q170,76 176,82 Q182,76 188,82" fill="none" stroke="#FFD700" stroke-width="2"/>'+
-    '<path d="M34,84 Q40,78 46,84 Q52,78 58,84 Q64,78 70,84 Q76,78 82,84 Q88,78 94,84 Q100,78 106,84 Q112,78 118,84 Q124,78 130,84 Q136,78 142,84 Q148,78 154,84 Q160,78 166,84 Q172,78 178,84 Q184,78 186,84" fill="#FF69B4" stroke="none" opacity="0.5"/>'+
-
-    // Lucine bordo tetto
-    '<circle class="glight" cx="44" cy="82" r="2" fill="#FFD700"/>'+
-    '<circle class="glight" cx="56" cy="82" r="2" fill="#5DADE2"/>'+
-    '<circle class="glight" cx="68" cy="82" r="2" fill="#FF69B4"/>'+
-    '<circle class="glight" cx="80" cy="82" r="2" fill="#2ECC71"/>'+
-    '<circle class="glight" cx="92" cy="82" r="2" fill="#FFD700"/>'+
-    '<circle class="glight" cx="104" cy="82" r="2" fill="#FF69B4"/>'+
-    '<circle class="glight" cx="116" cy="82" r="2" fill="#5DADE2"/>'+
-    '<circle class="glight" cx="128" cy="82" r="2" fill="#2ECC71"/>'+
-    '<circle class="glight" cx="140" cy="82" r="2" fill="#FFD700"/>'+
-    '<circle class="glight" cx="152" cy="82" r="2" fill="#FF69B4"/>'+
-    '<circle class="glight" cx="164" cy="82" r="2" fill="#5DADE2"/>'+
-    '<circle class="glight" cx="176" cy="82" r="2" fill="#2ECC71"/>'+
-
-    // === PUNTALE SUPERIORE ===
-    '<circle cx="110" cy="20" r="5" fill="#FFD700" stroke="#D4AC0D" stroke-width="1"/>'+
-    '<line x1="110" y1="15" x2="110" y2="5" stroke="#D4AC0D" stroke-width="1.5"/>'+
-    '<path d="M110,5 L122,9 L110,13 Z" fill="#E74C3C" stroke="#C0392B" stroke-width="0.5"/>'+
-
-    // Luci base
-    '<circle class="glight" cx="40" cy="195" r="2" fill="#FFD700"/>'+
-    '<circle class="glight" cx="60" cy="199" r="2" fill="#FF69B4"/>'+
-    '<circle class="glight" cx="80" cy="201" r="2" fill="#5DADE2"/>'+
-    '<circle class="glight" cx="110" cy="202" r="2" fill="#2ECC71"/>'+
-    '<circle class="glight" cx="140" cy="201" r="2" fill="#FFD700"/>'+
-    '<circle class="glight" cx="160" cy="199" r="2" fill="#FF69B4"/>'+
-    '<circle class="glight" cx="180" cy="195" r="2" fill="#5DADE2"/>'+
-
-  '</svg>';
-
-  el.innerHTML=svg;
-
-  // === ANIMAZIONE: cavalli scorrono da destra a sinistra + dondolio + luci ===
-  var svgEl=el.querySelector('svg');
-  var gHorses=svgEl?svgEl.querySelectorAll('.ghorse'):[];
-  var lights=svgEl?svgEl.querySelectorAll('.glight'):[];
-  var SPEED=28; // pixel al secondo (velocità orizzontale)
-  var lastTime=performance.now();
-
-  // Imposta posizione iniziale di ogni cavallo
-  for(var i=0;i<gHorses.length;i++){
-    gHorses[i].setAttribute('transform','translate('+horseX[i]+',0)');
-  }
-
-  function animateGiostra(now){
-    var dt=(now-lastTime)/1000;
-    if(dt>0.1)dt=0.1; // evita salti se la tab è in background
-    lastTime=now;
-
-    // Muovi ogni cavallo da destra a sinistra
-    for(var i=0;i<gHorses.length;i++){
-      horseX[i]-=SPEED*dt;
-      // Wrap-around: quando esce a sinistra, riappare a destra
-      if(horseX[i]<-30) horseX[i]+=TRACK_W;
-      // Dondolio su e giù (come le giostre vere!)
-      var bob=Math.sin(now/600+hcfg[i].bp)*6;
-      gHorses[i].setAttribute('transform','translate('+horseX[i]+','+bob+')');
-    }
-
-    // Luci lampeggianti alternate
-    for(var j=0;j<lights.length;j++){
-      var phase=(now+j*150)%1000;
-      lights[j].setAttribute('opacity',phase<500?0.9:0.25);
-    }
-
-    requestAnimationFrame(animateGiostra);
-  }
-  requestAnimationFrame(animateGiostra);
-
-  // Posizionamento: sotto l'header, a sinistra (sotto l'altalena, spazio libero)
-  function positionGiostra(){
-    var headerEl=document.querySelector('.header');
-    if(!headerEl) return;
-    var hr=headerEl.getBoundingClientRect();
-    var appEl=document.querySelector('.app');
-    var appLeft=appEl?appEl.getBoundingClientRect().left:hr.left;
-    // Sotto l'header, allineata a sinistra del contenitore
-    el.style.left=(appLeft+4)+'px';
-    el.style.top=(hr.bottom+2)+'px';
-  }
-
-  positionGiostra();
-  window.addEventListener('resize',positionGiostra);
-  setInterval(positionGiostra,2000);
-
-  var origRender=window.render;
-  if(origRender){
-    window.render=function(){
-      origRender.apply(this,arguments);
-      setTimeout(positionGiostra,100);
-    };
-  }
-})();
-// ---- FINE GIOSTRA CON CAVALLI ----
 
 // ---- STELLINE CADENTI NELL'HEADER ----
 (function(){
