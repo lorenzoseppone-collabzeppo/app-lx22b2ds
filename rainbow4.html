@@ -5286,68 +5286,13 @@ fetchWeather();
 
 // ---- 2 SAETTE / METEORE VELOCI CON CODA (setInterval per Safari) ----
 (function(){
-  // Crea 2 saette a livello body
   var meteors=[];
   for(var i=0;i<2;i++){
-    // Contenitore
     var d=document.createElement('div');
-    d.style.cssText='position:absolute;pointer-events:none;z-index:9997;opacity:0;width:1px;height:1px';
+    d.style.cssText='position:absolute;pointer-events:none;z-index:9997;opacity:0';
+    d.innerHTML='<svg width="120" height="6" viewBox="0 0 120 6" style="display:block;overflow:visible"><defs><linearGradient id="mt'+i+'" x1="0%" y1="50%" x2="100%" y2="50%"><stop offset="0%" stop-color="#ffffff" stop-opacity="0"/><stop offset="50%" stop-color="#ffe4b5" stop-opacity="0.3"/><stop offset="85%" stop-color="#fffacd" stop-opacity="0.85"/><stop offset="100%" stop-color="#ffffff" stop-opacity="1"/></linearGradient><filter id="mg'+i+'" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><line x1="0" y1="3" x2="100" y2="3" stroke="url(#mt'+i+')" stroke-width="2" stroke-linecap="round"/><circle cx="106" cy="3" r="2.5" fill="#ffffff" filter="url(#mg'+i+')"/></svg>';
     document.body.appendChild(d);
-    // SVG della saetta: linea sottile con testa luminosa e coda che sfuma
-    var svgNS='http://www.w3.org/2000/svg';
-    var svg=document.createElementNS(svgNS,'svg');
-    svg.setAttribute('width','120');
-    svg.setAttribute('height','6');
-    svg.setAttribute('viewBox','0 0 120 6');
-    svg.style.cssText='display:block;overflow:visible';
-    // Coda: linea con gradiente da trasparente a brillante
-    var defs=document.createElementNS(svgNS,'defs');
-    var grad=document.createElementNS(svgNS,'linearGradient');
-    grad.setAttribute('id','mtail'+i);
-    grad.setAttribute('x1','0%');grad.setAttribute('y1','50%');
-    grad.setAttribute('x2','100%');grad.setAttribute('y2','50%');
-    var s1=document.createElementNS(svgNS,'stop');
-    s1.setAttribute('offset','0%');s1.setAttribute('stop-color','#ffffff');s1.setAttribute('stop-opacity','0');
-    var s2=document.createElementNS(svgNS,'stop');
-    s2.setAttribute('offset','60%');s2.setAttribute('stop-color','#ffe4b5');s2.setAttribute('stop-opacity','0.5');
-    var s3=document.createElementNS(svgNS,'stop');
-    s3.setAttribute('offset','90%');s3.setAttribute('stop-color','#fffacd');s3.setAttribute('stop-opacity','0.9');
-    var s4=document.createElementNS(svgNS,'stop');
-    s4.setAttribute('offset','100%');s4.setAttribute('stop-color','#ffffff');s4.setAttribute('stop-opacity','1');
-    grad.appendChild(s1);grad.appendChild(s2);grad.appendChild(s3);grad.appendChild(s4);
-    defs.appendChild(grad);
-    svg.appendChild(defs);
-    // Linea coda
-    var line=document.createElementNS(svgNS,'line');
-    line.setAttribute('x1','0');line.setAttribute('y1','3');
-    line.setAttribute('x2','100');line.setAttribute('y2','3');
-    line.setAttribute('stroke','url(#mtail'+i+')');line.setAttribute('stroke-width','2');
-    line.setAttribute('stroke-linecap','round');
-    svg.appendChild(line);
-    // Testa luminosa (cerchio bianco)
-    var head=document.createElementNS(svgNS,'circle');
-    head.setAttribute('cx','106');head.setAttribute('cy','3');head.setAttribute('r','2.5');
-    head.setAttribute('fill','#ffffff');
-    head.setAttribute('filter','url(#mglow'+i+')');
-    svg.appendChild(head);
-    // Glow filter
-    var defs2=document.createElementNS(svgNS,'defs');
-    var filt=document.createElementNS(svgNS,'filter');
-    filt.setAttribute('id','mglow'+i);
-    filt.setAttribute('x','-50%');filt.setAttribute('y','-50%');
-    filt.setAttribute('width','200%');filt.setAttribute('height','200%');
-    var blur=document.createElementNS(svgNS,'feGaussianBlur');
-    blur.setAttribute('stdDeviation','2');blur.setAttribute('result','blur');
-    var merge=document.createElementNS(svgNS,'feMerge');
-    var mn1=document.createElementNS(svgNS,'feMergeNode');mn1.setAttribute('in','blur');
-    var mn2=document.createElementNS(svgNS,'feMergeNode');mn2.setAttribute('in','SourceGraphic');
-    merge.appendChild(mn1);merge.appendChild(mn2);
-    filt.appendChild(blur);filt.appendChild(merge);
-    defs2.appendChild(filt);
-    svg.appendChild(defs2);
-
-    d.appendChild(svg);
-    meteors.push({el:d, svg:svg, grad:grad, s1:s1, s2:s2, s3:s3, s4:s4, active:false, startX:0, startY:0, dx:0, dy:0, dur:0, start:0});
+    meteors.push({el:d, svg:d.querySelector('svg'), active:false, startX:0, startY:0, dx:0, dy:0, dur:0, start:0});
   }
 
   function launchMeteor(m){
@@ -5359,55 +5304,29 @@ fetchWeather();
     var hW=hr.width||300;
     var hH=hr.height||200;
 
-    // Diagonale casuale
     var goRight=Math.random()>0.5;
-    var startX,startY,endX,endY;
-    if(goRight){
-      startX=hLeft-30;
-      startY=hTop-10;
-      endX=hLeft+hW+30;
-      endY=hTop+hH+10;
-    } else {
-      startX=hLeft+hW+30;
-      startY=hTop-10;
-      endX=hLeft-30;
-      endY=hTop+hH+10;
-    }
+    var sx,sy,ex,ey;
+    if(goRight){sx=hLeft-30;sy=hTop-10;ex=hLeft+hW+30;ey=hTop+hH+10;}
+    else{sx=hLeft+hW+30;sy=hTop-10;ex=hLeft-30;ey=hTop+hH+10;}
 
-    m.startX=startX;
-    m.startY=startY;
-    m.dx=endX-startX;
-    m.dy=endY-startY;
-    m.dur=600+Math.random()*600; // 0.6-1.2 secondi - VELOCE!
+    m.startX=sx;m.startY=sy;
+    m.dx=ex-sx;m.dy=ey-sy;
+    m.dur=600+Math.random()*600;
     m.start=performance.now();
     m.active=true;
 
-    // Colore casuale caldo
-    var colChoices=[
-      {tail:'0%";stop-opacity="0',mid:'#ffe4b5",bright:'#fffacd',head:'#ffffff'},
-      {tail:'0%";stop-opacity="0',mid:'#ffd700',bright:'#ffec8b',head:'#ffffff'},
-      {tail:'0%";stop-opacity="0',mid:'#ffa500',bright:'#ffd700',head:'#ffffff'}
-    ];
-    var c=colChoices[Math.floor(Math.random()*colChoices.length)];
-    m.s2.setAttribute('stop-color',c.mid);
-    m.s3.setAttribute('stop-color',c.bright);
-    m.s4.setAttribute('stop-color',c.head);
-
-    m.el.style.opacity='1';
-    // Ruota il SVG nella direzione del movimento
     var angle=Math.atan2(m.dy,m.dx)*180/Math.PI;
     m.svg.style.transform='rotate('+angle+'deg)';
-    m.svg.style.transformOrigin='106px 3px'; // ruota attorno alla testa
+    m.svg.style.transformOrigin='106px 3px';
+    m.el.style.opacity='1';
   }
 
-  // Anima con setInterval
   setInterval(function(){
     for(var i=0;i<meteors.length;i++){
       var m=meteors[i];
       if(!m.active) continue;
       var elapsed=performance.now()-m.start;
       var t=Math.min(elapsed/m.dur,1);
-      // Ease-out per effetto saetta veloce
       var et=1-Math.pow(1-t,2);
       var x=m.startX+m.dx*et;
       var y=m.startY+m.dy*et;
@@ -5416,20 +5335,15 @@ fetchWeather();
       m.el.style.left=x+'px';
       m.el.style.top=y+'px';
       m.el.style.opacity=String(op);
-      if(t>=1){
-        m.active=false;
-        m.el.style.opacity='0';
-      }
+      if(t>=1){m.active=false;m.el.style.opacity='0';}
     }
   },16);
 
   function dropTwoMeteors(){
     launchMeteor(meteors[0]);
-    var gap=300+Math.random()*700; // 0.3-1s tra una e l'altra
-    setTimeout(function(){
-      launchMeteor(meteors[1]);
-    },gap);
-    var nextDrop=4000+Math.random()*6000; // 4-10s
+    var gap=300+Math.random()*700;
+    setTimeout(function(){launchMeteor(meteors[1]);},gap);
+    var nextDrop=4000+Math.random()*6000;
     setTimeout(dropTwoMeteors,nextDrop+gap);
   }
 
