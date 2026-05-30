@@ -5284,56 +5284,81 @@ fetchWeather();
   });
 })();
 
-// ---- 2 STELLE CADENTI GRANDI E VISIBILI ----
+// ---- 2 STELLE CADENTI GRANDI E VISIBILI (setInterval per Safari) ----
 (function(){
-  var header=document.querySelector('.header');
-  if(!header) return;
-  var colors=['#ffd700','#ffec8b','#ffa500','#fff8dc','#ffe4b5','#fffacd','#ffe066','#ffffff'];
-  var starChars=['★','✦','✧','✶','⋆','☆'];
+  var colors=['#ffd700','#ffec8b','#ffa500','#ffe4b5','#fffacd','#ffe066','#ffffff'];
+  var starChars=['★','✦','✶','⋆','☆'];
 
-  function dropOneStar(){
+  // Crea 2 div per le stelle cadenti grandi (position:absolute dentro header)
+  var stars=[];
+  for(var i=0;i<2;i++){
+    var d=document.createElement('span');
+    d.style.cssText='position:absolute;pointer-events:none;z-index:11;opacity:0;font-size:28px;line-height:1;will-change:transform,left,top';
+    d.textContent=starChars[Math.floor(Math.random()*starChars.length)];
     var header=document.querySelector('.header');
-    if(!header) return;
-    var hHeight=header.offsetHeight||200;
-    var star=document.createElement('span');
-    star.className='falling-star';
-    star.textContent=starChars[Math.floor(Math.random()*starChars.length)];
-    var x=5+Math.random()*85;
-    var size=20+Math.random()*14; // 20-34px, più grandi delle altre
-    var dur=3+Math.random()*3; // 3-6s caduta più veloce
-    var delay=0; // nessun ritardo, cade subito
-    var color=colors[Math.floor(Math.random()*colors.length)];
-    var midPx=Math.round(hHeight*0.35+Math.random()*hHeight*0.15);
-    var farPx=Math.round(hHeight*0.55+Math.random()*hHeight*0.2);
-    var endPx=Math.round(hHeight*0.8+Math.random()*hHeight*0.18);
-    star.style.left=x+'%';
-    star.style.top='0px';
-    star.style.color=color;
-    star.style.setProperty('--star-size',size+'px');
-    star.style.setProperty('--star-dur',dur+'s');
-    star.style.setProperty('--star-delay',delay+'s');
-    star.style.setProperty('--star-glow',color);
-    star.style.setProperty('--star-mid',midPx+'px');
-    star.style.setProperty('--star-far',farPx+'px');
-    star.style.setProperty('--star-end',endPx+'px');
-    header.appendChild(star);
-    // Rimuovi dopo la caduta
-    setTimeout(function(){if(star.parentNode)star.remove();},(dur+1)*1000);
+    if(header) header.appendChild(d);
+    stars.push({el:d, active:false, t:0, startX:0, startY:0, dx:0, dy:0, dur:0, start:0, rot:0});
   }
 
-  // Fa cadere 2 stelle una dopo l'altra, poi ripete
+  function launchStar(s){
+    var header=document.querySelector('.header');
+    if(!header) return;
+    var hW=header.offsetWidth||300;
+    var hH=header.offsetHeight||200;
+    // Direzione diagonale casuale: parte da un lato alto e attraversa verso il basso
+    var goRight=Math.random()>0.5;
+    s.startX=goRight? -30 : hW+10;
+    s.startY=-10-Math.random()*20;
+    s.dx=goRight? (hW+60) : -(hW+60);
+    s.dy=hH+40;
+    s.dur=2500+Math.random()*2000; // 2.5-4.5 secondi
+    s.start=performance.now();
+    s.rot=Math.random()*360;
+    s.active=true;
+    s.el.style.opacity='1';
+    s.el.style.color=colors[Math.floor(Math.random()*colors.length)];
+    s.el.style.textShadow='0 0 10px '+s.el.style.color+', 0 0 20px '+s.el.style.color;
+    s.el.textContent=starChars[Math.floor(Math.random()*starChars.length)];
+    s.el.style.fontSize=(24+Math.floor(Math.random()*14))+'px';
+  }
+
+  // Anima con setInterval (Safari compatibile)
+  setInterval(function(){
+    for(var i=0;i<stars.length;i++){
+      var s=stars[i];
+      if(!s.active) continue;
+      var elapsed=performance.now()-s.start;
+      var t=Math.min(elapsed/s.dur,1);
+      // Ease-in per caduta naturale
+      var et=t*t;
+      var x=s.startX+s.dx*et;
+      var y=s.startY+s.dy*et;
+      var r=s.rot+t*300;
+      var op=1;
+      if(t>0.8) op=1-(t-0.8)/0.2; // sfuma alla fine
+      s.el.style.left=x+'px';
+      s.el.style.top=y+'px';
+      s.el.style.transform='rotate('+r+'deg)';
+      s.el.style.opacity=String(op);
+      if(t>=1){
+        s.active=false;
+        s.el.style.opacity='0';
+      }
+    }
+  },30);
+
+  // Lancia 2 stelle una dopo l'altra, poi ripeti
   function dropTwoStars(){
-    dropOneStar();
-    var gap=400+Math.random()*800; // 0.4-1.2s tra una e l'altra
+    launchStar(stars[0]);
+    var gap=500+Math.random()*1000; // 0.5-1.5s tra una e l'altra
     setTimeout(function(){
-      dropOneStar();
+      launchStar(stars[1]);
     },gap);
-    // Ripeti dopo un intervallo casuale (4-9 secondi)
-    var nextDrop=4000+Math.random()*5000;
+    // Ripeti dopo intervallo casuale
+    var nextDrop=5000+Math.random()*5000;
     setTimeout(dropTwoStars,nextDrop+gap);
   }
 
-  // Inizia dopo 3 secondi
   setTimeout(dropTwoStars,3000);
 })();
 // ---- FINE STELLE CADENTI GRANDI ----
