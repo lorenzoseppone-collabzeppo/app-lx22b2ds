@@ -5337,11 +5337,32 @@ fetchWeather();
     var hW=hr.width||300;
     var hH=hr.height||200;
 
-    var yOff=Math.random()*hH*0.6;
-    var sx=hLeft-40;
-    var sy=hTop+yOff;
-    var ex=hLeft+hW+40;
-    var ey=sy+hH*0.3+Math.random()*hH*0.3;
+    // Percorsi casuali come le linee rosse disegnate:
+    // Tutti da sinistra a destra, ma con partenze e arrivi a diverse altezze
+    var pathType=Math.floor(Math.random()*5);
+    var sx,sy,ex,ey;
+
+    if(pathType===0){
+      // Alto-sinistra verso basso-destra (angolo ~30-35 gradi)
+      sx=hLeft-40;sy=hTop+hH*0.05+Math.random()*hH*0.15;
+      ex=hLeft+hW+40;ey=hTop+hH*0.6+Math.random()*hH*0.3;
+    } else if(pathType===1){
+      // Centro-sinistra verso basso-destra (angolo ~45 gradi)
+      sx=hLeft-40;sy=hTop+hH*0.25+Math.random()*hH*0.2;
+      ex=hLeft+hW+40;ey=hTop+hH*0.7+Math.random()*hH*0.25;
+    } else if(pathType===2){
+      // Basso-sinistra verso centro-destra (angolo ~15 gradi, quasi orizzontale)
+      sx=hLeft-40;sy=hTop+hH*0.4+Math.random()*hH*0.25;
+      ex=hLeft+hW+40;ey=hTop+hH*0.3+Math.random()*hH*0.2;
+    } else if(pathType===3){
+      // In alto quasi piatto (scorre sopra tutto)
+      sx=hLeft-40;sy=hTop+Math.random()*hH*0.2;
+      ex=hLeft+hW+40;ey=sy+hH*0.1+Math.random()*hH*0.15;
+    } else {
+      // Centro quasi orizzontale
+      sx=hLeft-40;sy=hTop+hH*0.2+Math.random()*hH*0.4;
+      ex=hLeft+hW+40;ey=sy-Math.random()*hH*0.1+Math.random()*hH*0.2;
+    }
 
     var dx=ex-sx,dy=ey-sy;
     var len=Math.sqrt(dx*dx+dy*dy);
