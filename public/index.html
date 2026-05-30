@@ -2358,8 +2358,40 @@ function render(){
       html+='</div>';
     }
     html+='</div>';
+    // RISPOSTE DALLE CLASSI - Sezione per la coordinatrice
+    var hasReplies=false;
+    for(var hri=0;hri<coorClassKeys.length;hri++){
+      var hrId=coorClassKeys[hri];
+      if(hrId===COORDINATRICE_ID) continue;
+      if(classes[hrId].replies&&classes[hrId].replies.length>0) hasReplies=true;
+    }
+    if(hasReplies){
+      html+='<div class="msg-received-section">';
+      html+='<div class="msg-received-label"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5dff8e" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Risposte dalle Classi</div>';
+      for(var rci=0;rci<coorClassKeys.length;rci++){
+        var rcId=coorClassKeys[rci];
+        if(rcId===COORDINATRICE_ID) continue;
+        var rcName=classes[rcId].name||'Classe';
+        var rcReplies=classes[rcId].replies||[];
+        if(rcReplies.length===0) continue;
+        html+='<div class="msg-box" id="replyBox_'+rcId+'">';
+        html+='<div class="msg-box-header"><span class="msg-box-class" style="color:#5dff8e">'+esc(rcName.toUpperCase())+'</span><span class="msg-box-count">'+rcReplies.length+' risp.</span></div>';
+        for(var rri=0;rri<rcReplies.length;rri++){
+          var rr=rcReplies[rri];
+          var rrTime=rr.timestamp?new Date(rr.timestamp):null;
+          var rrTimeStr=rrTime?rrTime.getDate()+'/'+(rrTime.getMonth()+1)+' '+String(rrTime.getHours()).padStart(2,'0')+':'+String(rrTime.getMinutes()).padStart(2,'0'):'';
+          html+='<div class="msg-item">';
+          html+='<span class="msg-item-text">'+esc(rr.text)+'</span>';
+          html+='<span class="msg-item-time">'+rrTimeStr+'</span>';
+          html+='<button class="msg-item-del" onclick="App.deleteReply(\''+rcId+'\','+rri+')" title="Cancella risposta">\u00d7</button>';
+          html+='</div>';
+        }
+        html+='</div>';
+      }
+      html+='</div>';
+    }
   } else {
-    // CLASSE NORMALE: mostra comunicazioni ricevute dalla coordinatrice
+    // CLASSE NORMALE: mostra comunicazioni ricevute dalla coordinatrice + possibilità di rispondere
     var rcvMsgs=(currentClassId&&classes[currentClassId])?(classes[currentClassId].messages||[]):[];
     html+='<div class="msg-received-section">';
     html+='<div class="msg-received-label"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64b5f6" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Comunicazioni dalla Coordinatrice</div>';
@@ -2375,6 +2407,11 @@ function render(){
         html+='<span class="msg-item-time">'+rmTimeStr+'</span>';
         html+='</div>';
       }
+      // Input per rispondere alla coordinatrice
+      html+='<div class="msg-input-row" style="margin-top:10px">';
+      html+='<input id="replyInput" placeholder="Rispondi alla coordinatrice..." onkeydown="if(event.key===\'Enter\')App.replyToCoordinatrice()"/>';
+      html+='<button onclick="App.replyToCoordinatrice()">Rispondi</button>';
+      html+='</div>';
     }
     html+='</div>';
   }
@@ -4293,6 +4330,36 @@ window.App={
     var msgBox=document.getElementById('msgBox_'+classId);
     if(msgBox){msgBox.scrollIntoView({behavior:'smooth',block:'center'});}
     // Salva i dati dopo il render
+    saveCurrentClassData();
+    try{localStorage.setItem(getStorageKey(),JSON.stringify({classes:JSON.parse(JSON.stringify(classes)),currentClassId:currentClassId,schoolName:schoolName,currentDate:dateToInput(currentDate)}));}catch(e){}
+    saveToFirestoreNow();
+  },
+  replyToCoordinatrice:function(){
+    if(!currentClassId||!classes[currentClassId]) return;
+    var input=document.getElementById('replyInput');
+    if(!input) return;
+    var text=input.value.trim();
+    if(!text) return;
+    // Salva la risposta nei replies della classe
+    if(!classes[currentClassId].replies) classes[currentClassId].replies=[];
+    var className=classes[currentClassId].name||'Classe';
+    classes[currentClassId].replies.push({text:text,fromClassId:currentClassId,fromClassName:className,timestamp:Date.now()});
+    // Elimina tutti i messaggi della coordinatrice (letti e risposti)
+    classes[currentClassId].messages=[];
+    // Render
+    render();
+    saveCurrentClassData();
+    try{localStorage.setItem(getStorageKey(),JSON.stringify({classes:JSON.parse(JSON.stringify(classes)),currentClassId:currentClassId,schoolName:schoolName,currentDate:dateToInput(currentDate)}));}catch(e){}
+    saveToFirestoreNow();
+  },
+  deleteReply:function(classId,replyIdx){
+    if(!classId||!classes[classId]) return;
+    if(!classes[classId].replies) return;
+    if(replyIdx<0||replyIdx>=classes[classId].replies.length) return;
+    var replyText=classes[classId].replies[replyIdx].text;
+    if(!confirm('Cancellare la risposta:\n"'+replyText+'"?')) return;
+    classes[classId].replies.splice(replyIdx,1);
+    render();
     saveCurrentClassData();
     try{localStorage.setItem(getStorageKey(),JSON.stringify({classes:JSON.parse(JSON.stringify(classes)),currentClassId:currentClassId,schoolName:schoolName,currentDate:dateToInput(currentDate)}));}catch(e){}
     saveToFirestoreNow();
