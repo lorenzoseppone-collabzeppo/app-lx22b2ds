@@ -4441,11 +4441,11 @@ fetchWeather();
   }
 
   function getRestPosC(){
-    var t1=document.getElementById('teacher1Field');
-    if(t1){
-      var r=t1.getBoundingClientRect();
+    var icon=document.querySelector('.header-icon');
+    if(icon){
+      var r=icon.getBoundingClientRect();
       var legOff=74/96*80;
-      return {x:r.left+r.width*0.5-45,y:r.top-legOff-4};
+      return {x:r.left+r.width*0.5-45,y:r.top+r.height*0.35-legOff};
     }
     var tRow=document.querySelector('.header-teachers');
     if(tRow){
@@ -4453,7 +4453,7 @@ fetchWeather();
       var legOff2=74/96*80;
       return {x:r2.left+r2.width*0.25-45,y:r2.top-legOff2-4};
     }
-    return {x:window.innerWidth*0.25,y:80};
+    return {x:30,y:30};
   }
 
   function getRestPos(){
