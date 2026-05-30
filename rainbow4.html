@@ -4871,7 +4871,8 @@ fetchWeather();
   var wbDiv=document.createElement('div');
   wbDiv.style.cssText='position:absolute;pointer-events:none;z-index:9999;opacity:0;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.18))';
   document.body.appendChild(wbDiv);
-  if(window._registerAnimEl) window._registerAnimEl(wbDiv);
+  // NON registrare il bambino che cammina per iOS scroll handler
+  // position:absolute gestisce scroll naturalmente, e il bambino gestisce la propria opacity
 
   // SVG bambino in piedi - STESSE DIMENSIONI del bambino sull'altalena
   var wbSvgStr='<svg viewBox="0 0 30 50" width="30" height="50">'+
@@ -5073,7 +5074,8 @@ fetchWeather();
   var wgDiv=document.createElement('div');
   wgDiv.style.cssText='position:absolute;pointer-events:none;z-index:9999;opacity:0;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.18))';
   document.body.appendChild(wgDiv);
-  if(window._registerAnimEl) window._registerAnimEl(wgDiv);
+  // NON registrare la bambina che cammina per iOS scroll handler
+  // position:absolute gestisce scroll naturalmente, e la bambina gestisce la propria opacity
 
   // SVG bambina in piedi - stesse dimensioni del bambino (30x50)
   var wgSvgStr='<svg viewBox="0 0 30 50" width="30" height="50">'+
