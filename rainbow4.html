@@ -4753,7 +4753,7 @@ fetchWeather();
   // Elementi restano fuori da #app per non essere distrutti da render()
   // position:absolute a livello body = coordinate documento (scroll naturale iOS)
 
-  var svg='<svg viewBox="0 0 120 95" width="96" height="76">'+
+  var svg='<svg viewBox="0 0 120 95" width="82" height="65">'+
     // Asta orizzontale di sostegno
     '<rect x="8" y="0" width="104" height="4" rx="2" fill="#8B4513" stroke="#5D3A1A" stroke-width="0.5"/>'+
     // === BAMBINO (sinistra, x=10-68) ===
@@ -4831,7 +4831,7 @@ fetchWeather();
   '</svg>';
 
   el.innerHTML=svg;
-  el.style.transformOrigin='60px 2px';
+  el.style.transformOrigin='60px 2px'; // pivot altalena (viewBox coords, non cambia)
 
   function positionSwing(){
     var hdr=document.querySelector('.header');
@@ -4841,14 +4841,14 @@ fetchWeather();
       var dateEl=document.getElementById('headerClockDate');
       if(!dateEl) return;
       var r=dateEl.getBoundingClientRect();
-      el.style.left=(r.right+window.pageXOffset-48)+'px';
+      el.style.left=(r.right+window.pageXOffset-41)+'px';
       el.style.top=(r.bottom+window.pageYOffset+2)+'px';
       el.style.animation='swingBoth 3.2s ease-in-out infinite';
       return;
     }
     var wr=weatherEl.getBoundingClientRect();
     // Appesa sotto il blocco meteo, centrata rispetto ad esso - coordinate documento
-    el.style.left=(wr.left+window.pageXOffset+wr.width/2-48)+'px';
+    el.style.left=(wr.left+window.pageXOffset+wr.width/2-41)+'px';
     el.style.top=(wr.bottom+window.pageYOffset+2)+'px';
     el.style.animation='swingBoth 3.2s ease-in-out infinite';
   }
@@ -4875,7 +4875,7 @@ fetchWeather();
   // position:absolute gestisce scroll naturalmente, e il bambino gestisce la propria opacity
 
   // SVG bambino in piedi - STESSE DIMENSIONI del bambino sull'altalena
-  var wbSvgStr='<svg viewBox="0 0 30 50" width="30" height="50">'+
+  var wbSvgStr='<svg viewBox="0 0 30 50" width="26" height="43">'+
     '<circle cx="15" cy="7" r="6" fill="#FFD5B8" stroke="#1a1a1a" stroke-width="0.5"/>'+
     '<path d="M9,5 C9,0 21,0 21,5" fill="#5D3A1A"/>'+
     '<circle cx="12.5" cy="7.5" r="0.8" fill="#1a1a1a"/>'+
@@ -4926,14 +4926,14 @@ fetchWeather();
   function swingBoyVisualPos(){
     var lx=parseInt(el.style.left)||0;
     var ly=parseInt(el.style.top)||0;
-    var bx=lx+(38/120)*96;
-    var by=ly+(40/95)*76;
-    var px=lx+48;
+    var bx=lx+(38/120)*82;
+    var by=ly+(40/95)*65;
+    var px=lx+41;
     var py=ly+1.6;
     var angle=getSwingAngle();
     var dx=bx-px, dy=by-py;
     var cosA=Math.cos(angle), sinA=Math.sin(angle);
-    return{x:px+dx*cosA-dy*sinA-15, y:py+dx*sinA+dy*cosA-7};
+    return{x:px+dx*cosA-dy*sinA-13, y:py+dx*sinA+dy*cosA-6};
   }
 
   function bonirolaTextPos(){
@@ -4941,14 +4941,14 @@ fetchWeather();
     if(!sn)return null;
     var r=sn.getBoundingClientRect();
     // Coordinate documento (per position:absolute a livello body)
-    return{x:r.left+window.pageXOffset+r.width/2-15, y:r.top+window.pageYOffset-42};
+    return{x:r.left+window.pageXOffset+r.width/2-13, y:r.top+window.pageYOffset-36};
   }
 
   function iconCenterPos(){
     var ic=document.querySelector('.header-icon');
     if(!ic)return null;
     var r=ic.getBoundingClientRect();
-    return{x:r.left+window.pageXOffset+r.width/2-15, y:r.top+window.pageYOffset+r.height/2-7};
+    return{x:r.left+window.pageXOffset+r.width/2-13, y:r.top+window.pageYOffset+r.height/2-6};
   }
 
   function setSwingBoyVis(v){
@@ -5078,7 +5078,7 @@ fetchWeather();
   // position:absolute gestisce scroll naturalmente, e la bambina gestisce la propria opacity
 
   // SVG bambina in piedi - stesse dimensioni del bambino (30x50)
-  var wgSvgStr='<svg viewBox="0 0 30 50" width="30" height="50">'+
+  var wgSvgStr='<svg viewBox="0 0 30 50" width="26" height="43">'+
     '<circle cx="15" cy="7" r="6" fill="#FFD5B8" stroke="#1a1a1a" stroke-width="0.5"/>'+
     '<path d="M9,5 C9,0 21,0 21,5" fill="#FFD700"/>'+
     '<path d="M9,6 C8,10 7,18 8,24 C9,24 10,18 10,12 Z" fill="#FFD700"/>'+
@@ -5114,14 +5114,14 @@ fetchWeather();
   function swingGirlVisualPos(){
     var lx=parseInt(el.style.left)||0;
     var ly=parseInt(el.style.top)||0;
-    var gx=lx+(82/120)*96;
-    var gy=ly+(40/95)*76;
-    var px=lx+48;
+    var gx=lx+(82/120)*82;
+    var gy=ly+(40/95)*65;
+    var px=lx+41;
     var py=ly+1.6;
     var angle=getSwingAngle();
     var dx=gx-px, dy=gy-py;
     var cosA=Math.cos(angle), sinA=Math.sin(angle);
-    return{x:px+dx*cosA-dy*sinA-15, y:py+dx*sinA+dy*cosA-7};
+    return{x:px+dx*cosA-dy*sinA-13, y:py+dx*sinA+dy*cosA-6};
   }
 
   function setSwingGirlVis(v){
