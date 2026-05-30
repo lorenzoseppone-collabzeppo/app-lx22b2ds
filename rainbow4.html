@@ -4922,6 +4922,8 @@ fetchWeather();
   }
 
   function easeIO(t){return t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;}
+  // easeOut: parte veloce, rallenta alla fine - per la discesa
+  function easeOut(t){return 1-Math.pow(1-t,3);}
 
   // Avvia passeggiata - aspetta che l'altalena passi dal centro
   function startBoyWalk(){
@@ -4943,23 +4945,25 @@ fetchWeather();
         // L'altalena continua a dondolare - NESSUNA pausa visibile!
         if(Math.abs(getSwingAngle())<0.08){
           var sp=swingBoyVisualPos();
-          // Scambio ISTANTANEO al centro: il bambino "scende" dal seggiolino
+          // Scambio ISTANTANEO: il bambino "salta giu" dal seggiolino
+          // Appare gia' 8px piu' in basso - gia' in movimento, mai fermo!
           setSwingBoyVis(false);
-          wbX=sp.x;wbY=sp.y;
+          var btY=bonirolaTextY();
+          var dropY=8; // gia' caduto di 8px
+          wbX=sp.x;wbY=sp.y+dropY;
           wbDiv.style.left=wbX+'px';
           wbDiv.style.top=wbY+'px';
           wbDiv.style.opacity=1;
           wbDiv.style.transform='scale(1)';
           resetWalk();
-          var btY=bonirolaTextY();
-          wbSX=sp.x;wbSY=sp.y;wbDX=sp.x;wbDY=btY;
+          wbSX=sp.x;wbSY=sp.y+dropY;wbDX=sp.x;wbDY=btY;
           wbWalkF=0;wbState=ST_DESCEND;wbFrame=0;
         }
         break;
       case ST_DESCEND:
-        // Scende DIRITTO verso la scritta Bonirola - LENTO
+        // Scende DIRITTO verso la scritta Bonirola - easeOut (parte veloce!)
         t=Math.min(1,wbFrame/FR_DESC);
-        e=easeIO(t);
+        e=easeOut(t);
         wbX=wbSX+(wbDX-wbSX)*e;
         wbY=wbSY+(wbDY-wbSY)*e;
         wbDiv.style.left=wbX+'px';
