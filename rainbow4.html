@@ -5285,15 +5285,15 @@ fetchWeather();
     var dx=bx-px, dy=by-py;
     // Con angle=0: cosA=1, sinA=0 → stessa formula di swingBoyVisualPos
     var sx=px+dx*1-dy*0-13; // -13 come in swingBoyVisualPos()
-    var sy=py+dx*0+dy*1-6+6+10; // -6 come in swingBoyVisualPos(), +6 come wp0y, +10 abbassata di poco
+    var sy=py+dx*0+dy*1-6+6+22; // -6 come in swingBoyVisualPos(), +6 come wp0y, +22 abbassata
 
     // P1 = scritta Bonirola (stesso punto di controllo dei bambini, abbassato)
     var cpx=bp.x;
-    var cpy=bp.y+8;
+    var cpy=bp.y+16;
 
     // P2 = icona scuola (stesso arrivo dei bambini, abbassato)
     var ex=ip.x;
-    var ey=ip.y+8;
+    var ey=ip.y+16;
 
     // Bezier quadratica IDENTICA a quella dei bambini:
     // B(t) = (1-t)²·P0 + 2(1-t)t·P1 + t²·P2
