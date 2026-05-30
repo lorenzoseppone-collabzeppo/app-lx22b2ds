@@ -4769,11 +4769,9 @@ setInterval(function(){
 // Arcobaleno animato: attraversa l'header in diagonale da sinistra a destra, poi scompare, poi riappare
 (function(){
   var _rbPhase=0;
-  var _rbCycleDuration=850; // frames per ciclo completo (~42 secondi a 50ms)
-  var _rbAppearFrames=200;  // frames per attraversare (da sinistra a centro)
-  var _rbPauseFrames=300;   // frames di pausa visibile FERMO al centro (~15 secondi)
-  var _rbDisappearFrames=150; // frames per scomparire (fade out verso destra)
-  // _rbHiddenFrames = 850-200-300-150 = 200 frames nascosto (~10 secondi)
+  var _rbCycleDuration=580; // frames per ciclo completo (~29 secondi a 50ms)
+  var _rbCrossFrames=380;   // frames per attraversare da sinistra a destra (senza fermarsi)
+  // _rbHiddenFrames = 580-380 = 200 frames nascosto (~10 secondi di pausa tra un passaggio e l'altro)
   setInterval(function(){
     var outer=document.getElementById('headerRainbow');
     var inner=document.getElementById('headerRainbowInner');
@@ -4782,20 +4780,18 @@ setInterval(function(){
     var opacity=0;
     var xPos=-120;
     
-    if(_rbPhase<_rbAppearFrames){
-      // Entra da sinistra verso il centro
-      var progress=_rbPhase/_rbAppearFrames;
-      xPos=-120+progress*120;
-      opacity=Math.min(0.85,progress*1.4);
-    } else if(_rbPhase<_rbAppearFrames+_rbPauseFrames){
-      // FERMO al centro, visibile
-      opacity=0.85;
-      xPos=0;
-    } else if(_rbPhase<_rbAppearFrames+_rbPauseFrames+_rbDisappearFrames){
-      // Esce verso destra e svanisce
-      var dp=(_rbPhase-_rbAppearFrames-_rbPauseFrames)/_rbDisappearFrames;
-      xPos=dp*120;
-      opacity=0.85*(1-dp);
+    if(_rbPhase<_rbCrossFrames){
+      // Attraversa da sinistra a destra, senza mai fermarsi
+      var progress=_rbPhase/_rbCrossFrames;
+      xPos=-120+progress*240; // da -120% a +120%
+      // Fade in all'inizio e fade out alla fine
+      if(progress<0.12){
+        opacity=0.85*(progress/0.12);
+      } else if(progress>0.88){
+        opacity=0.85*(1-(progress-0.88)/0.12);
+      } else {
+        opacity=0.85;
+      }
     } else {
       // Nascosto, in attesa del prossimo ciclo
       opacity=0;
