@@ -2531,25 +2531,31 @@ function render(){
   }
 
   // Version indicator - always visible
-  html+='<div style="position:fixed;bottom:4px;right:6px;font-size:9px;color:#aaa;z-index:9999;pointer-events:none;font-weight:600" id="versionBadge">v21</div>';
+  html+='<div style="position:fixed;bottom:4px;right:6px;font-size:9px;color:#aaa;z-index:9999;pointer-events:none;font-weight:600" id="versionBadge">v22</div>';
 
   if(selectedChild>=0){html+=renderChildDetail(selectedChild);}
   if(showDietModal>=0){html+=renderDietModal(showDietModal);}
 
   app.innerHTML=html;
 
-  // Animazione class-tabs: slide-in da sinistra con JS (Safari non attiva CSS animations via innerHTML)
+  // Animazione class-tabs: slide-in da sinistra con requestAnimationFrame (Safari compatibile)
   var tabs=app.querySelectorAll('.class-tabs .class-tab');
   for(var ti=0;ti<tabs.length;ti++){
     (function(tab,idx){
       tab.style.opacity='0';
-      tab.style.transform='translateX(-20px)';
+      tab.style.transform='translateX(-30px)';
       tab.style.transition='none';
+      // Forza reflow per Safari
+      void tab.offsetHeight;
       setTimeout(function(){
-        tab.style.transition='opacity 0.35s ease-out, transform 0.35s ease-out';
-        tab.style.opacity='1';
-        tab.style.transform='translateX(0)';
-      },80+idx*100);
+        requestAnimationFrame(function(){
+          requestAnimationFrame(function(){
+            tab.style.transition='opacity 0.4s ease-out, transform 0.4s ease-out';
+            tab.style.opacity='1';
+            tab.style.transform='translateX(0)';
+          });
+        });
+      },60+idx*120);
     })(tabs[ti],ti);
   }
 
