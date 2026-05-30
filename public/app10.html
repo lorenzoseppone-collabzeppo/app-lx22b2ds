@@ -2194,7 +2194,7 @@ function render(){
     }
     html+='<div class="class-name"'+(isCoordinatrice()?' style="cursor:default"':' onclick="App.startEditClass()" title="Clicca per modificare"')+'>'+animatedName+'</div>';
   }
-  html+='<div class="class-sub">REGISTRO DI CLASSE<span style="font-size:9px;opacity:0.4;margin-left:6px">v71</span>'+(isCoordinatrice()&&regularClassCount()>0?' · '+regularClassCount()+' classi':'')+'</div>';
+  html+='<div class="class-sub">REGISTRO DI CLASSE'+(isCoordinatrice()&&regularClassCount()>0?' · '+regularClassCount()+' classi':'')+'</div>';
   html+='<div class="header-teachers">';
   if(isCoordinatrice()){
     // COORDINATRICE: un solo campo "Coordinatrice" + campo PIN
