@@ -303,7 +303,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .theme-toggle:active{transform:scale(0.95)}
 .theme-toggle-icon{font-size:16px;line-height:1;transition:transform 0.3s}
 .theme-toggle-label{font-size:11px;font-weight:600;color:white;white-space:nowrap}
-.bfly{position:fixed;pointer-events:none;z-index:9999;transition:opacity 0.5s;background:transparent!important}
+.bfly{position:absolute;pointer-events:none;z-index:9999;transition:opacity 0.5s;background:transparent!important}
 .bfly.resting{opacity:0.92}
 .bfly.flying{opacity:1}
 [data-theme="dark"] .bfly.resting{opacity:0.82}
@@ -312,7 +312,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 @keyframes bflyRest{0%,100%{transform:rotate(-3deg) translateY(0)}50%{transform:rotate(-1deg) translateY(-1.5px)}}
 @keyframes bflyFlutter{0%,100%{transform:scaleX(1)}50%{transform:scaleX(0.3)}}
 
-.altalena{position:fixed;pointer-events:none;z-index:9998}
+.altalena{position:absolute;pointer-events:none;z-index:9998}
 @keyframes swingBoth{0%,100%{transform:rotate(-14deg)}50%{transform:rotate(14deg)}}
 .altalena svg{display:block;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.15))}
 @keyframes colorShift{0%{filter:drop-shadow(0 2px 6px rgba(0,0,0,0.18)) hue-rotate(0deg)}33%{filter:drop-shadow(0 2px 6px rgba(0,0,0,0.18)) hue-rotate(90deg)}66%{filter:drop-shadow(0 2px 6px rgba(0,0,0,0.18)) hue-rotate(200deg)}100%{filter:drop-shadow(0 2px 6px rgba(0,0,0,0.18)) hue-rotate(360deg)}}
@@ -4404,56 +4404,59 @@ fetchWeather();
   }
 
   function getRestPosA(){
+    var sx=window.pageXOffset||0, sy=window.pageYOffset||0;
     var dateEl=document.getElementById('headerClockDate');
     if(dateEl){
       var r=dateEl.getBoundingClientRect();
       var text=String(dateEl.textContent||'');
       var yearPos=text.lastIndexOf('2026');
       var offset=yearPos>=0?(yearPos+2)/text.length:0.65;
-      var legY=r.top+r.height*0.55;
-      var sixX=r.left+r.width*offset;
+      var legY=r.top+r.height*0.55+sy;
+      var sixX=r.left+r.width*offset+sx;
       var legOff=74/96*80;
       return {x:sixX-45,y:legY-legOff};
     }
     var icon=document.querySelector('.header-icon');
     if(icon){
       var r2=icon.getBoundingClientRect();
-      return {x:r2.right-20,y:r2.bottom-15};
+      return {x:r2.right-20+sx,y:r2.bottom-15+sy};
     }
-    return {x:80,y:40};
+    return {x:80+sx,y:40+sy};
   }
 
   function getRestPosB(){
+    var sx=window.pageXOffset||0, sy=window.pageYOffset||0;
     var wEl=document.querySelector('.header-weather');
     if(wEl){
       var r=wEl.getBoundingClientRect();
       var legOff=74/96*80;
-      return {x:r.left+r.width*0.5-45,y:r.top+r.height*0.5-legOff};
+      return {x:r.left+r.width*0.5-45+sx,y:r.top+r.height*0.5-legOff+sy};
     }
     var tempEl=document.querySelector('.header-weather-temp');
     if(tempEl){
       var r2=tempEl.getBoundingClientRect();
       var legOff2=74/96*80;
-      return {x:r2.left+r2.width*0.5-45,y:r2.top-r2.height*0.3-legOff2};
+      return {x:r2.left+r2.width*0.5-45+sx,y:r2.top-r2.height*0.3-legOff2+sy};
     }
     var w=window.innerWidth;
-    return {x:w-160,y:30};
+    return {x:w-160+sx,y:30+sy};
   }
 
   function getRestPosC(){
+    var sx=window.pageXOffset||0, sy=window.pageYOffset||0;
     var icon=document.querySelector('.header-icon');
     if(icon){
       var r=icon.getBoundingClientRect();
       var legOff=74/96*80;
-      return {x:r.left+r.width*0.5-45,y:r.top+r.height*0.35-legOff};
+      return {x:r.left+r.width*0.5-45+sx,y:r.top+r.height*0.35-legOff+sy};
     }
     var tRow=document.querySelector('.header-teachers');
     if(tRow){
       var r2=tRow.getBoundingClientRect();
       var legOff2=74/96*80;
-      return {x:r2.left+r2.width*0.25-45,y:r2.top-legOff2-4};
+      return {x:r2.left+r2.width*0.25-45+sx,y:r2.top-legOff2-4+sy};
     }
-    return {x:30,y:30};
+    return {x:30+sx,y:30+sy};
   }
 
   function getRestPos(){
@@ -4494,6 +4497,7 @@ fetchWeather();
     requestAnimationFrame(function(){
       var w=window.innerWidth;
       var h=window.innerHeight;
+      var sx=window.pageXOffset||0, sy=window.pageYOffset||0;
       var startX=curX;
       var startY=curY;
       var takeoffDur=3000;
@@ -4513,40 +4517,40 @@ fetchWeather();
       var p1,p2,p3,p4;
       if(pat===0){
         // Giro ampio a destra poi a sinistra
-        p1={x:rr()*w*0.4+w*0.5,y:rr()*h*0.25+h*0.05};
-        p2={x:rr()*w*0.3+w*0.05,y:rr()*h*0.3+h*0.15};
-        p3={x:rr()*w*0.4+w*0.3,y:rr()*h*0.3+h*0.25};
-        p4={x:rr()*w*0.3+w*0.1,y:rr()*h*0.2+h*0.1};
+        p1={x:rr()*w*0.4+w*0.5+sx,y:rr()*h*0.25+h*0.05+sy};
+        p2={x:rr()*w*0.3+w*0.05+sx,y:rr()*h*0.3+h*0.15+sy};
+        p3={x:rr()*w*0.4+w*0.3+sx,y:rr()*h*0.3+h*0.25+sy};
+        p4={x:rr()*w*0.3+w*0.1+sx,y:rr()*h*0.2+h*0.1+sy};
       } else if(pat===1){
         // Volo alto al centro poi scesa
-        p1={x:rr()*w*0.3+w*0.3,y:rr()*h*0.15+h*0.02};
-        p2={x:rr()*w*0.4+w*0.4,y:rr()*h*0.1+h*0.02};
-        p3={x:rr()*w*0.3+w*0.1,y:rr()*h*0.2+h*0.1};
-        p4={x:rr()*w*0.3+w*0.3,y:rr()*h*0.3+h*0.15};
+        p1={x:rr()*w*0.3+w*0.3+sx,y:rr()*h*0.15+h*0.02+sy};
+        p2={x:rr()*w*0.4+w*0.4+sx,y:rr()*h*0.1+h*0.02+sy};
+        p3={x:rr()*w*0.3+w*0.1+sx,y:rr()*h*0.2+h*0.1+sy};
+        p4={x:rr()*w*0.3+w*0.3+sx,y:rr()*h*0.3+h*0.15+sy};
       } else if(pat===2){
         // Zig-zag sinistra-destra
-        p1={x:rr()*w*0.3+w*0.05,y:rr()*h*0.2+h*0.05};
-        p2={x:rr()*w*0.3+w*0.6,y:rr()*h*0.15+h*0.08};
-        p3={x:rr()*w*0.3+w*0.05,y:rr()*h*0.2+h*0.2};
-        p4={x:rr()*w*0.3+w*0.5,y:rr()*h*0.15+h*0.15};
+        p1={x:rr()*w*0.3+w*0.05+sx,y:rr()*h*0.2+h*0.05+sy};
+        p2={x:rr()*w*0.3+w*0.6+sx,y:rr()*h*0.15+h*0.08+sy};
+        p3={x:rr()*w*0.3+w*0.05+sx,y:rr()*h*0.2+h*0.2+sy};
+        p4={x:rr()*w*0.3+w*0.5+sx,y:rr()*h*0.15+h*0.15+sy};
       } else if(pat===3){
         // Cerchio alto in alto a destra
-        p1={x:rr()*w*0.3+w*0.6,y:rr()*h*0.1+h*0.02};
-        p2={x:rr()*w*0.4+w*0.3,y:rr()*h*0.08+h*0.02};
-        p3={x:rr()*w*0.3+w*0.1,y:rr()*h*0.15+h*0.08};
-        p4={x:rr()*w*0.3+w*0.4,y:rr()*h*0.25+h*0.15};
+        p1={x:rr()*w*0.3+w*0.6+sx,y:rr()*h*0.1+h*0.02+sy};
+        p2={x:rr()*w*0.4+w*0.3+sx,y:rr()*h*0.08+h*0.02+sy};
+        p3={x:rr()*w*0.3+w*0.1+sx,y:rr()*h*0.15+h*0.08+sy};
+        p4={x:rr()*w*0.3+w*0.4+sx,y:rr()*h*0.25+h*0.15+sy};
       } else if(pat===4){
         // Tondo largo in basso
-        p1={x:rr()*w*0.3+w*0.5,y:rr()*h*0.2+h*0.25};
-        p2={x:rr()*w*0.3+w*0.1,y:rr()*h*0.2+h*0.3};
-        p3={x:rr()*w*0.3+w*0.5,y:rr()*h*0.15+h*0.15};
-        p4={x:rr()*w*0.3+w*0.2,y:rr()*h*0.15+h*0.1};
+        p1={x:rr()*w*0.3+w*0.5+sx,y:rr()*h*0.2+h*0.25+sy};
+        p2={x:rr()*w*0.3+w*0.1+sx,y:rr()*h*0.2+h*0.3+sy};
+        p3={x:rr()*w*0.3+w*0.5+sx,y:rr()*h*0.15+h*0.15+sy};
+        p4={x:rr()*w*0.3+w*0.2+sx,y:rr()*h*0.15+h*0.1+sy};
       } else {
         // Otto orizzontale
-        p1={x:rr()*w*0.3+w*0.55,y:rr()*h*0.1+h*0.05};
-        p2={x:rr()*w*0.2+w*0.2,y:rr()*h*0.15+h*0.2};
-        p3={x:rr()*w*0.3+w*0.55,y:rr()*h*0.1+h*0.2};
-        p4={x:rr()*w*0.2+w*0.2,y:rr()*h*0.1+h*0.05};
+        p1={x:rr()*w*0.3+w*0.55+sx,y:rr()*h*0.1+h*0.05+sy};
+        p2={x:rr()*w*0.2+w*0.2+sx,y:rr()*h*0.15+h*0.2+sy};
+        p3={x:rr()*w*0.3+w*0.55+sx,y:rr()*h*0.1+h*0.2+sy};
+        p4={x:rr()*w*0.2+w*0.2+sx,y:rr()*h*0.1+h*0.05+sy};
       }
 
       function easeInOut(t){return t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;}
@@ -4771,20 +4775,21 @@ fetchWeather();
   el.style.transformOrigin='60px 2px';
 
   function positionSwing(){
+    var sx=window.pageXOffset||0, sy=window.pageYOffset||0;
     var weatherEl=document.querySelector('.header-weather');
     if(!weatherEl){
       var dateEl=document.getElementById('headerClockDate');
       if(!dateEl) return;
       var r=dateEl.getBoundingClientRect();
-      el.style.left=(r.right-48)+'px';
-      el.style.top=(r.bottom+2)+'px';
+      el.style.left=(r.right-48+sx)+'px';
+      el.style.top=(r.bottom+2+sy)+'px';
       el.style.animation='swingBoth 3.2s ease-in-out infinite';
       return;
     }
     var wr=weatherEl.getBoundingClientRect();
     // Appesa sotto il blocco meteo, centrata rispetto ad esso
-    el.style.left=(wr.left+wr.width/2-48)+'px';
-    el.style.top=(wr.bottom+2)+'px';
+    el.style.left=(wr.left+wr.width/2-48+sx)+'px';
+    el.style.top=(wr.bottom+2+sy)+'px';
     el.style.animation='swingBoth 3.2s ease-in-out infinite';
   }
 
@@ -4804,7 +4809,7 @@ fetchWeather();
   // ---- BAMBINO CHE CAMMINA ----
   // Div per il bambino che cammina
   var wbDiv=document.createElement('div');
-  wbDiv.style.cssText='position:fixed;pointer-events:none;z-index:9999;opacity:0;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.18))';
+  wbDiv.style.cssText='position:absolute;pointer-events:none;z-index:9999;opacity:0;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.18))';
   document.body.appendChild(wbDiv);
 
   // SVG bambino in piedi - STESSE DIMENSIONI del bambino sull'altalena
@@ -4870,18 +4875,20 @@ fetchWeather();
   }
 
   function bonirolaTextPos(){
+    var sx=window.pageXOffset||0, sy=window.pageYOffset||0;
     var sn=document.querySelector('.school-name');
     if(!sn)return null;
     var r=sn.getBoundingClientRect();
-    // Centro del testo, sopra di esso
-    return{x:r.left+r.width/2-15, y:r.top-42};
+    // Centro del testo, sopra di esso - coordinate documento per position:absolute
+    return{x:r.left+r.width/2-15+sx, y:r.top-42+sy};
   }
 
   function iconCenterPos(){
+    var sx=window.pageXOffset||0, sy=window.pageYOffset||0;
     var ic=document.querySelector('.header-icon');
     if(!ic)return null;
     var r=ic.getBoundingClientRect();
-    return{x:r.left+r.width/2-15, y:r.top+r.height/2-7};
+    return{x:r.left+r.width/2-15+sx, y:r.top+r.height/2-7+sy};
   }
 
   function setSwingBoyVis(v){
@@ -5005,7 +5012,7 @@ fetchWeather();
   // ---- BAMBINA CHE CAMMINA ----
   // Stessa identica animazione del bambino, ma per la bambina
   var wgDiv=document.createElement('div');
-  wgDiv.style.cssText='position:fixed;pointer-events:none;z-index:9999;opacity:0;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.18))';
+  wgDiv.style.cssText='position:absolute;pointer-events:none;z-index:9999;opacity:0;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.18))';
   document.body.appendChild(wgDiv);
 
   // SVG bambina in piedi - stesse dimensioni del bambino (30x50)
@@ -5153,52 +5160,6 @@ fetchWeather();
 
   // Prima passeggiata bambina dopo 12 secondi (sfasata dal bambino)
   setTimeout(startGirlWalk,12000);
-
-  // ---- PREVENZIONE SCROLL: nascondi bambini durante lo scroll iOS ----
-  // Su iOS Safari lo scroll con il dito NON attiva l'evento scroll finche' non si ferma!
-  // Usiamo touchmove per nascondere subito + controllo header nel loop
-  var _scrollHidden=false;
-
-  function hideWalkKids(){
-    _scrollHidden=true;
-    wbDiv.style.opacity='0';
-    wgDiv.style.opacity='0';
-    el.style.opacity='0'; // nascondi anche l'altalena
-    var bflyEl=document.getElementById('bfly');
-    if(bflyEl){ bflyEl.style.transition='none'; bflyEl.style.opacity='0'; } // nascondi farfalla senza transizione
-  }
-  function restoreWalkKids(){
-    _scrollHidden=false;
-    el.style.opacity='1'; // ripristina altalena
-    var bflyEl=document.getElementById('bfly');
-    if(bflyEl){ bflyEl.style.transition=''; bflyEl.style.opacity=''; } // ripristina farfalla con transizione CSS originale
-    if(wbState===ST_JOURNEY){
-      var et2=1-Math.pow(1-Math.min(1,wbFrame/TOTAL_FRAMES),2);
-      wbDiv.style.opacity=et2>0.85?String(1-((et2-0.85)/0.15)*0.7):'1';
-    }
-    if(wgState===ST_JOURNEY){
-      var et3=1-Math.pow(1-Math.min(1,wgFrame/TOTAL_FRAMES),2);
-      wgDiv.style.opacity=et3>0.85?String(1-((et3-0.85)/0.15)*0.7):'1';
-    }
-  }
-
-  // touchmove: si attiva SUBITO durante lo scroll con il dito su iOS
-  window.addEventListener('touchmove',function(){
-    if(!_scrollHidden) hideWalkKids();
-  },{passive:true});
-
-  // touchend: ripristina dopo che il dito si alza
-  window.addEventListener('touchend',function(){
-    setTimeout(restoreWalkKids,200);
-  },{passive:true});
-
-  // scroll: per desktop e iOS post-scroll
-  var _scrollEndTimer=null;
-  window.addEventListener('scroll',function(){
-    if(!_scrollHidden) hideWalkKids();
-    clearTimeout(_scrollEndTimer);
-    _scrollEndTimer=setTimeout(restoreWalkKids,200);
-  },{passive:true});
 })();
 // ---- FINE ALTALENA ----
 
