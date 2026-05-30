@@ -4833,15 +4833,15 @@ fetchWeather();
   var wbLShoe=wbSvgEl.querySelector('#wbLShoe');
   var wbRShoe=wbSvgEl.querySelector('#wbRShoe');
 
-  // Stati dell'animazione
-  var ST_IDLE=0,ST_DETACH=1,ST_DESCEND=2,ST_WALK=3,ST_CLIMB=4,ST_ENTER=5,ST_INSIDE=6,ST_REATTACH=7;
+  // Stati dell'animazione (nessuno stacco - movimento continuo)
+  var ST_IDLE=0,ST_DESCEND=1,ST_WALK=2,ST_CLIMB=3,ST_ENTER=4,ST_INSIDE=5,ST_REATTACH=6;
   var wbState=ST_IDLE,wbFrame=0;
   var wbX=0,wbY=0,wbOp=0;
   var wbSX=0,wbSY=0,wbDX=0,wbDY=0;
   var wbWalkF=0;
 
   // Frame per stato (~30fps) - discesa LENTA
-  var FR_DET=30,FR_DESC=120,FR_WALK=90,FR_CLIMB=55,FR_ENT=30,FR_INSIDE=90,FR_REAT=30;
+  var FR_DESC=120,FR_WALK=90,FR_CLIMB=55,FR_ENT=30,FR_INSIDE=90;
 
   // Posizione VISIVA reale del bambino sull'altalena
   // L'altalena ruota, quindi dobbiamo calcolare la posizione tenendo conto della rotazione
@@ -4943,20 +4943,25 @@ fetchWeather();
   // Avvia passeggiata del bambino
   function startBoyWalk(){
     if(wbState!==ST_IDLE)return;
-    var sp=swingBoyVisualPos();
     var btY=bonirolaTextY();
     var ip=iconCenterPos();
-    if(!sp||btY===null||!ip){setTimeout(startBoyWalk,5000);return;}
+    if(btY===null||!ip){setTimeout(startBoyWalk,5000);return;}
     // Ferma l'altalena e mettila dritta
     pauseSwing();
     // Ricalcola la posizione con altalena ferma
-    sp=swingBoyVisualPos();
-    wbX=sp.x;wbY=sp.y;wbOp=0;
+    var sp=swingBoyVisualPos();
+    // Scambio ISTANTANEO: nascondi bambino altalena, mostra bambino che cammina
+    // nella STESSA posizione, stessa opacita' piena - nessuno stacco visibile
+    setSwingBoyVis(false);
+    wbX=sp.x;wbY=sp.y;
+    wbDiv.style.left=wbX+'px';
+    wbDiv.style.top=wbY+'px';
+    wbDiv.style.opacity=1;
+    wbDiv.style.transform='scale(1)';
+    resetWalk();
     // La discesa e' DIRITTA: stessa X, solo Y cambia
     wbSX=sp.x;wbSY=sp.y;wbDX=sp.x;wbDY=btY;
-    wbWalkF=0;wbState=ST_DETACH;wbFrame=0;
-    setSwingBoyVis(false);
-    resetWalk();
+    wbWalkF=0;wbState=ST_DESCEND;wbFrame=0;
   }
 
   // Loop animazione ~30fps
@@ -4964,24 +4969,8 @@ fetchWeather();
     wbFrame++;
     var t,e;
     switch(wbState){
-      case ST_DETACH:
-        // Fade in bambino che cammina, posizione fissa sull'altalena
-        wbOp=Math.min(1,wbFrame/FR_DET);
-        wbDiv.style.opacity=wbOp;
-        wbDiv.style.left=wbX+'px';
-        wbDiv.style.top=wbY+'px';
-        wbDiv.style.transform='scale(1)';
-        if(wbFrame>=FR_DET){
-          wbState=ST_DESCEND;wbFrame=0;
-          wbSX=wbX;wbSY=wbY;
-          // Scende DIRITTO: stessa X dell'altalena, Y del testo Bonirola
-          wbDX=wbX;
-          var btY=bonirolaTextY();
-          if(btY!==null)wbDY=btY;
-        }
-        break;
       case ST_DESCEND:
-        // Scende DIRITTO (stessa X) verso la scritta Bonirola - LENTO
+        // Scende DIRITTO (stessa X) verso la scritta Bonirola - LENTO e continuo
         t=Math.min(1,wbFrame/FR_DESC);
         e=easeIO(t);
         wbX=wbSX+(wbDX-wbSX)*e;
@@ -5040,24 +5029,29 @@ fetchWeather();
           wbState=ST_REATTACH;wbFrame=0;
           var sp=swingBoyVisualPos();
           if(sp){wbX=sp.x;wbY=sp.y;}
-          wbOp=0;
+          wbDiv.style.left=wbX+'px';
+          wbDiv.style.top=wbY+'px';
+          wbDiv.style.transform='scale(1)';
           resetWalk();
         }
         break;
       case ST_REATTACH:
-        // Riappare sull'altalena con solo fade (NO scaling)
-        var sp2=swingBoyVisualPos();
-        if(sp2){wbX=sp2.x;wbY=sp2.y;}
-        wbOp=Math.min(1,wbFrame/FR_REAT);
-        wbDiv.style.left=wbX+'px';
-        wbDiv.style.top=wbY+'px';
-        wbDiv.style.transform='scale(1)';
-        wbDiv.style.opacity=wbOp;
-        if(wbFrame>=FR_REAT){
-          wbState=ST_IDLE;wbFrame=0;
-          wbDiv.style.opacity=0;
+        // Riappare sull'altalena - istantaneo come lo stacco
+        // Primo frame: posizione esatta + opacita' piena + mostra altalena
+        if(wbFrame===1){
+          var sp2=swingBoyVisualPos();
+          if(sp2){wbX=sp2.x;wbY=sp2.y;}
+          wbDiv.style.left=wbX+'px';
+          wbDiv.style.top=wbY+'px';
+          wbDiv.style.opacity=1;
+          wbDiv.style.transform='scale(1)';
           setSwingBoyVis(true);
           resumeSwing();
+        }
+        // Pausa breve poi nascondi il bambino che cammina
+        if(wbFrame>=5){
+          wbDiv.style.opacity=0;
+          wbState=ST_IDLE;wbFrame=0;
           setTimeout(startBoyWalk,20000+Math.random()*20000);
         }
         break;
