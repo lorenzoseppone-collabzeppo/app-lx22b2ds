@@ -5224,45 +5224,66 @@ fetchWeather();
   setTimeout(startGirlWalk,12000);
 
   // ---- STRADINA IMMAGINARIA ----
-  // Parte dall'icona scuola (sinistra) → curva verso Bonirola → arriva sotto altalena (destra)
-  // Stile: tratteggiata chiara, leggera, come nella foto
+  // Striscia gialla continua: parte da icona scuola → sale verso altalena
+  // Come nella foto: gialla, continua, curva, in salita, più larga alla partenza
   var pathSvg=document.createElementNS('http://www.w3.org/2000/svg','svg');
   pathSvg.style.cssText='position:absolute;pointer-events:none;z-index:0;overflow:visible;top:0;left:0;width:1px;height:1px;';
   document.body.appendChild(pathSvg);
 
+  // Striscia gialla - due path per fare l'effetto "strada" con bordi
+  // Bordo scuro
+  var pathBorder=document.createElementNS('http://www.w3.org/2000/svg','path');
+  pathBorder.setAttribute('fill','none');
+  pathBorder.setAttribute('stroke','rgba(180,150,0,0.25)');
+  pathBorder.setAttribute('stroke-width','8');
+  pathBorder.setAttribute('stroke-linecap','round');
+  pathBorder.setAttribute('stroke-linejoin','round');
+  pathSvg.appendChild(pathBorder);
+
+  // Striscia gialla principale
   var pathEl=document.createElementNS('http://www.w3.org/2000/svg','path');
   pathEl.setAttribute('fill','none');
-  pathEl.setAttribute('stroke','rgba(255,255,255,0.18)');
-  pathEl.setAttribute('stroke-width','2');
-  pathEl.setAttribute('stroke-dasharray','4,6');
+  pathEl.setAttribute('stroke','rgba(255,215,0,0.35)');
+  pathEl.setAttribute('stroke-width','5');
   pathEl.setAttribute('stroke-linecap','round');
+  pathEl.setAttribute('stroke-linejoin','round');
   pathSvg.appendChild(pathEl);
+
+  // Linea chiara interna
+  var pathInner=document.createElementNS('http://www.w3.org/2000/svg','path');
+  pathInner.setAttribute('fill','none');
+  pathInner.setAttribute('stroke','rgba(255,240,100,0.25)');
+  pathInner.setAttribute('stroke-width','2');
+  pathInner.setAttribute('stroke-linecap','round');
+  pathSvg.appendChild(pathInner);
 
   function drawWalkingPath(){
     var bp=bonirolaTextPos();
     var ip=iconCenterPos();
     if(!bp||!ip) return;
 
-    // Partenza: icona scuola (centro in basso)
+    // Partenza: sotto icona scuola (basso)
     var sx=ip.x+13;
     var sy=ip.y+43;
 
-    // Arrivo: sotto l'altalena (PIÙ IN ALTO - va in salita!)
+    // Arrivo: sotto altalena (alto - in salita!)
     var lx=parseInt(el.style.left)||0;
     var ly=parseInt(el.style.top)||0;
     var endX=lx+41+13;
     var endY=ly+65+4;
 
-    // Punto di controllo: sopra la linea retta → curva che SALE verso altalena
-    // Metto il control point più in alto del midpoint per fare la salita
-    var midX=(sx+endX)/2;
-    var midY=(sy+endY)/2;
-    var cpx=midX+20; // leggermente a destra
-    var cpy=Math.min(sy,endY)-30; // SOPRA il punto più alto = curva in salita
+    // Bezier cubica per curva naturale in salita
+    // Punto di controllo 1: sale dalla scuola verso Bonirola
+    var cp1x=sx+30;
+    var cp1y=sy-40;
+    // Punto di controllo 2: curva verso l'altalena
+    var cp2x=endX-40;
+    var cp2y=endY+20;
 
-    // Quadratic bezier: icona → sale verso bonirola → arriva altalena
-    var d='M '+sx.toFixed(1)+','+sy.toFixed(1)+' Q '+cpx.toFixed(1)+','+cpy.toFixed(1)+' '+endX.toFixed(1)+','+endY.toFixed(1);
+    var d='M '+sx.toFixed(1)+','+sy.toFixed(1)+' C '+cp1x.toFixed(1)+','+cp1y.toFixed(1)+' '+cp2x.toFixed(1)+','+cp2y.toFixed(1)+' '+endX.toFixed(1)+','+endY.toFixed(1);
+    pathBorder.setAttribute('d',d);
     pathEl.setAttribute('d',d);
+    pathInner.setAttribute('d',d);
   }
 
   // Aggiorna la stradina quando si riposiziona l'altalena
