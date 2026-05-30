@@ -2212,7 +2212,7 @@ function render(){
     html+='<div class="teacher-field"><span>PIN:</span>';
     html+='<div class="teacher-name" style="cursor:default;color:'+(coorPinVal?'#ffd700':'#ff6b6b')+'">'+(coorPinVal?coorPinVal.replace(/./g,'\u2022'):'non impostato')+'</div>';
     html+='</div>';
-    html+='<button onclick="App.changeCoordinatricePin()" style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:8px;border:1.5px solid '+(coorPinVal?'#ffd700':'#ff6b6b')+';background:'+(coorPinVal?'rgba(255,215,0,0.15)':'rgba(255,107,107,0.15)')+';color:'+(coorPinVal?'#ffd700':'#ff6b6b')+';font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:0.3px;transition:all 0.15s" title="Modifica PIN COORDINATRICE"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> MODIFICA PIN</button>';
+    html+='<button onclick="App.changeCoordinatricePin()" style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:8px;border:1.5px solid '+(coorPinVal?'#ffd700':'#ff6b6b')+';background:'+(coorPinVal?'rgba(255,215,0,0.15)':'rgba(255,107,107,0.15)')+';color:'+(coorPinVal?'#ffd700':'#ff6b6b')+';font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:0.3px;transition:all 0.15s" title="Modifica PIN COORDINATRICE"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> MODIFICA PIN COORDINATRICE</button>';
   } else {
     html+='<div class="teacher-field"><span>Insegnante 1:</span>';
     if(editingTeacher1){html+='<input class="teacher-name-input" id="teacher1Input" value="'+esc(teacher1)+'" onblur="App.finishEditTeacher1()" onkeydown="if(event.key===\'Enter\')App.finishEditTeacher1()"/>';}
@@ -2227,7 +2227,7 @@ function render(){
     html+='<div class="teacher-field"><span>PIN:</span>';
     html+='<div class="teacher-name" style="cursor:default;color:'+(classPinVal?'#ffd700':'#ff6b6b')+'">'+(classPinVal?classPinVal.replace(/./g,'\u2022'):'non impostato')+'</div>';
     html+='</div>';
-    html+='<button onclick="App.changeClassPin()" style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:8px;border:1.5px solid '+(classPinVal?'#ffd700':'#ff6b6b')+';background:'+(classPinVal?'rgba(255,215,0,0.15)':'rgba(255,107,107,0.15)')+';color:'+(classPinVal?'#ffd700':'#ff6b6b')+';font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:0.3px;transition:all 0.15s" title="Modifica PIN classe"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> MODIFICA PIN</button>';
+    html+='<button onclick="App.changeClassPin()" style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:8px;border:1.5px solid '+(classPinVal?'#ffd700':'#ff6b6b')+';background:'+(classPinVal?'rgba(255,215,0,0.15)':'rgba(255,107,107,0.15)')+';color:'+(classPinVal?'#ffd700':'#ff6b6b')+';font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:0.3px;transition:all 0.15s" title="Modifica PIN classe"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> MODIFICA PIN CLASSE</button>';
   }
   html+='</div>';
   html+='</div>';
@@ -2301,8 +2301,8 @@ function render(){
   html+='<div style="display:flex;gap:6px;margin-top:4px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.15)">';
   html+='<div class="class-tab-add" style="flex:1" onclick="App.addClass()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Aggiungi Classe</div>';
   if(currentUser&&currentClassId){
-    if(isCoordinatrice()){html+='<div class="class-tab" style="flex:1;border-color:rgba(255,255,255,0.5);color:white;font-size:11px" onclick="App.changeCoordinatricePin()" title="Modifica PIN COORDINATRICE (richiede PIN attuale)">\ud83d\udd12 MODIFICA PIN</div>';}
-    else{html+='<div class="class-tab" style="flex:1;border-color:rgba(255,255,255,0.5);color:white;font-size:11px" onclick="App.changeClassPin()" title="Modifica PIN classe (richiede PIN attuale)">\ud83d\udd12 MODIFICA PIN</div>';}
+    if(isCoordinatrice()){html+='<div class="class-tab" style="flex:1;border-color:rgba(255,255,255,0.5);color:white;font-size:10px" onclick="App.changeCoordinatricePin()" title="Modifica PIN COORDINATRICE (richiede PIN attuale)">\ud83d\udd12 MODIFICA PIN COORDINATRICE</div>';}
+    else{html+='<div class="class-tab" style="flex:1;border-color:rgba(255,255,255,0.5);color:white;font-size:11px" onclick="App.changeClassPin()" title="Modifica PIN classe (richiede PIN attuale)">\ud83d\udd12 MODIFICA PIN CLASSE</div>';}
   }
   html+='</div>';
   html+='</div>';
