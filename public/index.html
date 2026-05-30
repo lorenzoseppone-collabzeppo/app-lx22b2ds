@@ -4817,10 +4817,10 @@ fetchWeather();
     '<path d="M10,13 L9,25 L21,25 L20,13 Z" fill="#4CAF50" stroke="#388E3C" stroke-width="0.4"/>'+
     '<line id="wbLArm" x1="10" y1="15" x2="6" y2="23" stroke="#FFD5B8" stroke-width="2" stroke-linecap="round"/>'+
     '<line id="wbRArm" x1="20" y1="15" x2="24" y2="23" stroke="#FFD5B8" stroke-width="2" stroke-linecap="round"/>'+
-    '<line id="wbLLeg" x1="13" y1="25" x2="10" y2="42" stroke="#FFD5B8" stroke-width="2" stroke-linecap="round"/>'+
-    '<line id="wbRLeg" x1="17" y1="25" x2="20" y2="42" stroke="#FFD5B8" stroke-width="2" stroke-linecap="round"/>'+
-    '<ellipse id="wbLShoe" cx="9" cy="43" rx="2.5" ry="1.2" fill="#333"/>'+
-    '<ellipse id="wbRShoe" cx="21" cy="43" rx="2.5" ry="1.2" fill="#333"/>'+
+    '<line id="wbLLeg" x1="13" y1="25" x2="10" y2="39" stroke="#FFD5B8" stroke-width="2" stroke-linecap="round"/>'+
+    '<line id="wbRLeg" x1="17" y1="25" x2="20" y2="39" stroke="#FFD5B8" stroke-width="2" stroke-linecap="round"/>'+
+    '<ellipse id="wbLShoe" cx="9" cy="40" rx="2.5" ry="1.2" fill="#333"/>'+
+    '<ellipse id="wbRShoe" cx="21" cy="40" rx="2.5" ry="1.2" fill="#333"/>'+
   '</svg>';
   wbDiv.innerHTML=wbSvgStr;
 
@@ -4895,19 +4895,19 @@ fetchWeather();
     var ls=Math.sin(ph)*6;
     var as=Math.sin(ph)*5;
     var bn=Math.abs(Math.sin(ph))*1;
-    wbLLeg.setAttribute('x2',String(10+ls));wbLLeg.setAttribute('y2',String(42-bn));
-    wbRLeg.setAttribute('x2',String(20-ls));wbRLeg.setAttribute('y2',String(42-bn));
-    wbLShoe.setAttribute('cx',String(9+ls));wbLShoe.setAttribute('cy',String(43-bn));
-    wbRShoe.setAttribute('cx',String(21-ls));wbRShoe.setAttribute('cy',String(43-bn));
+    wbLLeg.setAttribute('x2',String(10+ls));wbLLeg.setAttribute('y2',String(39-bn));
+    wbRLeg.setAttribute('x2',String(20-ls));wbRLeg.setAttribute('y2',String(39-bn));
+    wbLShoe.setAttribute('cx',String(9+ls));wbLShoe.setAttribute('cy',String(40-bn));
+    wbRShoe.setAttribute('cx',String(21-ls));wbRShoe.setAttribute('cy',String(40-bn));
     wbLArm.setAttribute('x2',String(6-as));wbLArm.setAttribute('y2',String(23+bn));
     wbRArm.setAttribute('x2',String(24+as));wbRArm.setAttribute('y2',String(23+bn));
   }
 
   function resetWalk(){
-    wbLLeg.setAttribute('x2','10');wbLLeg.setAttribute('y2','42');
-    wbRLeg.setAttribute('x2','20');wbRLeg.setAttribute('y2','42');
-    wbLShoe.setAttribute('cx','9');wbLShoe.setAttribute('cy','43');
-    wbRShoe.setAttribute('cx','21');wbRShoe.setAttribute('cy','43');
+    wbLLeg.setAttribute('x2','10');wbLLeg.setAttribute('y2','39');
+    wbRLeg.setAttribute('x2','20');wbRLeg.setAttribute('y2','39');
+    wbLShoe.setAttribute('cx','9');wbLShoe.setAttribute('cy','40');
+    wbRShoe.setAttribute('cx','21');wbRShoe.setAttribute('cy','40');
     wbLArm.setAttribute('x2','6');wbLArm.setAttribute('y2','23');
     wbRArm.setAttribute('x2','24');wbRArm.setAttribute('y2','23');
   }
@@ -5021,10 +5021,10 @@ fetchWeather();
     '<path d="M10,13 L9,25 L21,25 L20,13 Z" fill="#FF69B4" stroke="#FF1493" stroke-width="0.4"/>'+
     '<line id="wgLArm" x1="10" y1="15" x2="6" y2="23" stroke="#FFD5B8" stroke-width="2" stroke-linecap="round"/>'+
     '<line id="wgRArm" x1="20" y1="15" x2="24" y2="23" stroke="#FFD5B8" stroke-width="2" stroke-linecap="round"/>'+
-    '<line id="wgLLeg" x1="13" y1="25" x2="10" y2="42" stroke="#FFD5B8" stroke-width="2" stroke-linecap="round"/>'+
-    '<line id="wgRLeg" x1="17" y1="25" x2="20" y2="42" stroke="#FFD5B8" stroke-width="2" stroke-linecap="round"/>'+
-    '<ellipse id="wgLShoe" cx="9" cy="43" rx="2.5" ry="1.2" fill="#FF69B4"/>'+
-    '<ellipse id="wgRShoe" cx="21" cy="43" rx="2.5" ry="1.2" fill="#FF69B4"/>'+
+    '<line id="wgLLeg" x1="13" y1="25" x2="10" y2="39" stroke="#FFD5B8" stroke-width="2" stroke-linecap="round"/>'+
+    '<line id="wgRLeg" x1="17" y1="25" x2="20" y2="39" stroke="#FFD5B8" stroke-width="2" stroke-linecap="round"/>'+
+    '<ellipse id="wgLShoe" cx="9" cy="40" rx="2.5" ry="1.2" fill="#FF69B4"/>'+
+    '<ellipse id="wgRShoe" cx="21" cy="40" rx="2.5" ry="1.2" fill="#FF69B4"/>'+
   '</svg>';
   wgDiv.innerHTML=wgSvgStr;
 
@@ -5066,19 +5066,19 @@ fetchWeather();
     var ls=Math.sin(ph)*6;
     var as=Math.sin(ph)*5;
     var bn=Math.abs(Math.sin(ph))*1;
-    wgLLeg.setAttribute('x2',String(10+ls));wgLLeg.setAttribute('y2',String(42-bn));
-    wgRLeg.setAttribute('x2',String(20-ls));wgRLeg.setAttribute('y2',String(42-bn));
-    wgLShoe.setAttribute('cx',String(9+ls));wgLShoe.setAttribute('cy',String(43-bn));
-    wgRShoe.setAttribute('cx',String(21-ls));wgRShoe.setAttribute('cy',String(43-bn));
+    wgLLeg.setAttribute('x2',String(10+ls));wgLLeg.setAttribute('y2',String(39-bn));
+    wgRLeg.setAttribute('x2',String(20-ls));wgRLeg.setAttribute('y2',String(39-bn));
+    wgLShoe.setAttribute('cx',String(9+ls));wgLShoe.setAttribute('cy',String(40-bn));
+    wgRShoe.setAttribute('cx',String(21-ls));wgRShoe.setAttribute('cy',String(40-bn));
     wgLArm.setAttribute('x2',String(6-as));wgLArm.setAttribute('y2',String(23+bn));
     wgRArm.setAttribute('x2',String(24+as));wgRArm.setAttribute('y2',String(23+bn));
   }
 
   function resetGirlWalk(){
-    wgLLeg.setAttribute('x2','10');wgLLeg.setAttribute('y2','42');
-    wgRLeg.setAttribute('x2','20');wgRLeg.setAttribute('y2','42');
-    wgLShoe.setAttribute('cx','9');wgLShoe.setAttribute('cy','43');
-    wgRShoe.setAttribute('cx','21');wgRShoe.setAttribute('cy','43');
+    wgLLeg.setAttribute('x2','10');wgLLeg.setAttribute('y2','39');
+    wgRLeg.setAttribute('x2','20');wgRLeg.setAttribute('y2','39');
+    wgLShoe.setAttribute('cx','9');wgLShoe.setAttribute('cy','40');
+    wgRShoe.setAttribute('cx','21');wgRShoe.setAttribute('cy','40');
     wgLArm.setAttribute('x2','6');wgLArm.setAttribute('y2','23');
     wgRArm.setAttribute('x2','24');wgRArm.setAttribute('y2','23');
   }
