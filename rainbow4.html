@@ -4948,44 +4948,23 @@ fetchWeather();
         break;
 
       case ST_JOURNEY:
-        // UNICO PERCORSO CONTINUO con un solo parametro t: 0→1
-        // Nessuna pausa tra i tratti - e' tutto un movimento!
+        // PERCORSO CONTINUO con curva di Bezier quadratica
+        // P0=altalena, P1=scritta Bonirola (punto di controllo), P2=scuola
+        // Il bambino scende curvando gia' verso la scuola - nessuna pausa!
         var t=Math.min(1,wbFrame/TOTAL_FRAMES);
-        // Usiamo easeInOut per tutto: accelera all'inizio, rallenta alla fine
-        // Ma senza pause tra i segmenti!
-        var et=t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
-        var px,py,walkF;
+        // easeOut: parte veloce, rallona alla fine (nessun fermo all'inizio)
+        var et=1-Math.pow(1-t,2);
 
-        if(et<0.35){
-          // Tratto 1: altalena → Bonirola (discesa, 35% del percorso)
-          var s=et/0.35; // 0→1 dentro questo tratto
-          var se=1-Math.pow(1-s,2); // easeOut: parte veloce
-          px=lerp(wp0x,wp1x,se);
-          py=lerp(wp0y,wp1y,se);
-          walkF=false; // non cammina ancora, sta scendendo
-        } else if(et<0.75){
-          // Tratto 2: Bonirola → verso scuola (camminata, 40%)
-          var s=(et-0.35)/0.4;
-          var se=s<0.5?2*s*s:1-Math.pow(-2*s+2,2)/2;
-          px=lerp(wp1x,lerp(wp1x,wp2x,0.5),se);
-          py=lerp(wp1y,lerp(wp1y,wp2y,0.3),se);
-          walkF=true;
-        } else {
-          // Tratto 3: risalita verso icona scuola (25%)
-          var s=(et-0.75)/0.25;
-          var se=s<0.5?2*s*s:1-Math.pow(-2*s+2,2)/2;
-          px=lerp(lerp(wp1x,wp2x,0.5),wp2x,se);
-          py=lerp(lerp(wp1y,wp2y,0.3),wp2y,se);
-          walkF=true;
-        }
+        // Bezier quadratica: B(t) = (1-t)²·P0 + 2(1-t)t·P1 + t²·P2
+        var omt=1-et; // 1 - t
+        var px=omt*omt*wp0x + 2*omt*et*wp1x + et*et*wp2x;
+        var py=omt*omt*wp0y + 2*omt*et*wp1y + et*et*wp2y;
 
         wbDiv.style.left=px+'px';
         wbDiv.style.top=py+'px';
 
-        // Camminata durante i tratti 2 e 3
-        if(walkF){
-          updateWalk(wbFrame);
-        }
+        // Camminata sempre attiva (il bambino si muove sempre)
+        updateWalk(wbFrame);
 
         // Fade finale: ultimi frame si dissolve verso la scuola
         if(et>0.85){
