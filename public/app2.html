@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
 <title>Registro di Classe</title>
-<meta name="version" content="2025-05-30-v60-giostra-piccola"/>
+<meta name="version" content="2025-05-30-v61-giostra-posizione"/>
 <meta name="description" content="Registro di Classe per la gestione della classe"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a1a2e'><path d='M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z'/></svg>"/>
 <style>
@@ -2179,7 +2179,7 @@ function render(){
   var displayClassName=(currentClassId&&classes[currentClassId])?classes[currentClassId].name:className;
   if(editingClass&&!isCoordinatrice()){html+='<input class="class-name-input" id="classInput" value="'+esc(displayClassName.toUpperCase())+'" onblur="App.finishEditClass()" onkeydown="if(event.key===\'Enter\')App.finishEditClass()"/>';}
   else{html+='<div class="class-name"'+(isCoordinatrice()?' style="cursor:default"':' onclick="App.startEditClass()" title="Clicca per modificare"')+'>'+esc(displayClassName.toUpperCase())+'</div>';}
-  html+='<div class="class-sub">REGISTRO DI CLASSE<span style="font-size:9px;opacity:0.4;margin-left:6px">v60</span>'+(isCoordinatrice()&&regularClassCount()>0?' · '+regularClassCount()+' classi':'')+'</div>';
+  html+='<div class="class-sub">REGISTRO DI CLASSE<span style="font-size:9px;opacity:0.4;margin-left:6px">v61</span>'+(isCoordinatrice()&&regularClassCount()>0?' · '+regularClassCount()+' classi':'')+'</div>';
   html+='<div class="header-teachers">';
   if(isCoordinatrice()){
     // COORDINATRICE: un solo campo "Coordinatrice" + campo PIN
@@ -4788,20 +4788,14 @@ fetchWeather();
   }
   requestAnimationFrame(animateGiostra);
 
-  // Posizionamento
+  // Posizionamento: angolo in basso a destra dell'header, nello spazio libero
   function positionGiostra(){
-    var weatherEl=document.querySelector('.header-weather');
-    if(!weatherEl){
-      var dateEl=document.getElementById('headerClockDate');
-      if(!dateEl) return;
-      var r=dateEl.getBoundingClientRect();
-      el.style.left=(r.right-80)+'px';
-      el.style.top=(r.bottom+4)+'px';
-      return;
-    }
-    var wr=weatherEl.getBoundingClientRect();
-    el.style.left=(wr.right-80)+'px';
-    el.style.top=(wr.bottom+4)+'px';
+    var headerEl=document.querySelector('.header');
+    if(!headerEl) return;
+    var hr=headerEl.getBoundingClientRect();
+    // Posiziona la giostra in basso a destra dell'header
+    el.style.left=(hr.right-el.offsetWidth-8)+'px';
+    el.style.top=(hr.bottom-el.offsetHeight-8)+'px';
   }
 
   positionGiostra();
