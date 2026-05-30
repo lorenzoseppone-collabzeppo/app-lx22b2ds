@@ -5344,10 +5344,12 @@ fetchWeather();
     var hW=hr.width||300;
     var hH=hr.height||200;
 
-    var goRight=Math.random()>0.5;
-    var sx,sy,ex,ey;
-    if(goRight){sx=hLeft-30;sy=hTop-10;ex=hLeft+hW+30;ey=hTop+hH+10;}
-    else{sx=hLeft+hW+30;sy=hTop-10;ex=hLeft-30;ey=hTop+hH+10;}
+    // Solo da sinistra a destra, altezze diverse
+    var yOff=Math.random()*hH*0.6; // parte da altezza casuale nel 60% superiore
+    var sx=hLeft-30;
+    var sy=hTop+yOff;
+    var ex=hLeft+hW+30;
+    var ey=sy+hH*0.3+Math.random()*hH*0.3; // scende un po' verso il basso
 
     m.startX=sx;m.startY=sy;
     m.dx=ex-sx;m.dy=ey-sy;
