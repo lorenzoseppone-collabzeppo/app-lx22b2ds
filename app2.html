@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
 <title>Registro di Classe</title>
-<meta name="version" content="2025-05-30-v65-lettere-bianco"/>
+<meta name="version" content="2025-05-30-v66-altalena-meteo"/>
 <meta name="description" content="Registro di Classe per la gestione della classe"/>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231a1a2e'><path d='M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z'/></svg>"/>
 <style>
@@ -2194,7 +2194,7 @@ function render(){
     }
     html+='<div class="class-name"'+(isCoordinatrice()?' style="cursor:default"':' onclick="App.startEditClass()" title="Clicca per modificare"')+'>'+animatedName+'</div>';
   }
-  html+='<div class="class-sub">REGISTRO DI CLASSE<span style="font-size:9px;opacity:0.4;margin-left:6px">v65</span>'+(isCoordinatrice()&&regularClassCount()>0?' · '+regularClassCount()+' classi':'')+'</div>';
+  html+='<div class="class-sub">REGISTRO DI CLASSE<span style="font-size:9px;opacity:0.4;margin-left:6px">v66</span>'+(isCoordinatrice()&&regularClassCount()>0?' · '+regularClassCount()+' classi':'')+'</div>';
   html+='<div class="header-teachers">';
   if(isCoordinatrice()){
     // COORDINATRICE: un solo campo "Coordinatrice" + campo PIN
@@ -4601,13 +4601,20 @@ fetchWeather();
   el.style.transformOrigin='60px 2px';
 
   function positionSwing(){
-    var dateEl=document.getElementById('headerClockDate');
-    if(!dateEl) return;
-    var r=dateEl.getBoundingClientRect();
-    var x=r.left+r.width/2-48;
-    var y=r.bottom+2;
-    el.style.left=x+'px';
-    el.style.top=y+'px';
+    var weatherEl=document.querySelector('.header-weather');
+    if(!weatherEl){
+      var dateEl=document.getElementById('headerClockDate');
+      if(!dateEl) return;
+      var r=dateEl.getBoundingClientRect();
+      el.style.left=(r.right-48)+'px';
+      el.style.top=(r.bottom+2)+'px';
+      el.style.animation='swingBoth 3.2s ease-in-out infinite';
+      return;
+    }
+    var wr=weatherEl.getBoundingClientRect();
+    // Appesa sotto il blocco meteo, centrata rispetto ad esso
+    el.style.left=(wr.left+wr.width/2-48)+'px';
+    el.style.top=(wr.bottom+2)+'px';
     el.style.animation='swingBoth 3.2s ease-in-out infinite';
   }
 
