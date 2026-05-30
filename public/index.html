@@ -2222,7 +2222,7 @@ function render(){
     html+='</div>';
     html+='<button onclick="App.changeCoordinatricePin()" style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:8px;border:1.5px solid '+(coorPinVal?'#ffd700':'#ff6b6b')+';background:'+(coorPinVal?'rgba(255,215,0,0.15)':'rgba(255,107,107,0.15)')+';color:'+(coorPinVal?'#ffd700':'#ff6b6b')+';font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:0.3px;transition:all 0.15s" title="Modifica PIN COORDINATRICE"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> MODIFICA PIN COORDINATRICE</button>';
   } else {
-    html+='<div class="teacher-field"><span>Insegnante 1:</span>';
+    html+='<div class="teacher-field" id="teacher1Field"><span>Insegnante 1:</span>';
     if(editingTeacher1){html+='<input class="teacher-name-input" id="teacher1Input" value="'+esc(teacher1)+'" onblur="App.finishEditTeacher1()" onkeydown="if(event.key===\'Enter\')App.finishEditTeacher1()"/>';}
     else{html+='<div class="teacher-name" onclick="App.startEditTeacher1()" title="Clicca per modificare">'+esc(teacher1||'—')+'</div>';}
     html+='</div>';
@@ -4440,8 +4440,26 @@ fetchWeather();
     return {x:w-160,y:30};
   }
 
+  function getRestPosC(){
+    var t1=document.getElementById('teacher1Field');
+    if(t1){
+      var r=t1.getBoundingClientRect();
+      var legOff=74/96*80;
+      return {x:r.left+r.width*0.5-45,y:r.top-legOff-4};
+    }
+    var tRow=document.querySelector('.header-teachers');
+    if(tRow){
+      var r2=tRow.getBoundingClientRect();
+      var legOff2=74/96*80;
+      return {x:r2.left+r2.width*0.25-45,y:r2.top-legOff2-4};
+    }
+    return {x:window.innerWidth*0.25,y:80};
+  }
+
   function getRestPos(){
-    return bflySpot===0?getRestPosA():getRestPosB();
+    if(bflySpot===0) return getRestPosA();
+    if(bflySpot===1) return getRestPosB();
+    return getRestPosC();
   }
 
   function restOnDate(){
@@ -4461,7 +4479,7 @@ fetchWeather();
   function startFlying(){
     if(isFlying) return;
     isFlying=true;
-    bflySpot=bflySpot===0?1:0;
+    bflySpot=(bflySpot+1)%3;
     var curX=parseInt(bfly.style.left)||80;
     var curY=parseInt(bfly.style.top)||40;
     bfly.style.animation='none';
