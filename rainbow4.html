@@ -5394,10 +5394,14 @@ fetchWeather();
 
     // Traiettorie AD ARCO ∩: parte sinistra alta → arriva destra bassa, curva ad arco
     // Il centro della curva è PIÙ IN ALTO dei bordi (arco, non sorriso)
+    // Include traiettorie che passano anche negli angoli dell'header
     var paths=[
       {sx:0,  sy:0.10, ex:1,   ey:0.30, curve:0.07 },  // alta: 10%→30%
       {sx:0,  sy:0.25, ex:1,   ey:0.50, curve:0.06 },  // media: 25%→50%
-      {sx:0,  sy:0.45, ex:1,   ey:0.75, curve:0.05 }   // bassa: 45%→75%
+      {sx:0,  sy:0.45, ex:1,   ey:0.75, curve:0.05 },  // bassa: 45%→75%
+      {sx:0,  sy:0.02, ex:1,   ey:0.20, curve:0.08 },  // angolo alto-sinistra → destra
+      {sx:0,  sy:0.60, ex:1,   ey:0.95, curve:0.04 },  // sinistra → angolo basso-destra
+      {sx:0,  sy:0.05, ex:0.8, ey:0.98, curve:0.06 }   // angolo alto-sinistra → basso
     ];
     var p=paths[Math.floor(Math.random()*paths.length)];
 
