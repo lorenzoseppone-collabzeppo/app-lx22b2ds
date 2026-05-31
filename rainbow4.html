@@ -5293,6 +5293,28 @@ fetchWeather();
   pathInner2.setAttribute('stroke-linecap','round');
   pathSvg.appendChild(pathInner2);
 
+  // PEZZETTINO RETTO - alla fine della striscia sotto, orizzontale verso destra (scuola)
+  var pathBorder3=document.createElementNS('http://www.w3.org/2000/svg','path');
+  pathBorder3.setAttribute('fill','none');
+  pathBorder3.setAttribute('stroke','rgba(160,130,0,0.3)');
+  pathBorder3.setAttribute('stroke-width','9');
+  pathBorder3.setAttribute('stroke-linecap','round');
+  pathSvg.appendChild(pathBorder3);
+
+  var pathEl3=document.createElementNS('http://www.w3.org/2000/svg','path');
+  pathEl3.setAttribute('fill','none');
+  pathEl3.setAttribute('stroke','rgba(255,200,0,0.5)');
+  pathEl3.setAttribute('stroke-width','6');
+  pathEl3.setAttribute('stroke-linecap','round');
+  pathSvg.appendChild(pathEl3);
+
+  var pathInner3=document.createElementNS('http://www.w3.org/2000/svg','path');
+  pathInner3.setAttribute('fill','none');
+  pathInner3.setAttribute('stroke','rgba(255,235,80,0.35)');
+  pathInner3.setAttribute('stroke-width','2');
+  pathInner3.setAttribute('stroke-linecap','round');
+  pathSvg.appendChild(pathInner3);
+
   function drawWalkingPath(){
     var bp=bonirolaTextPos();
     var ip=iconCenterPos();
@@ -5336,6 +5358,13 @@ fetchWeather();
     pathBorder2.setAttribute('d',d2);
     pathEl2.setAttribute('d',d2);
     pathInner2.setAttribute('d',d2);
+
+    // PEZZETTINO RETTO - dalla fine della striscia sotto, va orizzontale verso destra (scuola)
+    var end2x=ex-15, end2y=ey+14;
+    var d3='M '+end2x.toFixed(1)+','+end2y.toFixed(1)+' L '+(end2x+30).toFixed(1)+','+end2y.toFixed(1);
+    pathBorder3.setAttribute('d',d3);
+    pathEl3.setAttribute('d',d3);
+    pathInner3.setAttribute('d',d3);
   }
 
   // Aggiorna la stradina quando si riposiziona l'altalena
