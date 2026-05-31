@@ -4743,7 +4743,7 @@ fetchWeather();
   
   function createWalkingChild(isGirl,startDelay){
     var el=document.createElement('div');
-    el.style.cssText='position:fixed;pointer-events:none;z-index:9997;';
+    el.style.cssText='position:fixed;pointer-events:none;z-index:15;';
     el.innerHTML=isGirl?girlSVG:boySVG;
     document.body.appendChild(el);
     
@@ -4757,13 +4757,15 @@ fetchWeather();
     var walkStart=0;
     
     function positionChild(){
+      var headerEl=document.querySelector('.header');
       var schoolIcon=document.querySelector('.header-icon');
-      if(!schoolIcon) return;
-      var r=schoolIcon.getBoundingClientRect();
-      targetX=r.left-5;
-      y=r.bottom-48;
+      if(!headerEl||!schoolIcon) return;
+      var hr=headerEl.getBoundingClientRect();
+      var sr=schoolIcon.getBoundingClientRect();
+      targetX=sr.left+sr.width/2-13;
+      y=hr.bottom-48;
       if(!placed){
-        x=-30-Math.random()*40;
+        x=hr.left-30-Math.random()*40;
         placed=true;
         walkStart=Date.now()+startDelay;
         walking=true;
@@ -4786,7 +4788,13 @@ fetchWeather();
           el.style.opacity='0';
           // Reset after a while to walk again
           setTimeout(function(){
-            x=-30-Math.random()*40;
+            var headerEl=document.querySelector('.header');
+            if(headerEl){
+              var hr=headerEl.getBoundingClientRect();
+              x=hr.left-30-Math.random()*40;
+            } else {
+              x=-30-Math.random()*40;
+            }
             walking=true;
             walkStart=Date.now();
             el.style.opacity='1';
