@@ -5330,8 +5330,8 @@ fetchWeather();
     pathInner.setAttribute('d',d);
     pathDash.setAttribute('d',d);
 
-    // SECONDA STRISCIA - parallela sotto (+14px su y per ogni punto)
-    var d2='M '+sx.toFixed(1)+','+(sy+14).toFixed(1)+' Q '+cpx.toFixed(1)+','+(cpy+14).toFixed(1)+' '+ex.toFixed(1)+','+(ey+14).toFixed(1);
+    // SECONDA STRISCIA - parallela sotto (+14px su y), finisce più avanti verso la scuola
+    var d2='M '+sx.toFixed(1)+','+(sy+14).toFixed(1)+' Q '+cpx.toFixed(1)+','+(cpy+14).toFixed(1)+' '+(ex+25).toFixed(1)+','+(ey+14).toFixed(1);
     pathBorder2.setAttribute('d',d2);
     pathEl2.setAttribute('d',d2);
     pathInner2.setAttribute('d',d2);
