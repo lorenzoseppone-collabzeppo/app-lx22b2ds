@@ -5266,6 +5266,33 @@ fetchWeather();
   pathDash.setAttribute('stroke-dasharray','6,8');
   pathSvg.appendChild(pathDash);
 
+  // SECONDA STRISCIA GIALLA - parallela sotto, per fare la strada a due bordi
+  // Bordo scuro seconda striscia
+  var pathBorder2=document.createElementNS('http://www.w3.org/2000/svg','path');
+  pathBorder2.setAttribute('fill','none');
+  pathBorder2.setAttribute('stroke','rgba(160,130,0,0.3)');
+  pathBorder2.setAttribute('stroke-width','9');
+  pathBorder2.setAttribute('stroke-linecap','round');
+  pathBorder2.setAttribute('stroke-linejoin','round');
+  pathSvg.appendChild(pathBorder2);
+
+  // Striscia gialla principale seconda
+  var pathEl2=document.createElementNS('http://www.w3.org/2000/svg','path');
+  pathEl2.setAttribute('fill','none');
+  pathEl2.setAttribute('stroke','rgba(255,200,0,0.5)');
+  pathEl2.setAttribute('stroke-width','6');
+  pathEl2.setAttribute('stroke-linecap','round');
+  pathEl2.setAttribute('stroke-linejoin','round');
+  pathSvg.appendChild(pathEl2);
+
+  // Linea chiara interna seconda
+  var pathInner2=document.createElementNS('http://www.w3.org/2000/svg','path');
+  pathInner2.setAttribute('fill','none');
+  pathInner2.setAttribute('stroke','rgba(255,235,80,0.35)');
+  pathInner2.setAttribute('stroke-width','2');
+  pathInner2.setAttribute('stroke-linecap','round');
+  pathSvg.appendChild(pathInner2);
+
   function drawWalkingPath(){
     var bp=bonirolaTextPos();
     var ip=iconCenterPos();
@@ -5302,6 +5329,12 @@ fetchWeather();
     pathEl.setAttribute('d',d);
     pathInner.setAttribute('d',d);
     pathDash.setAttribute('d',d);
+
+    // SECONDA STRISCIA - parallela sotto (+14px su y per ogni punto)
+    var d2='M '+sx.toFixed(1)+','+(sy+14).toFixed(1)+' Q '+cpx.toFixed(1)+','+(cpy+14).toFixed(1)+' '+ex.toFixed(1)+','+(ey+14).toFixed(1);
+    pathBorder2.setAttribute('d',d2);
+    pathEl2.setAttribute('d',d2);
+    pathInner2.setAttribute('d',d2);
   }
 
   // Aggiorna la stradina quando si riposiziona l'altalena
