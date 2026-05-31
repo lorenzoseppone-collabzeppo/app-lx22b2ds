@@ -4772,10 +4772,25 @@ fetchWeather();
   // Suona solo una volta per sessione
   if(sessionStorage.getItem('jinglePlayed')) return;
 
-  try{
-    var ctx=new (window.AudioContext||window.webkitAudioContext)();
-    if(!ctx) return;
+  function playJingle(){
+    // Evita doppio play
+    if(sessionStorage.getItem('jinglePlayed')) return;
+    sessionStorage.setItem('jinglePlayed','1');
 
+    try{
+      var ctx=new (window.AudioContext||window.webkitAudioContext)();
+      if(!ctx) return;
+
+      // Se sospeso, riprendi e poi suona
+      if(ctx.state==='suspended'){
+        ctx.resume().then(function(){ scheduleNotes(ctx); });
+      }else{
+        scheduleNotes(ctx);
+      }
+    }catch(e){}
+  }
+
+  function scheduleNotes(ctx){
     // Note xilofono: Do-Mi-Sol-Do alto (C5-E5-G5-C6) - allegra e scolastica
     var notes=[
       {freq:523.25, time:0,    dur:0.22},  // Do5
@@ -4784,31 +4799,32 @@ fetchWeather();
       {freq:1046.50,time:0.54, dur:0.35}   // Do6 (più lungo, nota finale)
     ];
 
+    var now=ctx.currentTime+0.05; // piccolo ritardo per sicurezza
+
     notes.forEach(function(n){
-      // Oscillatore principale (tono puro xilofono)
+      // Oscillatore principale (tono xilofono)
       var osc=ctx.createOscillator();
       osc.type='sine';
       osc.frequency.value=n.freq;
 
-      // Secondo oscillatore (armonica per effetto xilofono)
+      // Armonica xilofono
       var osc2=ctx.createOscillator();
       osc2.type='sine';
-      osc2.frequency.value=n.freq*3; // 3a armonica
+      osc2.frequency.value=n.freq*3;
 
-      // Guadagno principale con decay veloce (xilofono)
+      // Guadagno con decay veloce
       var gain=ctx.createGain();
-      gain.gain.setValueAtTime(0.25, ctx.currentTime+n.time);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+n.time+n.dur);
+      gain.gain.setValueAtTime(0.3, now+n.time);
+      gain.gain.exponentialRampToValueAtTime(0.001, now+n.time+n.dur);
 
-      // Guadagno armonica (più bassa)
       var gain2=ctx.createGain();
-      gain2.gain.setValueAtTime(0.06, ctx.currentTime+n.time);
-      gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+n.time+n.dur*0.5);
+      gain2.gain.setValueAtTime(0.08, now+n.time);
+      gain2.gain.exponentialRampToValueAtTime(0.001, now+n.time+n.dur*0.5);
 
-      // Filtro passa-alto per suono più brillante
+      // Filtro per suono brillante
       var filter=ctx.createBiquadFilter();
       filter.type='highpass';
-      filter.frequency.value=800;
+      filter.frequency.value=600;
 
       osc.connect(gain);
       osc2.connect(gain2);
@@ -4816,25 +4832,35 @@ fetchWeather();
       gain2.connect(filter);
       filter.connect(ctx.destination);
 
-      osc.start(ctx.currentTime+n.time);
-      osc.stop(ctx.currentTime+n.time+n.dur+0.1);
-      osc2.start(ctx.currentTime+n.time);
-      osc2.stop(ctx.currentTime+n.time+n.dur+0.1);
+      osc.start(now+n.time);
+      osc.stop(now+n.time+n.dur+0.1);
+      osc2.start(now+n.time);
+      osc2.stop(now+n.time+n.dur+0.1);
     });
+  }
 
-    // Durata totale ~1 secondo
-    sessionStorage.setItem('jinglePlayed','1');
+  // Suona al primo tocco/click dell'utente (obbligatorio su iOS/Safari)
+  var played=false;
+  function onFirstInteraction(){
+    if(played) return;
+    played=true;
+    playJingle();
+    document.removeEventListener('touchstart',onFirstInteraction);
+    document.removeEventListener('touchend',onFirstInteraction);
+    document.removeEventListener('click',onFirstInteraction);
+  }
+  document.addEventListener('touchstart',onFirstInteraction,{once:false,passive:true});
+  document.addEventListener('touchend',onFirstInteraction,{once:false,passive:true});
+  document.addEventListener('click',onFirstInteraction,{once:false});
 
-    // Se l'AudioContext è sospeso (autoplay policy), riprendi al primo tocco
-    if(ctx.state==='suspended'){
-      var resume=function(){
-        ctx.resume();
-        document.removeEventListener('touchstart',resume);
-        document.removeEventListener('click',resume);
-      };
-      document.addEventListener('touchstart',resume,{once:true});
-      document.addEventListener('click',resume,{once:true});
+  // Su desktop prova subito (dove autoplay funziona)
+  try{
+    var testCtx=new (window.AudioContext||window.webkitAudioContext)();
+    if(testCtx.state==='running'){
+      played=true;
+      playJingle();
     }
+    testCtx.close();
   }catch(e){}
 })();
 // ---- FINE JINGLE XILOFONO ----
