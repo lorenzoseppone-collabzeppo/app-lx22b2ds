@@ -5359,9 +5359,9 @@ fetchWeather();
     pathEl2.setAttribute('d',d2);
     pathInner2.setAttribute('d',d2);
 
-    // PEZZETTINO RETTO - dall'inizio della striscia sotto, va verso la bambina (altalena)
-    var start2x=sx-10, start2y=sy+14;
-    var d3='M '+start2x.toFixed(1)+','+start2y.toFixed(1)+' L '+(start2x-25).toFixed(1)+','+(start2y-5).toFixed(1);
+    // PEZZETTINO RETTO - dall'inizio della striscia SOPRA, va diagonale verso la bambina (altalena)
+    var start1x=sx, start1y=sy;
+    var d3='M '+start1x.toFixed(1)+','+start1y.toFixed(1)+' L '+(start1x-20).toFixed(1)+','+(start1y-12).toFixed(1);
     pathBorder3.setAttribute('d',d3);
     pathEl3.setAttribute('d',d3);
     pathInner3.setAttribute('d',d3);
