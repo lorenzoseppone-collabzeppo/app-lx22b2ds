@@ -1930,7 +1930,7 @@ function initFirebase(){
     // Auth persistence = LOCAL so login survives redirect and page close
     try{auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);}catch(e){console.log('[FIREBASE] Auth persistence:',e);}
     
-    // Handle redirect result FIRST - SOLO se c'è stato un redirect login
+    // Handle redirect result FIRST (before onAuthStateChanged)
     var hadRedirect=false;
     try{hadRedirect=!!localStorage.getItem('rp_login_redirect');}catch(e){}
     try{
@@ -1939,6 +1939,7 @@ function initFirebase(){
           console.log('[AUTH] Redirect login OK:',result.user.displayName||result.user.email);
           loginLoading=false;
         }else{
+          // No redirect result - either first visit or redirect was cancelled
           console.log('[AUTH] No redirect result (normal on first visit)');
           loginLoading=false;
         }
@@ -1947,7 +1948,7 @@ function initFirebase(){
         console.error('[AUTH] Redirect result error:',error.code,error.message);
         loginLoading=false;
         try{localStorage.removeItem('rp_login_redirect');}catch(e){}
-        // Non mostrare alert se non c'era un redirect in corso
+        // Se non c'era un redirect in corso, ignora l'errore silenziosamente
         if(!hadRedirect){console.warn('[AUTH] Ignoring error - no redirect was expected');return;}
         var msg='';
         if(error.code==='auth/unauthorized-domain'){
@@ -1956,9 +1957,6 @@ function initFirebase(){
           msg='Login Google non abilitato in Firebase Console.\nAbilita Google come provider in Authentication > Sign-in method.';
         }else if(error.code==='auth/network-request-failed'){
           msg='Errore di rete. Controlla la connessione internet e riprova.';
-        }else if(error.code==='auth/operation-not-supported-in-this-environment'){
-          msg='Apri l\'app dal link:\nhttps://lorenzoseppone-collabzeppo.github.io/app-lx22b2ds/rainbow4.html\n\nNon funziona se apri il file direttamente.';
-          console.warn('[AUTH] File locale rilevato - usa GitHub Pages');
         }else{
           msg='Errore login: '+(error.code||'')+'\n'+(error.message||'');
         }
@@ -2061,9 +2059,6 @@ function doRedirectLogin(){
     var msg='';
     if(error.code==='auth/unauthorized-domain'){
       msg='DOMINIO NON AUTORIZZATO!\n\nAggiungi "'+window.location.hostname+'" in Firebase Console:\nAuthentication > Settings > Authorized domains > Add domain\n\nDomini richiesti:\n  - localhost\n  - presenze-pre-post.firebaseapp.com\n  - '+window.location.hostname;
-    }else if(error.code==='auth/operation-not-supported-in-this-environment'){
-      msg='Apri l\'app dal link:\nhttps://lorenzoseppone-collabzeppo.github.io/app-lx22b2ds/rainbow4.html\n\nNon funziona se apri il file direttamente.';
-      console.warn('[AUTH] File locale - usa GitHub Pages');
     }else{
       msg='Errore login: '+(error.code||error.message||'Errore sconosciuto');
     }
@@ -2096,9 +2091,6 @@ function doPopupLogin(){
     var msg='';
     if(error.code==='auth/unauthorized-domain'){
       msg='DOMINIO NON AUTORIZZATO!\n\nAggiungi "'+window.location.hostname+'" in Firebase Console:\nAuthentication > Settings > Authorized domains > Add domain';
-    }else if(error.code==='auth/operation-not-supported-in-this-environment'){
-      msg='Apri l\'app dal link:\nhttps://lorenzoseppone-collabzeppo.github.io/app-lx22b2ds/rainbow4.html\n\nNon funziona se apri il file direttamente.';
-      console.warn('[AUTH] File locale - usa GitHub Pages');
     }else{
       msg='Errore login: '+(error.code||error.message||'Errore');
     }
