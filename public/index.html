@@ -1964,14 +1964,15 @@ function initFirebase(){
         }else if(error.code==='auth/operation-not-allowed'){
           msg='Login Google non abilitato in Firebase Console.\nAbilita Google come provider in Authentication > Sign-in method.';
         }else if(error.code==='auth/operation-not-supported-in-this-environment'){
-          msg='Apri questa pagina in Safari (non nel browser dell\'app).\nCopia il link e apri Safari direttamente.';
+          console.warn('[AUTH] Ambiente non supportato (browser in-app) - modalità offline');
+          render();return;
         }else if(error.code==='auth/network-request-failed'){
-          msg='Errore di rete. Controlla la connessione internet e riprova.';
+          console.warn('[AUTH] Errore di rete - modalità offline');
+          render();return;
         }else{
-          msg='Errore login: '+(error.code||'')+'\n'+(error.message||'');
+          console.error('[AUTH] Errore login:',error.code,error.message);
+          render();return;
         }
-        alert(msg);
-        render();
       });
     }catch(e){console.error('[FIREBASE] getRedirectResult error:',e);loginLoading=false;}
     
@@ -2070,12 +2071,12 @@ function doRedirectLogin(){
     if(error.code==='auth/unauthorized-domain'){
       msg='DOMINIO NON AUTORIZZATO!\n\nAggiungi "'+window.location.hostname+'" in Firebase Console:\nAuthentication > Settings > Authorized domains > Add domain\n\nDomini richiesti:\n  - localhost\n  - presenze-pre-post.firebaseapp.com\n  - '+window.location.hostname;
     }else if(error.code==='auth/operation-not-supported-in-this-environment'){
-      msg='Apri questa pagina in Safari (non nel browser dell\'app).\nCopia il link e apri Safari direttamente.';
+      console.warn('[AUTH] Ambiente non supportato (browser in-app) - modalità offline');
+      render();return;
     }else{
-      msg='Errore login: '+(error.code||error.message||'Errore sconosciuto');
+      console.error('[AUTH] Errore redirect:',error.code,error.message);
+      render();return;
     }
-    alert(msg);
-    render();
   });
 }
 
@@ -2104,9 +2105,11 @@ function doPopupLogin(){
     if(error.code==='auth/unauthorized-domain'){
       msg='DOMINIO NON AUTORIZZATO!\n\nAggiungi "'+window.location.hostname+'" in Firebase Console:\nAuthentication > Settings > Authorized domains > Add domain';
     }else if(error.code==='auth/operation-not-supported-in-this-environment'){
-      msg='Apri questa pagina in Safari (non nel browser dell\'app).\nCopia il link e apri Safari direttamente.';
+      console.warn('[AUTH] Ambiente non supportato (browser in-app) - modalità offline');
+      render();return;
     }else{
-      msg='Errore login: '+(error.code||error.message||'Errore');
+      console.error('[AUTH] Errore popup:',error.code,error.message);
+      render();return;
     }
     alert(msg);
     render();
@@ -2136,6 +2139,16 @@ function handleLogin(){
   }
   
   // LOGIN - Try multiple methods for maximum compatibility
+  // CHECK: se ambiente non supportato, non tentare il login
+  var proto=window.location.protocol;
+  var storageOK=false;
+  try{localStorage.setItem('_t','1');localStorage.removeItem('_t');storageOK=true;}catch(e){}
+  if(proto!=='http:'&&proto!=='https:'&&proto!=='chrome-extension:'||!storageOK){
+    console.warn('[AUTH] Ambiente non supportato - login non disponibile in questo browser');
+    alert('Per il login, apri questa pagina in Safari o Chrome (non nel browser dell\\'app).\\n\\nCopia il link e aprilo direttamente nel browser.');
+    loginLoading=false;render();return;
+  }
+
   loginLoading=true;render();
   
   // Strategy: Try popup first (works on most devices), fall back to redirect if blocked
