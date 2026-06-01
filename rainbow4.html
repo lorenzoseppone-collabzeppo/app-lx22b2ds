@@ -1918,6 +1918,13 @@ var _gisTried=false;
 
 function initFirebase(){
   try{
+    // CHECK: web storage must be available for Firebase Auth
+    var storageOK=false;
+    try{localStorage.setItem('_test','1');localStorage.removeItem('_test');storageOK=true;}catch(e){storageOK=false;}
+    if(!storageOK){
+      console.warn('[FIREBASE] Web storage NOT available - running in offline mode');
+      render();return;
+    }
     if(typeof firebase==='undefined'){console.warn('Firebase SDK not loaded');render();return;}
     firebase.initializeApp(FIREBASE_CONFIG);
     var auth=firebase.auth();
