@@ -4741,13 +4741,16 @@ fetchWeather();
     '<ellipse cx="18" cy="37" rx="2.5" ry="1.5" fill="#FF69B4"/>'+
   '</svg>';
   
+  var childrenCreated=false;
+  
   function createWalkingChild(isGirl,startDelay){
     var el=document.createElement('div');
     el.style.cssText='position:fixed;pointer-events:none;z-index:15;';
     el.innerHTML=isGirl?girlSVG:boySVG;
+    el.style.opacity='0';
     document.body.appendChild(el);
     
-    var speed=0.4+Math.random()*0.3; // px per frame
+    var speed=0.4+Math.random()*0.3;
     var x=0;
     var targetX=0;
     var y=0;
@@ -4769,6 +4772,7 @@ fetchWeather();
         placed=true;
         walkStart=Date.now()+startDelay;
         walking=true;
+        el.style.opacity='1';
       }
     }
     
@@ -4776,22 +4780,19 @@ fetchWeather();
       positionChild();
       if(walking && placed && Date.now()>=walkStart){
         x+=speed;
-        // Walking leg animation
         legPhase+=0.08;
         var legOff=Math.sin(legPhase)*3;
         el.style.transform='translateY('+legOff+'px)';
         
-        // Reached school
         if(x>=targetX){
           x=targetX;
           walking=false;
           el.style.opacity='0';
-          // Reset after a while to walk again
           setTimeout(function(){
-            var headerEl=document.querySelector('.header');
-            if(headerEl){
-              var hr=headerEl.getBoundingClientRect();
-              x=hr.left-30-Math.random()*40;
+            var headerEl2=document.querySelector('.header');
+            if(headerEl2){
+              var hr2=headerEl2.getBoundingClientRect();
+              x=hr2.left-30-Math.random()*40;
             } else {
               x=-30-Math.random()*40;
             }
@@ -4806,24 +4807,42 @@ fetchWeather();
       requestAnimationFrame(animate);
     }
     
-    positionChild();
     requestAnimationFrame(animate);
     window.addEventListener('resize',positionChild);
   }
   
-  // Create 2 boys and 2 girls with staggered delays
-  setTimeout(function(){createWalkingChild(false,0);},2000);
-  setTimeout(function(){createWalkingChild(true,3000);},5000);
-  setTimeout(function(){createWalkingChild(false,8000);},9000);
-  setTimeout(function(){createWalkingChild(true,14000);},13000);
+  function initChildren(){
+    if(childrenCreated) return;
+    var headerEl=document.querySelector('.header');
+    if(!headerEl) return;
+    childrenCreated=true;
+    setTimeout(function(){createWalkingChild(false,0);},2000);
+    setTimeout(function(){createWalkingChild(true,3000);},5000);
+    setTimeout(function(){createWalkingChild(false,8000);},9000);
+    setTimeout(function(){createWalkingChild(true,14000);},13000);
+  }
+  
+  // Retry until header exists
+  var _childInitTimer=setInterval(function(){
+    if(document.querySelector('.header')){
+      clearInterval(_childInitTimer);
+      initChildren();
+    }
+  },500);
+  
+  // Also hook into render like altalena does
+  var origRender=window.render;
+  if(origRender){
+    window.render=function(){
+      origRender.apply(this,arguments);
+      setTimeout(initChildren,100);
+    };
+  }
 })();
 // ---- FINE BAMBINI CHE ENTRANO A SCUOLA ----
 
 // ---- STELLINE CADENTI NELL'HEADER ----
 (function(){
-  var header=document.querySelector('.header');
-  if(!header) return;
-  
   var trajectories=[
     {sx:5,ex:30,cpDy:-45,dur:4200,delay:0},
     {sx:15,ex:55,cpDy:-55,dur:5000,delay:600},
@@ -4838,8 +4857,9 @@ fetchWeather();
   
   var colors=['#ffd700','#ffec8b','#ffa500','#ffe4b5','#fffacd','#ffe066','#fff8dc'];
   var starEls=[];
+  var starsCreated=false;
   
-  function createStar(traj,idx){
+  function createStar(traj,idx,header){
     var el=document.createElement('div');
     el.style.cssText='position:absolute;pointer-events:none;z-index:1;width:4px;height:4px;border-radius:50%;';
     var col=colors[idx%colors.length];
@@ -4849,7 +4869,7 @@ fetchWeather();
     return el;
   }
   
-  function animateStar(el,traj,idx){
+  function animateStar(el,traj,idx,header){
     var hW=header.offsetWidth||300;
     var hH=header.offsetHeight||200;
     var startX=hW*traj.sx/100;
@@ -4871,7 +4891,7 @@ fetchWeather();
         return;
       }
       var t=Math.min(elapsed/dur,1);
-      // Quadratic bezier: B(t) = (1-t)^2*P0 + 2*(1-t)*t*P1 + t^2*P2
+      // Quadratic bezier arc ∩: B(t) = (1-t)^2*P0 + 2*(1-t)*t*P1 + t^2*P2
       var mt=1-t;
       var x=mt*mt*startX+2*mt*t*cpX+t*t*endX;
       var y=mt*mt*startY+2*mt*t*cpY+t*t*endY;
@@ -4888,7 +4908,6 @@ fetchWeather();
       if(t>=1){
         // Restart with slight variation
         startT=Date.now()+Math.random()*3000+1000;
-        // Slightly vary trajectory
         traj.cpDy=traj.cpDy+(Math.random()-0.5)*10;
         traj.sx=Math.max(0,Math.min(95,traj.sx+(Math.random()-0.5)*5));
         traj.ex=Math.max(5,Math.min(95,traj.ex+(Math.random()-0.5)*5));
@@ -4899,25 +4918,35 @@ fetchWeather();
     requestAnimationFrame(tick);
   }
   
-  // Create trail elements for each star
-  function createTrailStar(traj,idx){
-    var el=document.createElement('div');
-    el.style.cssText='position:absolute;pointer-events:none;z-index:1;width:2px;height:2px;border-radius:50%;';
-    var col=colors[idx%colors.length];
-    el.style.background=col;
-    el.style.opacity='0.3';
-    header.appendChild(el);
-    return el;
+  function initStars(){
+    if(starsCreated) return;
+    var header=document.querySelector('.header');
+    if(!header) return;
+    starsCreated=true;
+    
+    for(var i=0;i<trajectories.length;i++){
+      var star=createStar(trajectories[i],i,header);
+      starEls.push(star);
+      animateStar(star,trajectories[i],i,header);
+    }
   }
   
-  for(var i=0;i<trajectories.length;i++){
-    var star=createStar(trajectories[i],i);
-    starEls.push(star);
-    animateStar(star,trajectories[i],i);
-  }
+  // Retry until header exists
+  var _starInitTimer=setInterval(function(){
+    if(document.querySelector('.header')){
+      clearInterval(_starInitTimer);
+      initStars();
+    }
+  },500);
   
-  // Re-position on resize
-  window.addEventListener('resize',function(){});
+  // Also hook into render
+  var origRender=window.render;
+  if(origRender){
+    window.render=function(){
+      origRender.apply(this,arguments);
+      setTimeout(initStars,100);
+    };
+  }
 })();
 // ---- FINE STELLINE CADENTI ----
 
