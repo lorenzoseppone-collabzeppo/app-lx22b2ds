@@ -1933,14 +1933,12 @@ function initFirebase(){
     // Handle redirect result FIRST - SOLO se c'è stato un redirect login
     var hadRedirect=false;
     try{hadRedirect=!!localStorage.getItem('rp_login_redirect');}catch(e){}
-    if(hadRedirect){
     try{
       auth.getRedirectResult().then(function(result){
         if(result&&result.user){
           console.log('[AUTH] Redirect login OK:',result.user.displayName||result.user.email);
           loginLoading=false;
         }else{
-          // No redirect result - either first visit or redirect was cancelled
           console.log('[AUTH] No redirect result (normal on first visit)');
           loginLoading=false;
         }
@@ -1949,6 +1947,8 @@ function initFirebase(){
         console.error('[AUTH] Redirect result error:',error.code,error.message);
         loginLoading=false;
         try{localStorage.removeItem('rp_login_redirect');}catch(e){}
+        // Non mostrare alert se non c'era un redirect in corso
+        if(!hadRedirect){console.warn('[AUTH] Ignoring error - no redirect was expected');return;}
         var msg='';
         if(error.code==='auth/unauthorized-domain'){
           msg='DOMINIO NON AUTORIZZATO!\n\nDevi aggiungere il dominio in Firebase Console:\n\n1. Vai su: console.firebase.google.com\n2. Seleziona il progetto "presenze-pre-post"\n3. Clicca: Authentication (sinistra)\n4. Clicca: Settings (sopra)\n5. Scorri fino a: Authorized domains\n6. Clicca: Add domain\n7. Aggiungi: '+window.location.hostname+'\n\nDomini che DEVONO essere presenti:\n  - localhost\n  - presenze-pre-post.firebaseapp.com\n  - '+window.location.hostname;
@@ -1957,7 +1957,7 @@ function initFirebase(){
         }else if(error.code==='auth/network-request-failed'){
           msg='Errore di rete. Controlla la connessione internet e riprova.';
         }else if(error.code==='auth/operation-not-supported-in-this-environment'){
-          msg='Apri l\\'app dal link:\nhttps://lorenzoseppone-collabzeppo.github.io/app-lx22b2ds/rainbow4.html\n\nNon funziona se apri il file direttamente.';
+          msg='Apri l\'app dal link:\nhttps://lorenzoseppone-collabzeppo.github.io/app-lx22b2ds/rainbow4.html\n\nNon funziona se apri il file direttamente.';
           console.warn('[AUTH] File locale rilevato - usa GitHub Pages');
         }else{
           msg='Errore login: '+(error.code||'')+'\n'+(error.message||'');
@@ -1966,9 +1966,6 @@ function initFirebase(){
         render();
       });
     }catch(e){console.error('[FIREBASE] getRedirectResult error:',e);loginLoading=false;}
-    }else{
-      console.log('[AUTH] Skip redirect check - nessun redirect in corso');
-    }
     
     // Auth state listener
     auth.onAuthStateChanged(function(u){
