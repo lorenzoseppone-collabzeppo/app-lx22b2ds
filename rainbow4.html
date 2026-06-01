@@ -312,8 +312,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 
 .falling-star{position:absolute;pointer-events:none;z-index:1;color:#ffd700;opacity:0;animation:starFall var(--star-dur,5s) ease-in var(--star-delay,0s) infinite;font-size:var(--star-size,14px);text-shadow:0 0 8px var(--star-glow,#ffd700)}
 @keyframes starFall{0%{opacity:0;transform:translateY(-10px) rotate(0deg) scale(0.3)}8%{opacity:1;transform:translateY(10px) rotate(40deg) scale(1)}30%{opacity:0.85;transform:translateY(var(--star-mid,80px)) rotate(150deg) scale(0.95)}70%{opacity:0.5;transform:translateY(var(--star-far,160px)) rotate(300deg) scale(0.8)}90%{opacity:0.15;transform:translateY(var(--star-end,220px)) rotate(350deg) scale(0.5)}100%{opacity:0;transform:translateY(var(--star-end,220px)) rotate(360deg) scale(0.2)}}
-.saetta-wrap{position:fixed;pointer-events:none;z-index:9997;overflow:visible}
-.saetta-wrap svg{overflow:visible}
+.saetta{position:fixed;pointer-events:none;z-index:9997;white-space:nowrap;overflow:visible}
+.saetta-line{display:inline-block;height:1.5px;background:linear-gradient(to right,transparent,#ffffff,transparent);border-radius:1px;box-shadow:0 0 6px 2px rgba(255,255,255,0.5),0 0 12px 4px rgba(255,255,255,0.2)}
 .header-rainbow{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;opacity:0;border-radius:16px;overflow:hidden}
 .header-rainbow-inner{position:absolute;top:-30%;left:-30%;width:160%;height:160%;transform:rotate(-30deg) translateX(-120%);-webkit-transform:rotate(-30deg) translateX(-120%);background:linear-gradient(90deg,transparent 0%,transparent 20%,rgba(255,0,0,0.22) 28%,rgba(255,127,0,0.22) 34%,rgba(255,255,0,0.22) 40%,rgba(0,255,0,0.22) 46%,rgba(0,0,255,0.18) 52%,rgba(75,0,130,0.15) 58%,rgba(139,0,255,0.13) 64%,transparent 72%,transparent 100%)}
 </style>
@@ -4769,174 +4769,76 @@ fetchWeather();
 })();
 // ---- FINE STELLINE CADENTI ----
 
-// ---- SAETTE CON SCIA LUMINOSA DISSOLVENTE DA SINISTRA A DESTRA ----
+// ---- STRISCE BIANCHE DA SINISTRA A DESTRA IN CADUTA ----
 (function(){
-  var activeStars=[];
+  var elList=[];
 
-  function spawnSaetta(){
+  function spawnStriscia(){
     var header=document.querySelector('.header');
     if(!header) return;
     var rect=header.getBoundingClientRect();
-    var w=rect.width;
-    var h=rect.height;
-    // Partenza a sinistra, arrivo a destra, altezza casuale
-    var yPerc=10+Math.random()*70; // 10-80% altezza header
-    var arcH=-15-Math.random()*25; // arco verso l'alto
-    var dur=500+Math.random()*600; // veloce
+    // Partenza: lato sinistro, altezza casuale nel terzo superiore
+    var startX=rect.left-80;
+    var startY=rect.top+rect.height*Math.random()*0.4;
+    // Arrivo: lato destro, piu in basso (caduta)
+    var endX=rect.right+80;
+    var endY=rect.top+rect.height*0.6+rect.height*Math.random()*0.4;
+    // Angolo di caduta
+    var angle=Math.atan2(endY-startY,endX-startX)*180/Math.PI;
+    var width=60+Math.random()*80;
+    var dur=400+Math.random()*500;
 
-    var wrap=document.createElement('div');
-    wrap.className='saetta-wrap';
-    wrap.style.left=rect.left+'px';
-    wrap.style.top=rect.top+'px';
+    var el=document.createElement('div');
+    el.className='saetta';
+    var line=document.createElement('div');
+    line.className='saetta-line';
+    line.style.width=width+'px';
+    el.appendChild(line);
+    document.body.appendChild(el);
+    elList.push(el);
 
-    var svgNS='http://www.w3.org/2000/svg';
-    var svg=document.createElementNS(svgNS,'svg');
-    svg.setAttribute('width',w);
-    svg.setAttribute('height',h);
-    svg.style.overflow='visible';
+    var startT=Date.now();
+    var curX=startX;
+    var curY=startY;
 
-    // Definisci gradiente lineare per la scia (da opaco a trasparente)
-    var defs=document.createElementNS(svgNS,'defs');
-    var grad=document.createElementNS(svgNS,'linearGradient');
-    grad.setAttribute('id','sg'+activeStars.length);
-    grad.setAttribute('gradientUnits','userSpaceOnUse');
-    // Il gradiente viene aggiornato ogni frame
-    var stop1=document.createElementNS(svgNS,'stop');
-    stop1.setAttribute('offset','0%');
-    stop1.setAttribute('stop-color','#ffffff');
-    stop1.setAttribute('stop-opacity','0');
-    var stop2=document.createElementNS(svgNS,'stop');
-    stop2.setAttribute('offset','40%');
-    stop2.setAttribute('stop-color','#fffacd');
-    stop2.setAttribute('stop-opacity','0.6');
-    var stop3=document.createElementNS(svgNS,'stop');
-    stop3.setAttribute('offset','100%');
-    stop3.setAttribute('stop-color','#ffffff');
-    stop3.setAttribute('stop-opacity','1');
-    grad.appendChild(stop1);
-    grad.appendChild(stop2);
-    grad.appendChild(stop3);
-    defs.appendChild(grad);
-    svg.appendChild(defs);
-
-    // Scia luminosa (striscia con gradiente dissolvente)
-    var trail=document.createElementNS(svgNS,'path');
-    trail.setAttribute('fill','none');
-    trail.setAttribute('stroke','url(#sg'+activeStars.length+')');
-    trail.setAttribute('stroke-width','2');
-    trail.setAttribute('stroke-linecap','round');
-    trail.setAttribute('opacity','0');
-    svg.appendChild(trail);
-
-    // Glow (sfocatura larga dietro la scia)
-    var glow=document.createElementNS(svgNS,'path');
-    glow.setAttribute('fill','none');
-    glow.setAttribute('stroke','#ffd700');
-    glow.setAttribute('stroke-width','6');
-    glow.setAttribute('stroke-linecap','round');
-    glow.setAttribute('opacity','0');
-    glow.style.filter='blur(3px)';
-    svg.appendChild(glow);
-
-    // Testa brillante
-    var head=document.createElementNS(svgNS,'circle');
-    head.setAttribute('r','2');
-    head.setAttribute('fill','white');
-    head.setAttribute('opacity','0');
-    var headGlow=document.createElementNS(svgNS,'circle');
-    headGlow.setAttribute('r','5');
-    headGlow.setAttribute('fill','#ffd700');
-    headGlow.setAttribute('opacity','0');
-    headGlow.style.filter='blur(2px)';
-
-    svg.appendChild(trail);
-    svg.appendChild(glow);
-    svg.appendChild(headGlow);
-    svg.appendChild(head);
-    wrap.appendChild(svg);
-    document.body.appendChild(wrap);
-
-    // Punti della curva: inizio a sinistra, arco, fine a destra
-    var sx=0;
-    var sy=h*yPerc/100;
-    var ex=w;
-    var ey=h*(yPerc+(Math.random()-0.5)*20)/100;
-    var cpx=w*0.5;
-    var cpy=Math.max(0,sy+h*arcH/100);
-    var totalLen=Math.sqrt((ex-sx)*(ex-sx)+(ey-sy)*(ey-sy))*1.2;
-
-    var starObj={wrap:wrap,svg:svg,trail:trail,glow:glow,head:head,headGlow:headGlow,
-      grad:grad,sx:sx,sy:sy,ex:ex,ey:ey,cpx:cpx,cpy:cpy,
-      dur:dur,totalLen:totalLen,active:true,start:Date.now()};
-    activeStars.push(starObj);
+    function tick(){
+      if(!document.body.contains(el)){return;}
+      var now=Date.now();
+      var elapsed=now-startT;
+      var t=Math.min(elapsed/dur,1);
+      curX=startX+(endX-startX)*t;
+      curY=startY+(endY-startY)*t;
+      var alpha=1;
+      if(t<0.1) alpha=t/0.1;
+      else if(t>0.75) alpha=(1-t)/0.25;
+      el.style.left=curX+'px';
+      el.style.top=curY+'px';
+      el.style.transform='rotate('+angle+'deg)';
+      el.style.opacity=alpha;
+      if(t>=1){
+        if(el.parentNode) el.parentNode.removeChild(el);
+        var idx=elList.indexOf(el);
+        if(idx>-1) elList.splice(idx,1);
+        return;
+      }
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
   }
 
-  // Animation loop con setInterval (Safari-safe)
-  setInterval(function(){
-    var now=Date.now();
-    for(var i=activeStars.length-1;i>=0;i--){
-      var s=activeStars[i];
-      if(!s.active) continue;
-      var elapsed=now-s.start;
-      var progress=elapsed/s.dur;
-      if(progress>1){
-        s.active=false;
-        if(s.wrap&&s.wrap.parentNode) s.wrap.parentNode.removeChild(s.wrap);
-        activeStars.splice(i,1);
-        continue;
-      }
-      var t=progress;
-      // Posizione testa sulla curva di Bezier
-      var px=(1-t)*(1-t)*s.sx+2*(1-t)*t*s.cpx+t*t*s.ex;
-      var py=(1-t)*(1-t)*s.sy+2*(1-t)*t*s.cpy+t*t*s.ey;
-
-      // Coda: punto piu indietro sulla curva
-      var trailLen=50+30*t; // scia piu lunga a meta percorso
-      var tailT=Math.max(0,t-trailLen/s.totalLen);
-      var tx=(1-tailT)*(1-tailT)*s.sx+2*(1-tailT)*tailT*s.cpx+tailT*tailT*s.ex;
-      var ty=(1-tailT)*(1-tailT)*s.sy+2*(1-tailT)*tailT*s.cpy+tailT*tailT*s.ey;
-
-      var pathD='M'+tx+','+ty+' Q'+s.cpx+','+s.cpy+' '+px+','+py;
-      s.trail.setAttribute('d',pathD);
-      s.glow.setAttribute('d',pathD);
-
-      // Aggiorna direzione gradiente
-      s.grad.setAttribute('x1',tx);
-      s.grad.setAttribute('y1',ty);
-      s.grad.setAttribute('x2',px);
-      s.grad.setAttribute('y2',py);
-
-      // Opacita: fade in veloce, fade out alla fine
-      var alpha=1;
-      if(t<0.08) alpha=t/0.08;
-      else if(t>0.8) alpha=(1-t)/0.2;
-
-      s.trail.setAttribute('opacity',(alpha*0.95).toFixed(2));
-      s.glow.setAttribute('opacity',(alpha*0.35).toFixed(2));
-
-      s.head.setAttribute('cx',px);
-      s.head.setAttribute('cy',py);
-      s.head.setAttribute('opacity',alpha.toFixed(2));
-      s.headGlow.setAttribute('cx',px);
-      s.headGlow.setAttribute('cy',py);
-      s.headGlow.setAttribute('opacity',(alpha*0.7).toFixed(2));
-    }
-  },30);
-
-  // Genera saette a intervalli
   function scheduleNext(){
-    var delay=1200+Math.random()*2500;
+    var delay=800+Math.random()*2000;
     setTimeout(function(){
-      spawnSaetta();
+      spawnStriscia();
       scheduleNext();
     },delay);
   }
   setTimeout(function(){
-    spawnSaetta();
+    spawnStriscia();
     scheduleNext();
-  },1000);
+  },800);
 })();
-// ---- FINE SAETTE ----
+// ---- FINE STRISCE BIANCHE ----
 
 // Aggiorna meteo ogni 30 minuti
 setInterval(function(){fetchWeather();},1800000);
