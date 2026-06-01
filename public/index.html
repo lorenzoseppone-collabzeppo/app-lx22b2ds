@@ -4728,7 +4728,7 @@ fetchWeather();
 // ---- FINE ALTALENA ----
 
 // ---- BAMBINI CHE ENTRANO A SCUOLA ----
-// 4 bambini che camminano verso la scuola (position:fixed, y relativo all'icona scuola)
+// Bambini che scendono dall'altalena e vanno verso la scuola
 (function(){
   var boySVG='<svg viewBox="0 0 26 43" width="26" height="43">'+
     '<circle cx="13" cy="7" r="6" fill="#FFD5B8" stroke="#1a1a1a" stroke-width="0.5"/>'+
@@ -4763,53 +4763,76 @@ fetchWeather();
     '<line x1="16" y1="18" x2="21" y2="25" stroke="#FFD5B8" stroke-width="2" stroke-linecap="round"/>'+
   '</svg>';
 
-  function createWalkingChild(isGirl,startDelay){
+  function getAltalenaPos(){
+    // Get the bottom of the altalena (where children "step off")
+    var altalena=document.getElementById('altalena');
+    if(!altalena) return null;
+    var r=altalena.getBoundingClientRect();
+    return{x:r.left+r.width/2, y:r.bottom};
+  }
+
+  function getSchoolPos(){
+    // Get the school icon position (where children go)
+    var icon=document.querySelector('.header-icon');
+    if(!icon) return null;
+    var r=icon.getBoundingClientRect();
+    return{x:r.left+r.width/2-13, y:r.bottom-48};
+  }
+
+  function createChildFromSwing(isGirl,delay){
     var el=document.createElement('div');
-    el.style.cssText='position:fixed;pointer-events:none;z-index:15;';
+    el.style.cssText='position:fixed;pointer-events:none;z-index:15;opacity:0;transition:opacity 0.3s';
     el.innerHTML=isGirl?girlSVG:boySVG;
     document.body.appendChild(el);
 
-    var speed=0.4+Math.random()*0.3;
-    var x=-30-Math.random()*40;
-    var targetX=0;
-    var y=0;
-    var placed=false;
+    var speed=0.5+Math.random()*0.2;
+    var x=0, y=0;
+    var startX=0, startY=0, targetX=0, targetY=0;
+    var state='waiting'; // waiting -> walking -> arrived -> waiting
     var legPhase=0;
-    var walking=false;
     var walkStart=0;
 
-    function positionChild(){
-      var schoolIcon=document.querySelector('.header-icon');
-      if(!schoolIcon) return;
-      var r=schoolIcon.getBoundingClientRect();
-      targetX=r.left-5;
-      y=r.bottom-48;
-      if(!placed){
-        x=r.left>60?-30-Math.random()*40:-30-Math.random()*40;
-        placed=true;
-        walkStart=Date.now()+startDelay;
-        walking=true;
-      }
+    function startWalk(){
+      var ap=getAltalenaPos();
+      var sp=getSchoolPos();
+      if(!ap||!sp) return;
+      startX=ap.x-13;
+      startY=ap.y-10;
+      targetX=sp.x;
+      targetY=sp.y;
+      x=startX;
+      y=startY;
+      state='walking';
+      el.style.opacity='1';
+      walkStart=Date.now();
     }
 
     function animate(){
-      positionChild();
-      if(walking && placed && Date.now()>=walkStart){
-        x+=speed;
-        legPhase+=0.08;
-        var legOff=Math.sin(legPhase)*3;
-        el.style.transform='translateY('+legOff+'px)';
-
-        if(x>=targetX){
-          x=targetX;
-          walking=false;
+      if(state==='waiting'){
+        // Check if it's time to start
+      } else if(state==='walking'){
+        // Move toward school
+        var dx=targetX-x;
+        var dy=targetY-y;
+        var dist=Math.sqrt(dx*dx+dy*dy);
+        if(dist<2){
+          // Arrived at school
+          state='arrived';
           el.style.opacity='0';
+          // Wait then restart from swing
           setTimeout(function(){
-            x=-30-Math.random()*40;
-            walking=true;
-            walkStart=Date.now();
-            el.style.opacity='1';
-          },8000+Math.random()*12000);
+            state='waiting';
+            setTimeout(startWalk,2000+Math.random()*3000);
+          },6000+Math.random()*8000);
+        } else {
+          var step=Math.min(speed,dist);
+          x+=dx/dist*step;
+          y+=dy/dist*step;
+          legPhase+=0.1;
+          var bob=Math.sin(legPhase)*2;
+          // Face direction of movement
+          var scaleX=dx>0?1:-1;
+          el.style.transform='scaleX('+scaleX+') translateY('+bob+'px)';
         }
       }
       el.style.left=Math.round(x)+'px';
@@ -4817,16 +4840,24 @@ fetchWeather();
       requestAnimationFrame(animate);
     }
 
-    positionChild();
-    requestAnimationFrame(animate);
-    window.addEventListener('resize',positionChild);
+    // Start after delay
+    setTimeout(function(){
+      startWalk();
+      requestAnimationFrame(animate);
+    },delay);
+
+    window.addEventListener('resize',function(){
+      if(state==='walking'){
+        // Recalculate target on resize
+        var sp=getSchoolPos();
+        if(sp){targetX=sp.x;targetY=sp.y;}
+      }
+    });
   }
 
-  // Create 2 boys and 2 girls with staggered delays
-  setTimeout(function(){createWalkingChild(false,0);},2000);
-  setTimeout(function(){createWalkingChild(true,3000);},5000);
-  setTimeout(function(){createWalkingChild(false,8000);},9000);
-  setTimeout(function(){createWalkingChild(true,14000);},13000);
+  // Create children that descend from swing with staggered delays
+  setTimeout(function(){createChildFromSwing(false,3000);},2000);
+  setTimeout(function(){createChildFromSwing(true,8000);},5000);
 })();
 // ---- FINE BAMBINI CHE ENTRANO A SCUOLA ----
 
