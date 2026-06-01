@@ -313,8 +313,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 .falling-star{position:absolute;pointer-events:none;z-index:1;color:#ffd700;opacity:0;animation:starFall var(--star-dur,5s) ease-in var(--star-delay,0s) infinite;font-size:var(--star-size,14px);text-shadow:0 0 8px var(--star-glow,#ffd700)}
 @keyframes starFall{0%{opacity:0;transform:translateY(-10px) rotate(0deg) scale(0.3)}8%{opacity:1;transform:translateY(10px) rotate(40deg) scale(1)}30%{opacity:0.85;transform:translateY(var(--star-mid,80px)) rotate(150deg) scale(0.95)}70%{opacity:0.5;transform:translateY(var(--star-far,160px)) rotate(300deg) scale(0.8)}90%{opacity:0.15;transform:translateY(var(--star-end,220px)) rotate(350deg) scale(0.5)}100%{opacity:0;transform:translateY(var(--star-end,220px)) rotate(360deg) scale(0.2)}}
 .saetta{position:fixed;pointer-events:none;z-index:9997;white-space:nowrap;overflow:visible}
-.saetta-line{display:inline-block;height:2px;background:linear-gradient(to right,transparent 0%,#ffffff 100%);border-radius:1px;box-shadow:0 0 8px 3px rgba(255,255,255,0.9),0 0 16px 5px rgba(255,255,255,0.5),0 0 30px 8px rgba(255,255,255,0.2)}
-.saetta-trail{position:fixed;pointer-events:none;z-index:9996;border-radius:1px;background:#ffffff;box-shadow:0 0 6px 2px rgba(255,255,255,0.8),0 0 14px 4px rgba(255,255,255,0.4),0 0 24px 6px rgba(255,255,255,0.15)}
+.saetta-line{display:inline-block;height:2px;background:#ffffff;border-radius:1px;box-shadow:0 0 10px 4px rgba(255,255,255,1),0 0 20px 8px rgba(255,255,255,0.7),0 0 36px 12px rgba(255,255,255,0.35),0 0 60px 20px rgba(255,255,255,0.15)}
+.saetta-trail{position:fixed;pointer-events:none;z-index:9996;border-radius:2px;background:#ffffff;box-shadow:0 0 8px 3px rgba(255,255,255,1),0 0 18px 6px rgba(255,255,255,0.6),0 0 32px 10px rgba(255,255,255,0.25)}
 .header-rainbow{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;opacity:0;border-radius:16px;overflow:hidden}
 .header-rainbow-inner{position:absolute;top:-30%;left:-30%;width:160%;height:160%;transform:rotate(-30deg) translateX(-120%);-webkit-transform:rotate(-30deg) translateX(-120%);background:linear-gradient(90deg,transparent 0%,transparent 20%,rgba(255,0,0,0.22) 28%,rgba(255,127,0,0.22) 34%,rgba(255,255,0,0.22) 40%,rgba(0,255,0,0.22) 46%,rgba(0,0,255,0.18) 52%,rgba(75,0,130,0.15) 58%,rgba(139,0,255,0.13) 64%,transparent 72%,transparent 100%)}
 </style>
@@ -4823,8 +4823,8 @@ fetchWeather();
         trail.className='saetta-trail';
         trail.style.left=curX+'px';
         trail.style.top=curY+'px';
-        trail.style.width='3px';
-        trail.style.height='2px';
+        trail.style.width='6px';
+        trail.style.height='3px';
         trail.style.transform='rotate('+angle+'deg)';
         trail.style.opacity='0.9';
         document.body.appendChild(trail);
