@@ -312,6 +312,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 
 .falling-star{position:absolute;pointer-events:none;z-index:1;color:#ffd700;opacity:0;animation:starFall var(--star-dur,5s) ease-in var(--star-delay,0s) infinite;font-size:var(--star-size,14px);text-shadow:0 0 8px var(--star-glow,#ffd700)}
 @keyframes starFall{0%{opacity:0;transform:translateY(-10px) rotate(0deg) scale(0.3)}8%{opacity:1;transform:translateY(10px) rotate(40deg) scale(1)}30%{opacity:0.85;transform:translateY(var(--star-mid,80px)) rotate(150deg) scale(0.95)}70%{opacity:0.5;transform:translateY(var(--star-far,160px)) rotate(300deg) scale(0.8)}90%{opacity:0.15;transform:translateY(var(--star-end,220px)) rotate(350deg) scale(0.5)}100%{opacity:0;transform:translateY(var(--star-end,220px)) rotate(360deg) scale(0.2)}}
+.shooting-star-trail{position:fixed;pointer-events:none;z-index:9997;overflow:visible}
+.shooting-star-trail svg{overflow:visible}
 .header-rainbow{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;opacity:0;border-radius:16px;overflow:hidden}
 .header-rainbow-inner{position:absolute;top:-30%;left:-30%;width:160%;height:160%;transform:rotate(-30deg) translateX(-120%);-webkit-transform:rotate(-30deg) translateX(-120%);background:linear-gradient(90deg,transparent 0%,transparent 20%,rgba(255,0,0,0.22) 28%,rgba(255,127,0,0.22) 34%,rgba(255,255,0,0.22) 40%,rgba(0,255,0,0.22) 46%,rgba(0,0,255,0.18) 52%,rgba(75,0,130,0.15) 58%,rgba(139,0,255,0.13) 64%,transparent 72%,transparent 100%)}
 </style>
@@ -4766,6 +4768,148 @@ fetchWeather();
   });
 })();
 // ---- FINE STELLINE CADENTI ----
+
+// 9 traiettorie arc ∩ visibili solo nell'header
+// Usa setInterval + style diretto (Safari non attiva CSS animations su elementi creati dinamicamente)
+(function(){
+  var TRAJECTORIES=[
+    {x1:0,  y1:18, x2:100,y2:22, cpDy:-28},
+    {x1:5,  y1:35, x2:95, y2:30, cpDy:-22},
+    {x1:10, y1:50, x2:90, y2:45, cpDy:-25},
+    {x1:0,  y1:65, x2:85, y2:60, cpDy:-20},
+    {x1:15, y1:10, x2:100,y2:15, cpDy:-30},
+    {x1:5,  y1:75, x2:80, y2:70, cpDy:-18},
+    {x1:20, y1:25, x2:95, y2:20, cpDy:-26},
+    {x1:0,  y1:45, x2:90, y2:50, cpDy:-24},
+    {x1:10, y1:60, x2:100,y2:55, cpDy:-22}
+  ];
+  var starColors=['#ffd700','#ffec8b','#ffa500','#fff8dc','#ffe4b5','#fffacd','#ffe066','#ffcc00'];
+  var activeStars=[];
+
+  function createShootingStar(){
+    var header=document.querySelector('.header');
+    if(!header) return;
+    var rect=header.getBoundingClientRect();
+    var w=rect.width||400;
+    var h=rect.height||200;
+    var t=TRAJECTORIES[Math.floor(Math.random()*TRAJECTORIES.length)];
+    var sx=w*t.x1/100;
+    var sy=h*t.y1/100;
+    var ex=w*t.x2/100;
+    var ey=h*t.y2/100;
+    var cpx=(sx+ex)/2;
+    var cpy=(sy+ey)/2+h*t.cpDy/100;
+    var col=starColors[Math.floor(Math.random()*starColors.length)];
+    var starLen=40+Math.random()*60;
+    var dur=600+Math.random()*800;
+    var wrap=document.createElement('div');
+    wrap.className='shooting-star-trail';
+    wrap.style.left=rect.left+'px';
+    wrap.style.top=rect.top+'px';
+    var svgNS='http://www.w3.org/2000/svg';
+    var svg=document.createElementNS(svgNS,'svg');
+    svg.setAttribute('width',w);
+    svg.setAttribute('height',h);
+    svg.style.position='absolute';
+    svg.style.top='0';
+    svg.style.left='0';
+    svg.style.overflow='visible';
+    // Trail path (full arc, invisible, used for clipping)
+    var trail=document.createElementNS(svgNS,'path');
+    trail.setAttribute('d','M'+sx+','+sy+' Q'+cpx+','+cpy+' '+ex+','+ey);
+    trail.setAttribute('fill','none');
+    trail.setAttribute('stroke',col);
+    trail.setAttribute('stroke-width','2.5');
+    trail.setAttribute('stroke-linecap','round');
+    trail.setAttribute('opacity','0');
+    svg.appendChild(trail);
+    // Glow trail (wider, softer)
+    var glow=document.createElementNS(svgNS,'path');
+    glow.setAttribute('d','M'+sx+','+sy+' Q'+cpx+','+cpy+' '+ex+','+ey);
+    glow.setAttribute('fill','none');
+    glow.setAttribute('stroke',col);
+    glow.setAttribute('stroke-width','5');
+    glow.setAttribute('stroke-linecap','round');
+    glow.setAttribute('opacity','0');
+    glow.style.filter='blur(2px)';
+    svg.appendChild(glow);
+    // Bright head dot
+    var head=document.createElementNS(svgNS,'circle');
+    head.setAttribute('cx',sx);
+    head.setAttribute('cy',sy);
+    head.setAttribute('r','2.5');
+    head.setAttribute('fill','white');
+    head.setAttribute('opacity','0');
+    svg.appendChild(head);
+    wrap.appendChild(svg);
+    document.body.appendChild(wrap);
+    // Animate using setInterval for Safari compatibility
+    var start=Date.now();
+    var starObj={wrap:wrap,svg:svg,trail:trail,glow:glow,head:head,
+      sx:sx,sy:sy,ex:ex,ey:ey,cpx:cpx,cpy:cpy,dur:dur,
+      starLen:starLen,totalLen:0,active:true};
+    // Calculate total path length
+    starObj.totalLen=trail.getTotalLength?trail.getTotalLength():Math.sqrt((ex-sx)*(ex-sx)+(ey-sy)*(ey-sy));
+    activeStars.push(starObj);
+  }
+
+  // Animation loop via setInterval (Safari-safe)
+  setInterval(function(){
+    var now=Date.now();
+    for(var i=activeStars.length-1;i>=0;i--){
+      var s=activeStars[i];
+      if(!s.active) continue;
+      var elapsed=now-s.start;
+      if(elapsed===undefined){s.start=now;continue;}
+      var progress=elapsed/s.dur;
+      if(progress>1){
+        s.active=false;
+        if(s.wrap&&s.wrap.parentNode) s.wrap.parentNode.removeChild(s.wrap);
+        activeStars.splice(i,1);
+        continue;
+      }
+      // Quadratic bezier point at t
+      var t=progress;
+      var px=(1-t)*(1-t)*s.sx+2*(1-t)*t*s.cpx+t*t*s.ex;
+      var py=(1-t)*(1-t)*s.sy+2*(1-t)*t*s.cpy+t*t*s.ey;
+      s.head.setAttribute('cx',px);
+      s.head.setAttribute('cy',py);
+      s.head.setAttribute('opacity',Math.min(1,progress*5)*(progress>0.85?1-(progress-0.85)/0.15:1));
+      // Trail: draw from tail to head
+      var tailT=Math.max(0,t-s.starLen/s.totalLen);
+      var tx=(1-tailT)*(1-tailT)*s.sx+2*(1-tailT)*tailT*s.cpx+tailT*tailT*s.ex;
+      var ty=(1-tailT)*(1-tailT)*s.sy+2*(1-tailT)*tailT*s.cpy+tailT*tailT*s.ey;
+      var trailD='M'+tx+','+ty+' Q'+s.cpx+','+s.cpy+' '+px+','+py;
+      s.trail.setAttribute('d',trailD);
+      s.glow.setAttribute('d',trailD);
+      var alpha=Math.min(0.9,progress*4)*(progress>0.8?1-(progress-0.8)/0.2:1);
+      s.trail.setAttribute('opacity',alpha.toFixed(2));
+      s.glow.setAttribute('opacity',(alpha*0.4).toFixed(2));
+    }
+  },30);
+
+  // Spawn shooting stars at random intervals
+  function scheduleNext(){
+    var delay=1500+Math.random()*3000;
+    setTimeout(function(){
+      createShootingStar();
+      scheduleNext();
+    },delay);
+  }
+  // Start after header is rendered
+  setTimeout(function(){
+    createShootingStar();
+    scheduleNext();
+  },1200);
+
+  // Also create on render
+  var origRender=window.render;
+  if(origRender){
+    window.render=function(){
+      origRender.apply(this,arguments);
+    };
+  }
+})();
 
 // Aggiorna meteo ogni 30 minuti
 setInterval(function(){fetchWeather();},1800000);
