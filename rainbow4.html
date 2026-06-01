@@ -1931,8 +1931,6 @@ function initFirebase(){
     try{auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);}catch(e){console.log('[FIREBASE] Auth persistence:',e);}
     
     // Handle redirect result FIRST (before onAuthStateChanged)
-    var hadRedirect=false;
-    try{hadRedirect=!!localStorage.getItem('rp_login_redirect');}catch(e){}
     try{
       auth.getRedirectResult().then(function(result){
         if(result&&result.user){
@@ -1948,8 +1946,6 @@ function initFirebase(){
         console.error('[AUTH] Redirect result error:',error.code,error.message);
         loginLoading=false;
         try{localStorage.removeItem('rp_login_redirect');}catch(e){}
-        // Se non c'era un redirect in corso, ignora l'errore silenziosamente
-        if(!hadRedirect){console.warn('[AUTH] Ignoring error - no redirect was expected');return;}
         var msg='';
         if(error.code==='auth/unauthorized-domain'){
           msg='DOMINIO NON AUTORIZZATO!\n\nDevi aggiungere il dominio in Firebase Console:\n\n1. Vai su: console.firebase.google.com\n2. Seleziona il progetto "presenze-pre-post"\n3. Clicca: Authentication (sinistra)\n4. Clicca: Settings (sopra)\n5. Scorri fino a: Authorized domains\n6. Clicca: Add domain\n7. Aggiungi: '+window.location.hostname+'\n\nDomini che DEVONO essere presenti:\n  - localhost\n  - presenze-pre-post.firebaseapp.com\n  - '+window.location.hostname;
