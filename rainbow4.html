@@ -312,8 +312,6 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 
 .falling-star{position:absolute;pointer-events:none;z-index:1;color:#ffd700;opacity:0;animation:starFall var(--star-dur,5s) ease-in var(--star-delay,0s) infinite;font-size:var(--star-size,14px);text-shadow:0 0 8px var(--star-glow,#ffd700)}
 @keyframes starFall{0%{opacity:0;transform:translateY(-10px) rotate(0deg) scale(0.3)}8%{opacity:1;transform:translateY(10px) rotate(40deg) scale(1)}30%{opacity:0.85;transform:translateY(var(--star-mid,80px)) rotate(150deg) scale(0.95)}70%{opacity:0.5;transform:translateY(var(--star-far,160px)) rotate(300deg) scale(0.8)}90%{opacity:0.15;transform:translateY(var(--star-end,220px)) rotate(350deg) scale(0.5)}100%{opacity:0;transform:translateY(var(--star-end,220px)) rotate(360deg) scale(0.2)}}
-.saetta{position:fixed;pointer-events:none;z-index:9997;white-space:nowrap;overflow:visible}
-.saetta-line{display:inline-block;height:1px;background:#ffffff;border-radius:1px;box-shadow:0 0 6px 2px rgba(255,255,255,1),0 0 14px 5px rgba(255,255,255,0.6),0 0 28px 10px rgba(255,255,255,0.25)}
 .saetta-trail{position:fixed;pointer-events:none;z-index:9996;border-radius:1px;background:#ffffff;box-shadow:0 0 6px 2px rgba(255,255,255,1),0 0 14px 5px rgba(255,255,255,0.5),0 0 24px 8px rgba(255,255,255,0.2)}
 .header-rainbow{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;opacity:0;border-radius:16px;overflow:hidden}
 .header-rainbow-inner{position:absolute;top:-30%;left:-30%;width:160%;height:160%;transform:rotate(-30deg) translateX(-120%);-webkit-transform:rotate(-30deg) translateX(-120%);background:linear-gradient(90deg,transparent 0%,transparent 20%,rgba(255,0,0,0.22) 28%,rgba(255,127,0,0.22) 34%,rgba(255,255,0,0.22) 40%,rgba(0,255,0,0.22) 46%,rgba(0,0,255,0.18) 52%,rgba(75,0,130,0.15) 58%,rgba(139,0,255,0.13) 64%,transparent 72%,transparent 100%)}
@@ -4783,54 +4781,36 @@ fetchWeather();
     var endX=rect.right+60;
     var endY=rect.top+rect.height*0.05+rect.height*Math.random()*0.9;
     var angle=Math.atan2(endY-startY,endX-startX)*180/Math.PI;
-    var dur=600+Math.random()*700;
-    var headW=50+Math.random()*40;
+    var dur=700+Math.random()*800;
 
-    // Testa della saetta (striscia bianca brillante)
-    var el=document.createElement('div');
-    el.className='saetta';
-    var line=document.createElement('div');
-    line.className='saetta-line';
-    line.style.width=headW+'px';
-    el.appendChild(line);
-    document.body.appendChild(el);
-
+    // Solo scia tratteggiata, niente striscia continua
     var startT=Date.now();
-    var lastTrailT=0;
+    var lastTrailT=-1;
 
     function tick(){
-      if(!document.body.contains(el)){return;}
       var now=Date.now();
       var elapsed=now-startT;
       var t=Math.min(elapsed/dur,1);
       var curX=startX+(endX-startX)*t;
       var curY=startY+(endY-startY)*t;
 
-      // Alpha della testa
-      var alpha=1;
-      if(t<0.06) alpha=t/0.06;
-      else if(t>0.75) alpha=(1-t)/0.25;
-
-      el.style.left=curX+'px';
-      el.style.top=curY+'px';
-      el.style.transform='rotate('+angle+'deg)';
-      el.style.opacity=alpha;
-
-      // Ogni 2 frame lascia un pezzetto di scia dietro
-      if(t-lastTrailT>0.03 && t<0.9){
+      // Lascia pezzetti di scia luminosa
+      if(t-lastTrailT>0.025 && t<0.95){
         lastTrailT=t;
         var trail=document.createElement('div');
         trail.className='saetta-trail';
         trail.style.left=curX+'px';
         trail.style.top=curY+'px';
-        trail.style.width='4px';
+        trail.style.width='5px';
         trail.style.height='1px';
         trail.style.transform='rotate('+angle+'deg)';
-        trail.style.opacity='0.9';
+        // Più luminoso all'inizio, sfuma verso la fine
+        var bright=1-t*0.4;
+        trail.style.opacity=bright;
         document.body.appendChild(trail);
         // La scia rimane visibile poi sfuma lentamente
-        var stayMs=400+Math.random()*300;
-        var fadeDur=800+Math.random()*500;
+        var stayMs=500+Math.random()*400;
+        var fadeDur=900+Math.random()*600;
         (function(trailEl,stay,fd){
           setTimeout(function(){
             trailEl.style.transition='opacity '+fd+'ms ease-out';
@@ -4842,10 +4822,7 @@ fetchWeather();
         })(trail,stayMs,fadeDur);
       }
 
-      if(t>=1){
-        if(el.parentNode) el.parentNode.removeChild(el);
-        return;
-      }
+      if(t>=1){return;}
       requestAnimationFrame(tick);
     }
     requestAnimationFrame(tick);
