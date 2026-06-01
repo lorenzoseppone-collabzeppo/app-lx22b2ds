@@ -4826,17 +4826,20 @@ fetchWeather();
         trail.style.width='4px';
         trail.style.height='1px';
         trail.style.transform='rotate('+angle+'deg)';
-        trail.style.opacity='0.8';
+        trail.style.opacity='0.9';
         document.body.appendChild(trail);
-        // La scia va subito in dissolvenza
-        var fadeDur=250+Math.random()*150;
-        (function(trailEl,fd){
-          trailEl.style.transition='opacity '+fd+'ms ease-out';
-          trailEl.style.opacity='0';
+        // La scia rimane visibile poi sfuma lentamente
+        var stayMs=400+Math.random()*300;
+        var fadeDur=800+Math.random()*500;
+        (function(trailEl,stay,fd){
           setTimeout(function(){
-            if(trailEl.parentNode) trailEl.parentNode.removeChild(trailEl);
-          },fd+50);
-        })(trail,fadeDur);
+            trailEl.style.transition='opacity '+fd+'ms ease-out';
+            trailEl.style.opacity='0';
+            setTimeout(function(){
+              if(trailEl.parentNode) trailEl.parentNode.removeChild(trailEl);
+            },fd+50);
+          },stay);
+        })(trail,stayMs,fadeDur);
       }
 
       if(t>=1){
