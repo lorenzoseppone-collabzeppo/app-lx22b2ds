@@ -2145,7 +2145,7 @@ function handleLogin(){
   try{localStorage.setItem('_t','1');localStorage.removeItem('_t');storageOK=true;}catch(e){}
   if(proto!=='http:'&&proto!=='https:'&&proto!=='chrome-extension:'||!storageOK){
     console.warn('[AUTH] Ambiente non supportato - login non disponibile in questo browser');
-    alert('Per il login, apri questa pagina in Safari o Chrome (non nel browser dell\\'app).\\n\\nCopia il link e aprilo direttamente nel browser.');
+    alert('Per il login, apri questa pagina in Safari o Chrome (non nel browser dell\'app).\n\nCopia il link e aprilo direttamente nel browser.');
     loginLoading=false;render();return;
   }
 
