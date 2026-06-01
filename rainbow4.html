@@ -4776,9 +4776,9 @@ fetchWeather();
     var header=document.querySelector('.header');
     if(!header) return;
     var rect=header.getBoundingClientRect();
-    var startX=rect.left-60;
+    var startX=rect.left+5;
     var startY=rect.top+rect.height*0.05+rect.height*Math.random()*0.9;
-    var endX=rect.right+60;
+    var endX=rect.right-5;
     var endY=rect.top+rect.height*0.05+rect.height*Math.random()*0.9;
     var angle=Math.atan2(endY-startY,endX-startX)*180/Math.PI;
     var dur=400+Math.random()*400;
@@ -4791,8 +4791,8 @@ fetchWeather();
       var now=Date.now();
       var elapsed=now-startT;
       var t=Math.min(elapsed/dur,1);
-      var curX=startX+(endX-startX)*t;
-      var curY=startY+(endY-startY)*t;
+      var curX=Math.max(rect.left, Math.min(rect.right-6, startX+(endX-startX)*t));
+      var curY=Math.max(rect.top, Math.min(rect.bottom-2, startY+(endY-startY)*t));
 
       // Lascia pezzetti di scia tratteggiata
       if(t-lastTrailT>0.03 && t<0.95){
