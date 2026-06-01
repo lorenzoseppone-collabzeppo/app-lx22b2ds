@@ -1918,6 +1918,12 @@ var _gisTried=false;
 
 function initFirebase(){
   try{
+    // CHECK: protocol must be http/https for Firebase Auth
+    var proto=window.location.protocol;
+    if(proto!=='http:'&&proto!=='https:'&&proto!=='chrome-extension:'){
+      console.warn('[FIREBASE] Protocol not supported ('+proto+') - running in offline mode');
+      render();return;
+    }
     // CHECK: web storage must be available for Firebase Auth
     var storageOK=false;
     try{localStorage.setItem('_test','1');localStorage.removeItem('_test');storageOK=true;}catch(e){storageOK=false;}
@@ -1955,6 +1961,8 @@ function initFirebase(){
           msg='DOMINIO NON AUTORIZZATO!\n\nDevi aggiungere il dominio in Firebase Console:\n\n1. Vai su: console.firebase.google.com\n2. Seleziona il progetto "presenze-pre-post"\n3. Clicca: Authentication (sinistra)\n4. Clicca: Settings (sopra)\n5. Scorri fino a: Authorized domains\n6. Clicca: Add domain\n7. Aggiungi: '+window.location.hostname+'\n\nDomini che DEVONO essere presenti:\n  - localhost\n  - presenze-pre-post.firebaseapp.com\n  - '+window.location.hostname;
         }else if(error.code==='auth/operation-not-allowed'){
           msg='Login Google non abilitato in Firebase Console.\nAbilita Google come provider in Authentication > Sign-in method.';
+        }else if(error.code==='auth/operation-not-supported-in-this-environment'){
+          msg='Apri questa pagina in Safari (non nel browser dell\'app).\nCopia il link e apri Safari direttamente.';
         }else if(error.code==='auth/network-request-failed'){
           msg='Errore di rete. Controlla la connessione internet e riprova.';
         }else{
@@ -2059,6 +2067,8 @@ function doRedirectLogin(){
     var msg='';
     if(error.code==='auth/unauthorized-domain'){
       msg='DOMINIO NON AUTORIZZATO!\n\nAggiungi "'+window.location.hostname+'" in Firebase Console:\nAuthentication > Settings > Authorized domains > Add domain\n\nDomini richiesti:\n  - localhost\n  - presenze-pre-post.firebaseapp.com\n  - '+window.location.hostname;
+    }else if(error.code==='auth/operation-not-supported-in-this-environment'){
+      msg='Apri questa pagina in Safari (non nel browser dell\'app).\nCopia il link e apri Safari direttamente.';
     }else{
       msg='Errore login: '+(error.code||error.message||'Errore sconosciuto');
     }
@@ -2091,6 +2101,8 @@ function doPopupLogin(){
     var msg='';
     if(error.code==='auth/unauthorized-domain'){
       msg='DOMINIO NON AUTORIZZATO!\n\nAggiungi "'+window.location.hostname+'" in Firebase Console:\nAuthentication > Settings > Authorized domains > Add domain';
+    }else if(error.code==='auth/operation-not-supported-in-this-environment'){
+      msg='Apri questa pagina in Safari (non nel browser dell\'app).\nCopia il link e apri Safari direttamente.';
     }else{
       msg='Errore login: '+(error.code||error.message||'Errore');
     }
