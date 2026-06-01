@@ -4728,115 +4728,131 @@ fetchWeather();
 // ---- FINE ALTALENA ----
 
 // ---- BAMBINI CHE ENTRANO A SCUOLA ----
+// 2 bambini (maschio e femmina) che camminano nell'header verso la scuola
 (function(){
+  var walkContainer=null;
+  var boyX=0; var girlX=0;
+  var boyDir=1; var girlDir=1;
+  var boyFrame=0; var girlFrame=0;
+  var BOY_W=26; var BOY_H=43;
+  var GIRL_W=26; var GIRL_H=43;
+
   var boySVG='<svg viewBox="0 0 26 43" width="26" height="43">'+
-    '<circle cx="13" cy="6" r="5" fill="#FFD5B8" stroke="#1a1a1a" stroke-width="0.5"/>'+
-    '<path d="M8,4 C8,0 18,0 18,4" fill="#5D3A1A" stroke="none"/>'+
-    '<circle cx="11" cy="6" r="0.7" fill="#1a1a1a"/>'+
-    '<circle cx="15" cy="6" r="0.7" fill="#1a1a1a"/>'+
-    '<path d="M11,8 Q13,10 15,8" stroke="#1a1a1a" stroke-width="0.5" fill="none" stroke-linecap="round"/>'+
-    '<path d="M8,11 L7,24 L19,24 L18,11 Z" fill="#4CAF50" stroke="#388E3C" stroke-width="0.3"/>'+
-    '<line x1="9" y1="13" x2="5" y2="10" stroke="#FFD5B8" stroke-width="1.5" stroke-linecap="round"/>'+
-    '<line x1="17" y1="13" x2="21" y2="10" stroke="#FFD5B8" stroke-width="1.5" stroke-linecap="round"/>'+
-    '<line x1="9" y1="24" x2="7" y2="36" stroke="#FFD5B8" stroke-width="1.5" stroke-linecap="round"/>'+
-    '<line x1="15" y1="24" x2="17" y2="36" stroke="#FFD5B8" stroke-width="1.5" stroke-linecap="round"/>'+
-    '<ellipse cx="6" cy="37" rx="2.5" ry="1.5" fill="#333"/>'+
-    '<ellipse cx="18" cy="37" rx="2.5" ry="1.5" fill="#333"/>'+
+    '<circle cx="13" cy="7" r="6" fill="#FFD5B8" stroke="#1a1a1a" stroke-width="0.5"/>'+
+    '<path d="M7,5 C7,0 19,0 19,5" fill="#5D3A1A" stroke="none"/>'+
+    '<circle cx="10" cy="7" r="0.8" fill="#1a1a1a"/>'+
+    '<circle cx="16" cy="7" r="0.8" fill="#1a1a1a"/>'+
+    '<path d="M11,10 Q13,12 15,10" stroke="#1a1a1a" stroke-width="0.5" fill="none" stroke-linecap="round"/>'+
+    '<path d="M8,13 L6,28 L20,28 L18,13 Z" fill="#4CAF50" stroke="#388E3C" stroke-width="0.4"/>'+
+    '<line x1="8" y1="28" x2="6" y2="38" stroke="#FFD5B8" stroke-width="2.5" stroke-linecap="round"/>'+
+    '<line x1="18" y1="28" x2="20" y2="38" stroke="#FFD5B8" stroke-width="2.5" stroke-linecap="round"/>'+
+    '<ellipse cx="5" cy="39" rx="3" ry="1.5" fill="#333"/>'+
+    '<ellipse cx="21" cy="39" rx="3" ry="1.5" fill="#333"/>'+
+    '<line x1="10" y1="18" x2="5" y2="25" stroke="#FFD5B8" stroke-width="2" stroke-linecap="round"/>'+
+    '<line x1="16" y1="18" x2="21" y2="25" stroke="#FFD5B8" stroke-width="2" stroke-linecap="round"/>'+
   '</svg>';
-  
+
   var girlSVG='<svg viewBox="0 0 26 43" width="26" height="43">'+
-    '<circle cx="13" cy="6" r="5" fill="#FFD5B8" stroke="#1a1a1a" stroke-width="0.5"/>'+
-    '<path d="M8,4 C7,-1 19,-1 18,4" fill="#FFD700" stroke="none"/>'+
-    '<path d="M8,6 C7,10 6,18 7,22 C8,22 9,16 9,10 Z" fill="#FFD700" stroke="none"/>'+
-    '<path d="M18,6 C19,10 20,18 19,22 C18,22 17,16 17,10 Z" fill="#FFD700" stroke="none"/>'+
-    '<circle cx="8" cy="3" r="1.5" fill="#FF69B4" stroke="none"/>'+
-    '<circle cx="11" cy="6" r="0.7" fill="#1a1a1a"/>'+
-    '<circle cx="15" cy="6" r="0.7" fill="#1a1a1a"/>'+
-    '<path d="M11,8 Q13,10 15,8" stroke="#1a1a1a" stroke-width="0.5" fill="none" stroke-linecap="round"/>'+
-    '<path d="M8,11 L6,24 L20,24 L18,11 Z" fill="#FF69B4" stroke="#FF1493" stroke-width="0.3"/>'+
-    '<line x1="9" y1="13" x2="5" y2="10" stroke="#FFD5B8" stroke-width="1.5" stroke-linecap="round"/>'+
-    '<line x1="17" y1="13" x2="21" y2="10" stroke="#FFD5B8" stroke-width="1.5" stroke-linecap="round"/>'+
-    '<line x1="9" y1="24" x2="7" y2="36" stroke="#FFD5B8" stroke-width="1.5" stroke-linecap="round"/>'+
-    '<line x1="15" y1="24" x2="17" y2="36" stroke="#FFD5B8" stroke-width="1.5" stroke-linecap="round"/>'+
-    '<ellipse cx="6" cy="37" rx="2.5" ry="1.5" fill="#FF69B4"/>'+
-    '<ellipse cx="18" cy="37" rx="2.5" ry="1.5" fill="#FF69B4"/>'+
+    '<circle cx="13" cy="7" r="6" fill="#FFD5B8" stroke="#1a1a1a" stroke-width="0.5"/>'+
+    '<path d="M7,5 C5,0 21,0 19,5" fill="#FFD700" stroke="none"/>'+
+    '<path d="M7,5 C6,8 5,15 6,22 C7,22 8,15 8,9 Z" fill="#FFD700" stroke="none"/>'+
+    '<path d="M19,5 C20,8 21,15 20,22 C19,22 18,15 18,9 Z" fill="#FFD700" stroke="none"/>'+
+    '<circle cx="7" cy="4" r="1.5" fill="#FF69B4"/>'+
+    '<circle cx="10" cy="7" r="0.8" fill="#1a1a1a"/>'+
+    '<circle cx="16" cy="7" r="0.8" fill="#1a1a1a"/>'+
+    '<path d="M11,10 Q13,12 15,10" stroke="#1a1a1a" stroke-width="0.5" fill="none" stroke-linecap="round"/>'+
+    '<path d="M8,13 L5,28 L21,28 L18,13 Z" fill="#FF69B4" stroke="#FF1493" stroke-width="0.4"/>'+
+    '<line x1="8" y1="28" x2="6" y2="38" stroke="#FFD5B8" stroke-width="2.5" stroke-linecap="round"/>'+
+    '<line x1="18" y1="28" x2="20" y2="38" stroke="#FFD5B8" stroke-width="2.5" stroke-linecap="round"/>'+
+    '<ellipse cx="5" cy="39" rx="3" ry="1.5" fill="#FF69B4"/>'+
+    '<ellipse cx="21" cy="39" rx="3" ry="1.5" fill="#FF69B4"/>'+
+    '<line x1="10" y1="18" x2="5" y2="25" stroke="#FFD5B8" stroke-width="2" stroke-linecap="round"/>'+
+    '<line x1="16" y1="18" x2="21" y2="25" stroke="#FFD5B8" stroke-width="2" stroke-linecap="round"/>'+
   '</svg>';
-  
-  function createWalkingChild(isGirl,startDelay){
-    var el=document.createElement('div');
-    el.style.cssText='position:fixed;pointer-events:none;z-index:15;';
-    el.innerHTML=isGirl?girlSVG:boySVG;
-    document.body.appendChild(el);
-    
-    var speed=0.4+Math.random()*0.3; // px per frame
-    var x=0;
-    var targetX=0;
-    var y=0;
-    var placed=false;
-    var legPhase=0;
-    var walking=false;
-    var walkStart=0;
-    
-    function positionChild(){
-      var headerEl=document.querySelector('.header');
-      var schoolIcon=document.querySelector('.header-icon');
-      if(!headerEl||!schoolIcon) return;
-      var hr=headerEl.getBoundingClientRect();
-      var sr=schoolIcon.getBoundingClientRect();
-      targetX=sr.left+sr.width/2-13;
-      y=hr.bottom-48;
-      if(!placed){
-        x=hr.left-30-Math.random()*40;
-        placed=true;
-        walkStart=Date.now()+startDelay;
-        walking=true;
-      }
-    }
-    
-    function animate(){
-      positionChild();
-      if(walking && placed && Date.now()>=walkStart){
-        x+=speed;
-        // Walking leg animation
-        legPhase+=0.08;
-        var legOff=Math.sin(legPhase)*3;
-        el.style.transform='translateY('+legOff+'px)';
-        
-        // Reached school
-        if(x>=targetX){
-          x=targetX;
-          walking=false;
-          el.style.opacity='0';
-          // Reset after a while to walk again
-          setTimeout(function(){
-            var headerEl2=document.querySelector('.header');
-            if(headerEl2){
-              var hr2=headerEl2.getBoundingClientRect();
-              x=hr2.left-30-Math.random()*40;
-            } else {
-              x=-30-Math.random()*40;
-            }
-            walking=true;
-            walkStart=Date.now();
-            el.style.opacity='1';
-          },8000+Math.random()*12000);
-        }
-      }
-      el.style.left=Math.round(x)+'px';
-      el.style.top=Math.round(y)+'px';
-      requestAnimationFrame(animate);
-    }
-    
-    positionChild();
-    requestAnimationFrame(animate);
-    window.addEventListener('resize',positionChild);
+
+  function initWalkChildren(){
+    var header=document.querySelector('.header');
+    if(!header) return;
+    // Remove old
+    var old=header.querySelector('.walk-children-container');
+    if(old) old.remove();
+
+    walkContainer=document.createElement('div');
+    walkContainer.className='walk-children-container';
+    walkContainer.style.cssText='position:absolute;bottom:8px;left:0;width:100%;height:43px;pointer-events:none;z-index:2;overflow:visible';
+
+    var boyEl=document.createElement('div');
+    boyEl.className='walk-child';
+    boyEl.id='walkBoy';
+    boyEl.innerHTML=boySVG;
+    boyEl.style.cssText='position:absolute;bottom:0;transition:none';
+
+    var girlEl=document.createElement('div');
+    girlEl.className='walk-child';
+    girlEl.id='walkGirl';
+    girlEl.innerHTML=girlSVG;
+    girlEl.style.cssText='position:absolute;bottom:0;transition:none';
+
+    walkContainer.appendChild(boyEl);
+    walkContainer.appendChild(girlEl);
+    header.appendChild(walkContainer);
+
+    // Start positions: opposite sides
+    var w=header.offsetWidth||400;
+    boyX=w*0.15;
+    girlX=w*0.75;
+    boyDir=1;
+    girlDir=-1;
+    boyFrame=0;
+    girlFrame=0;
   }
-  
-  // Create 2 boys and 2 girls with staggered delays
-  setTimeout(function(){createWalkingChild(false,0);},2000);
-  setTimeout(function(){createWalkingChild(true,3000);},5000);
-  setTimeout(function(){createWalkingChild(false,8000);},9000);
-  setTimeout(function(){createWalkingChild(true,14000);},13000);
+
+  // Walking animation via setInterval (Safari-safe)
+  setInterval(function(){
+    var header=document.querySelector('.header');
+    if(!header) return;
+    var boyEl=document.getElementById('walkBoy');
+    var girlEl=document.getElementById('walkGirl');
+    if(!boyEl||!girlEl) return;
+
+    var w=header.offsetWidth||400;
+
+    // Boy walks back and forth
+    boyX+=boyDir*0.6;
+    if(boyX>w-BOY_W){boyDir=-1;boyEl.style.transform='scaleX(-1)';}
+    if(boyX<0){boyDir=1;boyEl.style.transform='scaleX(1)';}
+    // Girl walks back and forth
+    girlX+=girlDir*0.5;
+    if(girlX>w-GIRL_W){girlDir=-1;girlEl.style.transform='scaleX(-1)';}
+    if(girlX<0){girlDir=1;girlEl.style.transform='scaleX(1)';}
+
+    // Walking bob animation
+    boyFrame++;
+    girlFrame++;
+    var boyBob=Math.sin(boyFrame*0.3)*2;
+    var girlBob=Math.sin(girlFrame*0.28)*2;
+
+    boyEl.style.left=Math.round(boyX)+'px';
+    boyEl.style.top=Math.round(boyBob)+'px';
+    girlEl.style.left=Math.round(girlX)+'px';
+    girlEl.style.top=Math.round(girlBob)+'px';
+  },50);
+
+  // Init after page loads
+  setTimeout(initWalkChildren,800);
+
+  // Re-init on render
+  var origRender=window.render;
+  if(origRender){
+    window.render=function(){
+      origRender.apply(this,arguments);
+      setTimeout(initWalkChildren,100);
+    };
+  }
+  window.addEventListener('resize',function(){
+    clearTimeout(window._walkResizeTimer);
+    window._walkResizeTimer=setTimeout(initWalkChildren,300);
+  });
 })();
 // ---- FINE BAMBINI CHE ENTRANO A SCUOLA ----
 
