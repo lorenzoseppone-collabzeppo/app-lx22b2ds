@@ -4781,9 +4781,9 @@ fetchWeather();
     var endX=rect.right+60;
     var endY=rect.top+rect.height*0.05+rect.height*Math.random()*0.9;
     var angle=Math.atan2(endY-startY,endX-startX)*180/Math.PI;
-    var dur=300+Math.random()*350;
+    var dur=400+Math.random()*400;
 
-    // Scia continua tipo cometa
+    // Scia tratteggiata tipo meteorite
     var startT=Date.now();
     var lastTrailT=-1;
 
@@ -4794,23 +4794,21 @@ fetchWeather();
       var curX=startX+(endX-startX)*t;
       var curY=startY+(endY-startY)*t;
 
-      // Lascia pezzetti ravvicinati per fare scia continua
-      if(t-lastTrailT>0.015 && t<0.95){
+      // Lascia pezzetti di scia tratteggiata
+      if(t-lastTrailT>0.03 && t<0.95){
         lastTrailT=t;
         var trail=document.createElement('div');
         trail.className='saetta-trail';
         trail.style.left=curX+'px';
         trail.style.top=curY+'px';
-        trail.style.width='12px';
+        trail.style.width='6px';
         trail.style.height='1px';
         trail.style.transform='rotate('+angle+'deg)';
-        // Luminoso davanti, più debole dietro
-        var bright=1-t*0.3;
+        var bright=1-t*0.4;
         trail.style.opacity=bright;
         document.body.appendChild(trail);
-        // La scia rimane poi sfuma
-        var stayMs=300+Math.random()*200;
-        var fadeDur=700+Math.random()*400;
+        var stayMs=400+Math.random()*300;
+        var fadeDur=800+Math.random()*500;
         (function(trailEl,stay,fd){
           setTimeout(function(){
             trailEl.style.transition='opacity '+fd+'ms ease-out';
