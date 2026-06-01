@@ -21,7 +21,7 @@
 body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background-color:var(--bg-body);background-image:radial-gradient(circle,var(--bg-dots) 1px,transparent 1px);background-size:20px 20px;color:var(--text-main);-webkit-font-smoothing:antialiased;transition:background-color 0.3s,color 0.3s}
 .app{max-width:900px;margin:0 auto;padding:16px;min-height:100vh}
 .header{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:16px;padding:20px 16px;background:linear-gradient(135deg,#1a1a2e,#2d2d5e);border-radius:16px;box-shadow:0 4px 16px rgba(0,0,0,0.15);position:relative;overflow:hidden}
-.header-icon{width:86px;height:86px;border-radius:16px;overflow:visible;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:transparent!important}
+.header-icon{width:100px;height:100px;border-radius:16px;overflow:visible;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:transparent!important}
 .header-icon img{width:100%;height:100%;object-fit:contain;border-radius:16px}
 .header-info{display:flex;flex-direction:column;align-items:center;gap:4px;width:100%}
 .header-weather-row{display:flex;align-items:center;justify-content:space-between;width:100%;gap:8px}
@@ -2176,7 +2176,7 @@ function render(){
   html+='<div class="header-rainbow" id="headerRainbow"><div class="header-rainbow-inner" id="headerRainbowInner"></div></div>';
   // Orologio + Data + Meteo in alto
   html+=getClockHTML();
-  html+='<div class="header-icon" style="font-size:58px;line-height:1">🏫</div>';
+  html+='<div class="header-icon" style="font-size:72px;line-height:1">🏫</div>';
   html+='<div class="header-info">';
   if(editingSchool){html+='<input class="school-name-input" id="schoolInput" value="'+esc(schoolName)+'" onblur="App.finishEditSchool()" onkeydown="if(event.key===\'Enter\')App.finishEditSchool()"/>';}
   else{html+='<div class="school-name" onclick="App.startEditSchool()" title="Clicca per modificare">'+esc(schoolName)+'</div>';}
