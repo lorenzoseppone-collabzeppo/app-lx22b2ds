@@ -21,7 +21,7 @@
 body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background-color:var(--bg-body);background-image:radial-gradient(circle,var(--bg-dots) 1px,transparent 1px);background-size:20px 20px;color:var(--text-main);-webkit-font-smoothing:antialiased;transition:background-color 0.3s,color 0.3s}
 .app{max-width:900px;margin:0 auto;padding:16px;min-height:100vh}
 .header{display:flex;flex-direction:column;align-items:center;gap:8px;margin-bottom:16px;padding:20px 16px;background:linear-gradient(135deg,#1a1a2e,#2d2d5e);border-radius:16px;box-shadow:0 4px 16px rgba(0,0,0,0.15);position:relative;overflow:hidden}
-.header-icon{width:100px;height:100px;border-radius:16px;overflow:visible;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:transparent!important}
+.header-icon{width:86px;height:86px;border-radius:16px;overflow:visible;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:transparent!important}
 .header-icon img{width:100%;height:100%;object-fit:contain;border-radius:16px}
 .header-info{display:flex;flex-direction:column;align-items:center;gap:4px;width:100%}
 .header-weather-row{display:flex;align-items:center;justify-content:space-between;width:100%;gap:8px}
@@ -312,7 +312,8 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 
 .falling-star{position:absolute;pointer-events:none;z-index:1;color:#ffd700;opacity:0;animation:starFall var(--star-dur,5s) ease-in var(--star-delay,0s) infinite;font-size:var(--star-size,14px);text-shadow:0 0 8px var(--star-glow,#ffd700)}
 @keyframes starFall{0%{opacity:0;transform:translateY(-10px) rotate(0deg) scale(0.3)}8%{opacity:1;transform:translateY(10px) rotate(40deg) scale(1)}30%{opacity:0.85;transform:translateY(var(--star-mid,80px)) rotate(150deg) scale(0.95)}70%{opacity:0.5;transform:translateY(var(--star-far,160px)) rotate(300deg) scale(0.8)}90%{opacity:0.15;transform:translateY(var(--star-end,220px)) rotate(350deg) scale(0.5)}100%{opacity:0;transform:translateY(var(--star-end,220px)) rotate(360deg) scale(0.2)}}
-.saetta-trail{position:fixed;pointer-events:none;z-index:9996;border-radius:3px;background:rgba(255,255,255,0.85);box-shadow:0 0 6px 3px rgba(255,255,255,1),0 0 14px 6px rgba(255,255,255,0.6),0 0 26px 10px rgba(255,255,255,0.25);filter:blur(1px)}
+.saetta-wrap{position:fixed;pointer-events:none;z-index:9997;overflow:visible}
+.saetta-wrap svg{overflow:visible}
 .header-rainbow{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;opacity:0;border-radius:16px;overflow:hidden}
 .header-rainbow-inner{position:absolute;top:-30%;left:-30%;width:160%;height:160%;transform:rotate(-30deg) translateX(-120%);-webkit-transform:rotate(-30deg) translateX(-120%);background:linear-gradient(90deg,transparent 0%,transparent 20%,rgba(255,0,0,0.22) 28%,rgba(255,127,0,0.22) 34%,rgba(255,255,0,0.22) 40%,rgba(0,255,0,0.22) 46%,rgba(0,0,255,0.18) 52%,rgba(75,0,130,0.15) 58%,rgba(139,0,255,0.13) 64%,transparent 72%,transparent 100%)}
 </style>
@@ -2176,7 +2177,7 @@ function render(){
   html+='<div class="header-rainbow" id="headerRainbow"><div class="header-rainbow-inner" id="headerRainbowInner"></div></div>';
   // Orologio + Data + Meteo in alto
   html+=getClockHTML();
-  html+='<div class="header-icon" style="font-size:72px;line-height:1">🏫</div>';
+  html+='<div class="header-icon" style="font-size:58px;line-height:1">🏫</div>';
   html+='<div class="header-info">';
   if(editingSchool){html+='<input class="school-name-input" id="schoolInput" value="'+esc(schoolName)+'" onblur="App.finishEditSchool()" onkeydown="if(event.key===\'Enter\')App.finishEditSchool()"/>';}
   else{html+='<div class="school-name" onclick="App.startEditSchool()" title="Clicca per modificare">'+esc(schoolName)+'</div>';}
@@ -4728,7 +4729,8 @@ fetchWeather();
       var star=document.createElement('span');
       star.className='falling-star';
       star.textContent=starSymbols[Math.floor(Math.random()*starSymbols.length)];
-      var x=Math.random()*95; // 0-95% per non uscire dal bordo
+      // Distribuzione uniforme: forza stelle su tutta la larghezza
+      var x=(i/(count-1))*85+Math.random()*10; // distribuite da 0% a 95% con un po' di random
       var size=10+Math.random()*12; // 10-22px
       var dur=7+Math.random()*9; // 7-16s (più lento)
       var delay=Math.random()*8; // 0-8s ritardo
@@ -4768,104 +4770,174 @@ fetchWeather();
 })();
 // ---- FINE STELLINE CADENTI ----
 
-// ---- STRISCE BIANCHE DA SINISTRA A DESTRA IN CADUTA CON SCIA ----
+// ---- SAETTE CON SCIA LUMINOSA DISSOLVENTE DA SINISTRA A DESTRA ----
 (function(){
-  var trails=[];
+  var activeStars=[];
 
-  function spawnStriscia(){
+  function spawnSaetta(){
     var header=document.querySelector('.header');
     if(!header) return;
     var rect=header.getBoundingClientRect();
-    var startX=rect.left+3;
-    var endX=rect.right-3;
-    // O sta in alto o sta in basso, mai al centro
-    var topZone=rect.top+rect.height*0.05+Math.random()*rect.height*0.25;
-    var bottomZone=rect.top+rect.height*0.7+Math.random()*rect.height*0.25;
-    var isTop=Math.random()<0.5;
-    var startY=isTop ? topZone : bottomZone;
-    // Diagonale: scende ma resta nella stessa zona
-    var drop=rect.height*0.08+Math.random()*rect.height*0.15;
-    var endY=startY+drop;
-    if(endY>rect.top+rect.height*0.97) endY=rect.top+rect.height*0.97;
-    var angle=Math.atan2(endY-startY,endX-startX)*180/Math.PI;
-    var dur=400+Math.random()*400;
+    var w=rect.width;
+    var h=rect.height;
+    // Partenza a sinistra, arrivo a destra, altezza casuale
+    var yPerc=10+Math.random()*70; // 10-80% altezza header
+    var arcH=-15-Math.random()*25; // arco verso l'alto
+    var dur=500+Math.random()*600; // veloce
 
-    // Scia tratteggiata tipo meteorite
-    var startT=Date.now();
-    var lastTrailT=-1;
+    var wrap=document.createElement('div');
+    wrap.className='saetta-wrap';
+    wrap.style.left=rect.left+'px';
+    wrap.style.top=rect.top+'px';
 
-    function tick(){
-      var now=Date.now();
-      var elapsed=now-startT;
-      var t=Math.min(elapsed/dur,1);
-      var curX=Math.max(rect.left, Math.min(rect.right-6, startX+(endX-startX)*t));
-      var curY=Math.max(rect.top, Math.min(rect.bottom-2, startY+(endY-startY)*t));
+    var svgNS='http://www.w3.org/2000/svg';
+    var svg=document.createElementNS(svgNS,'svg');
+    svg.setAttribute('width',w);
+    svg.setAttribute('height',h);
+    svg.style.overflow='visible';
 
-      // Lascia scia soffice tipo schiuma
-      if(t-lastTrailT>0.02 && t<0.95){
-        lastTrailT=t;
-        var trail=document.createElement('div');
-        trail.className='saetta-trail';
-        trail.style.left=curX+'px';
-        trail.style.top=curY+'px';
-        trail.style.width='14px';
-        trail.style.height='2px';
-        trail.style.transform='rotate('+angle+'deg)';
-        var bright=1-t*0.3;
-        trail.style.opacity=bright;
-        document.body.appendChild(trail);
-        // Dissolvenza morbida tipo schiuma
-        var fadeDur=700+Math.random()*500;
-        (function(trailEl,fd){
-          setTimeout(function(){
-            trailEl.style.transition='opacity '+fd+'ms ease-out';
-            trailEl.style.opacity='0';
-            setTimeout(function(){
-              if(trailEl.parentNode) trailEl.parentNode.removeChild(trailEl);
-            },fd+50);
-          },100);
-        })(trail,fadeDur);
-      }
+    // Definisci gradiente lineare per la scia (da opaco a trasparente)
+    var defs=document.createElementNS(svgNS,'defs');
+    var grad=document.createElementNS(svgNS,'linearGradient');
+    grad.setAttribute('id','sg'+activeStars.length);
+    grad.setAttribute('gradientUnits','userSpaceOnUse');
+    // Il gradiente viene aggiornato ogni frame
+    var stop1=document.createElementNS(svgNS,'stop');
+    stop1.setAttribute('offset','0%');
+    stop1.setAttribute('stop-color','#ffffff');
+    stop1.setAttribute('stop-opacity','0');
+    var stop2=document.createElementNS(svgNS,'stop');
+    stop2.setAttribute('offset','40%');
+    stop2.setAttribute('stop-color','#fffacd');
+    stop2.setAttribute('stop-opacity','0.6');
+    var stop3=document.createElementNS(svgNS,'stop');
+    stop3.setAttribute('offset','100%');
+    stop3.setAttribute('stop-color','#ffffff');
+    stop3.setAttribute('stop-opacity','1');
+    grad.appendChild(stop1);
+    grad.appendChild(stop2);
+    grad.appendChild(stop3);
+    defs.appendChild(grad);
+    svg.appendChild(defs);
 
-      if(t>=1){return;}
-      requestAnimationFrame(tick);
-    }
-    requestAnimationFrame(tick);
+    // Scia luminosa (striscia con gradiente dissolvente)
+    var trail=document.createElementNS(svgNS,'path');
+    trail.setAttribute('fill','none');
+    trail.setAttribute('stroke','url(#sg'+activeStars.length+')');
+    trail.setAttribute('stroke-width','2');
+    trail.setAttribute('stroke-linecap','round');
+    trail.setAttribute('opacity','0');
+    svg.appendChild(trail);
+
+    // Glow (sfocatura larga dietro la scia)
+    var glow=document.createElementNS(svgNS,'path');
+    glow.setAttribute('fill','none');
+    glow.setAttribute('stroke','#ffd700');
+    glow.setAttribute('stroke-width','6');
+    glow.setAttribute('stroke-linecap','round');
+    glow.setAttribute('opacity','0');
+    glow.style.filter='blur(3px)';
+    svg.appendChild(glow);
+
+    // Testa brillante
+    var head=document.createElementNS(svgNS,'circle');
+    head.setAttribute('r','2');
+    head.setAttribute('fill','white');
+    head.setAttribute('opacity','0');
+    var headGlow=document.createElementNS(svgNS,'circle');
+    headGlow.setAttribute('r','5');
+    headGlow.setAttribute('fill','#ffd700');
+    headGlow.setAttribute('opacity','0');
+    headGlow.style.filter='blur(2px)';
+
+    svg.appendChild(trail);
+    svg.appendChild(glow);
+    svg.appendChild(headGlow);
+    svg.appendChild(head);
+    wrap.appendChild(svg);
+    document.body.appendChild(wrap);
+
+    // Punti della curva: inizio a sinistra, arco, fine a destra
+    var sx=0;
+    var sy=h*yPerc/100;
+    var ex=w;
+    var ey=h*(yPerc+(Math.random()-0.5)*20)/100;
+    var cpx=w*0.5;
+    var cpy=Math.max(0,sy+h*arcH/100);
+    var totalLen=Math.sqrt((ex-sx)*(ex-sx)+(ey-sy)*(ey-sy))*1.2;
+
+    var starObj={wrap:wrap,svg:svg,trail:trail,glow:glow,head:head,headGlow:headGlow,
+      grad:grad,sx:sx,sy:sy,ex:ex,ey:ey,cpx:cpx,cpy:cpy,
+      dur:dur,totalLen:totalLen,active:true,start:Date.now()};
+    activeStars.push(starObj);
   }
 
+  // Animation loop con setInterval (Safari-safe)
+  setInterval(function(){
+    var now=Date.now();
+    for(var i=activeStars.length-1;i>=0;i--){
+      var s=activeStars[i];
+      if(!s.active) continue;
+      var elapsed=now-s.start;
+      var progress=elapsed/s.dur;
+      if(progress>1){
+        s.active=false;
+        if(s.wrap&&s.wrap.parentNode) s.wrap.parentNode.removeChild(s.wrap);
+        activeStars.splice(i,1);
+        continue;
+      }
+      var t=progress;
+      // Posizione testa sulla curva di Bezier
+      var px=(1-t)*(1-t)*s.sx+2*(1-t)*t*s.cpx+t*t*s.ex;
+      var py=(1-t)*(1-t)*s.sy+2*(1-t)*t*s.cpy+t*t*s.ey;
+
+      // Coda: punto piu indietro sulla curva
+      var trailLen=50+30*t; // scia piu lunga a meta percorso
+      var tailT=Math.max(0,t-trailLen/s.totalLen);
+      var tx=(1-tailT)*(1-tailT)*s.sx+2*(1-tailT)*tailT*s.cpx+tailT*tailT*s.ex;
+      var ty=(1-tailT)*(1-tailT)*s.sy+2*(1-tailT)*tailT*s.cpy+tailT*tailT*s.ey;
+
+      var pathD='M'+tx+','+ty+' Q'+s.cpx+','+s.cpy+' '+px+','+py;
+      s.trail.setAttribute('d',pathD);
+      s.glow.setAttribute('d',pathD);
+
+      // Aggiorna direzione gradiente
+      s.grad.setAttribute('x1',tx);
+      s.grad.setAttribute('y1',ty);
+      s.grad.setAttribute('x2',px);
+      s.grad.setAttribute('y2',py);
+
+      // Opacita: fade in veloce, fade out alla fine
+      var alpha=1;
+      if(t<0.08) alpha=t/0.08;
+      else if(t>0.8) alpha=(1-t)/0.2;
+
+      s.trail.setAttribute('opacity',(alpha*0.95).toFixed(2));
+      s.glow.setAttribute('opacity',(alpha*0.35).toFixed(2));
+
+      s.head.setAttribute('cx',px);
+      s.head.setAttribute('cy',py);
+      s.head.setAttribute('opacity',alpha.toFixed(2));
+      s.headGlow.setAttribute('cx',px);
+      s.headGlow.setAttribute('cy',py);
+      s.headGlow.setAttribute('opacity',(alpha*0.7).toFixed(2));
+    }
+  },30);
+
+  // Genera saette a intervalli
   function scheduleNext(){
-    var delay=2500+Math.random()*3500;
+    var delay=1200+Math.random()*2500;
     setTimeout(function(){
-      spawnStriscia();
+      spawnSaetta();
       scheduleNext();
     },delay);
   }
   setTimeout(function(){
-    spawnStriscia();
+    spawnSaetta();
     scheduleNext();
-  },800);
+  },1000);
 })();
-// ---- FINE STRISCE BIANCHE ----
-
-// ---- NASCONDI ELEMENTI HEADER QUANDO SCROLL FUORI ----
-(function(){
-  function checkHeaderVisible(){
-    var header=document.querySelector('.header');
-    if(!header) return;
-    var rect=header.getBoundingClientRect();
-    var visible=rect.bottom>0 && rect.top<window.innerHeight;
-    var bfly=document.getElementById('bfly');
-    var altalena=document.getElementById('altalena');
-    var trails=document.querySelectorAll('.saetta-trail');
-    if(bfly) bfly.style.display=visible?'':'none';
-    if(altalena) altalena.style.display=visible?'':'none';
-    for(var i=0;i<trails.length;i++){
-      trails[i].style.display=visible?'':'none';
-    }
-  }
-  window.addEventListener('scroll',checkHeaderVisible,true);
-  setInterval(checkHeaderVisible,500);
-})();
+// ---- FINE SAETTE ----
 
 // Aggiorna meteo ogni 30 minuti
 setInterval(function(){fetchWeather();},1800000);
