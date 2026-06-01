@@ -4777,14 +4777,14 @@ fetchWeather();
     if(!header) return;
     var rect=header.getBoundingClientRect();
     var startX=rect.left+3;
-    // Preferenza per zone alte e basse, meno centro
+    // Partenza zona alta o bassa
     var r1=Math.random();
-    var startY=rect.top+rect.height*(r1<0.5 ? Math.random()*0.25 : 0.75+Math.random()*0.22);
+    var startY=rect.top+rect.height*(r1<0.5 ? Math.random()*0.2 : 0.75+Math.random()*0.2);
     var endX=rect.right-3;
-    var r2=Math.random();
-    var endY=rect.top+rect.height*(r2<0.5 ? Math.random()*0.25 : 0.75+Math.random()*0.22);
-    // Assicura che vada in discesa
-    if(endY<startY) endY=startY+rect.height*0.05+Math.random()*rect.height*0.5;
+    // Arrivo sempre più in basso con diagonale marcata
+    var minDrop=rect.height*0.3;
+    var maxDrop=rect.height*0.85;
+    var endY=startY+minDrop+Math.random()*(maxDrop-minDrop);
     if(endY>rect.top+rect.height*0.97) endY=rect.top+rect.height*0.97;
     var angle=Math.atan2(endY-startY,endX-startX)*180/Math.PI;
     var dur=400+Math.random()*400;
