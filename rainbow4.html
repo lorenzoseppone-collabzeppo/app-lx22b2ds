@@ -1953,6 +1953,9 @@ function initFirebase(){
           msg='Login Google non abilitato in Firebase Console.\nAbilita Google come provider in Authentication > Sign-in method.';
         }else if(error.code==='auth/network-request-failed'){
           msg='Errore di rete. Controlla la connessione internet e riprova.';
+        }else if(error.code==='auth/operation-not-supported-in-this-environment'){
+          msg='Apri l\\'app dal link:\nhttps://lorenzoseppone-collabzeppo.github.io/app-lx22b2ds/rainbow4.html\n\nNon funziona se apri il file direttamente.';
+          console.warn('[AUTH] File locale rilevato - usa GitHub Pages');
         }else{
           msg='Errore login: '+(error.code||'')+'\n'+(error.message||'');
         }
@@ -2055,6 +2058,9 @@ function doRedirectLogin(){
     var msg='';
     if(error.code==='auth/unauthorized-domain'){
       msg='DOMINIO NON AUTORIZZATO!\n\nAggiungi "'+window.location.hostname+'" in Firebase Console:\nAuthentication > Settings > Authorized domains > Add domain\n\nDomini richiesti:\n  - localhost\n  - presenze-pre-post.firebaseapp.com\n  - '+window.location.hostname;
+    }else if(error.code==='auth/operation-not-supported-in-this-environment'){
+      msg='Apri l\'app dal link:\nhttps://lorenzoseppone-collabzeppo.github.io/app-lx22b2ds/rainbow4.html\n\nNon funziona se apri il file direttamente.';
+      console.warn('[AUTH] File locale - usa GitHub Pages');
     }else{
       msg='Errore login: '+(error.code||error.message||'Errore sconosciuto');
     }
@@ -2087,6 +2093,9 @@ function doPopupLogin(){
     var msg='';
     if(error.code==='auth/unauthorized-domain'){
       msg='DOMINIO NON AUTORIZZATO!\n\nAggiungi "'+window.location.hostname+'" in Firebase Console:\nAuthentication > Settings > Authorized domains > Add domain';
+    }else if(error.code==='auth/operation-not-supported-in-this-environment'){
+      msg='Apri l\'app dal link:\nhttps://lorenzoseppone-collabzeppo.github.io/app-lx22b2ds/rainbow4.html\n\nNon funziona se apri il file direttamente.';
+      console.warn('[AUTH] File locale - usa GitHub Pages');
     }else{
       msg='Errore login: '+(error.code||error.message||'Errore');
     }
