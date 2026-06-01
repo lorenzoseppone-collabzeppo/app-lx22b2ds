@@ -4777,9 +4777,12 @@ fetchWeather();
     if(!header) return;
     var rect=header.getBoundingClientRect();
     var startX=rect.left+3;
-    var startY=rect.top+rect.height*Math.random()*0.95;
+    // Preferenza per zone alte e basse, meno centro
+    var r1=Math.random();
+    var startY=rect.top+rect.height*(r1<0.5 ? Math.random()*0.25 : 0.75+Math.random()*0.22);
     var endX=rect.right-3;
-    var endY=rect.top+rect.height*Math.random()*0.95;
+    var r2=Math.random();
+    var endY=rect.top+rect.height*(r2<0.5 ? Math.random()*0.25 : 0.75+Math.random()*0.22);
     // Assicura che vada in discesa
     if(endY<startY) endY=startY+rect.height*0.05+Math.random()*rect.height*0.5;
     if(endY>rect.top+rect.height*0.97) endY=rect.top+rect.height*0.97;
