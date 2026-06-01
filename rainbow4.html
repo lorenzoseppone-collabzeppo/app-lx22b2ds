@@ -4776,10 +4776,13 @@ fetchWeather();
     var header=document.querySelector('.header');
     if(!header) return;
     var rect=header.getBoundingClientRect();
-    var startX=rect.left+5;
-    var startY=rect.top+rect.height*(0.02+Math.random()*0.6);
-    var endX=rect.right-5;
-    var endY=rect.top+Math.min(rect.height*0.98, startY-rect.top+rect.height*(0.15+Math.random()*0.8));
+    var startX=rect.left+3;
+    var startY=rect.top+rect.height*Math.random()*0.95;
+    var endX=rect.right-3;
+    var endY=rect.top+rect.height*Math.random()*0.95;
+    // Assicura che vada in discesa
+    if(endY<startY) endY=startY+rect.height*0.05+Math.random()*rect.height*0.5;
+    if(endY>rect.top+rect.height*0.97) endY=rect.top+rect.height*0.97;
     var angle=Math.atan2(endY-startY,endX-startX)*180/Math.PI;
     var dur=400+Math.random()*400;
 
@@ -4827,7 +4830,7 @@ fetchWeather();
   }
 
   function scheduleNext(){
-    var delay=1000+Math.random()*2000;
+    var delay=2500+Math.random()*3500;
     setTimeout(function(){
       spawnStriscia();
       scheduleNext();
