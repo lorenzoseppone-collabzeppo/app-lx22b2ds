@@ -312,7 +312,7 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
 
 .falling-star{position:absolute;pointer-events:none;z-index:1;color:#ffd700;opacity:0;animation:starFall var(--star-dur,5s) ease-in var(--star-delay,0s) infinite;font-size:var(--star-size,14px);text-shadow:0 0 8px var(--star-glow,#ffd700)}
 @keyframes starFall{0%{opacity:0;transform:translateY(-10px) rotate(0deg) scale(0.3)}8%{opacity:1;transform:translateY(10px) rotate(40deg) scale(1)}30%{opacity:0.85;transform:translateY(var(--star-mid,80px)) rotate(150deg) scale(0.95)}70%{opacity:0.5;transform:translateY(var(--star-far,160px)) rotate(300deg) scale(0.8)}90%{opacity:0.15;transform:translateY(var(--star-end,220px)) rotate(350deg) scale(0.5)}100%{opacity:0;transform:translateY(var(--star-end,220px)) rotate(360deg) scale(0.2)}}
-.saetta-trail{position:fixed;pointer-events:none;z-index:9996;border-radius:4px;background:rgba(255,255,255,0.7);box-shadow:0 0 8px 4px rgba(255,255,255,0.8),0 0 18px 8px rgba(255,255,255,0.4),0 0 32px 14px rgba(255,255,255,0.15);filter:blur(2px)}
+.saetta-trail{position:fixed;pointer-events:none;z-index:9996;border-radius:3px;background:rgba(255,255,255,0.85);box-shadow:0 0 6px 3px rgba(255,255,255,1),0 0 14px 6px rgba(255,255,255,0.6),0 0 26px 10px rgba(255,255,255,0.25);filter:blur(1px)}
 .header-rainbow{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;opacity:0;border-radius:16px;overflow:hidden}
 .header-rainbow-inner{position:absolute;top:-30%;left:-30%;width:160%;height:160%;transform:rotate(-30deg) translateX(-120%);-webkit-transform:rotate(-30deg) translateX(-120%);background:linear-gradient(90deg,transparent 0%,transparent 20%,rgba(255,0,0,0.22) 28%,rgba(255,127,0,0.22) 34%,rgba(255,255,0,0.22) 40%,rgba(0,255,0,0.22) 46%,rgba(0,0,255,0.18) 52%,rgba(75,0,130,0.15) 58%,rgba(139,0,255,0.13) 64%,transparent 72%,transparent 100%)}
 </style>
@@ -4804,17 +4804,19 @@ fetchWeather();
         trail.style.width='14px';
         trail.style.height='2px';
         trail.style.transform='rotate('+angle+'deg)';
-        var bright=0.9-t*0.4;
+        var bright=1-t*0.3;
         trail.style.opacity=bright;
         document.body.appendChild(trail);
         // Dissolvenza morbida tipo schiuma
-        var fadeDur=500+Math.random()*400;
+        var fadeDur=700+Math.random()*500;
         (function(trailEl,fd){
-          trailEl.style.transition='opacity '+fd+'ms ease-out';
-          trailEl.style.opacity='0';
           setTimeout(function(){
-            if(trailEl.parentNode) trailEl.parentNode.removeChild(trailEl);
-          },fd+50);
+            trailEl.style.transition='opacity '+fd+'ms ease-out';
+            trailEl.style.opacity='0';
+            setTimeout(function(){
+              if(trailEl.parentNode) trailEl.parentNode.removeChild(trailEl);
+            },fd+50);
+          },100);
         })(trail,fadeDur);
       }
 
