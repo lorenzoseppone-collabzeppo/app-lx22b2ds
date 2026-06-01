@@ -1918,13 +1918,6 @@ var _gisTried=false;
 
 function initFirebase(){
   try{
-    // CHECK: web storage must be available for Firebase Auth
-    var storageOK=false;
-    try{localStorage.setItem('_test','1');localStorage.removeItem('_test');storageOK=true;}catch(e){storageOK=false;}
-    if(!storageOK){
-      console.warn('[FIREBASE] Web storage NOT available - running in offline mode');
-      render();return;
-    }
     if(typeof firebase==='undefined'){console.warn('Firebase SDK not loaded');render();return;}
     firebase.initializeApp(FIREBASE_CONFIG);
     var auth=firebase.auth();
@@ -4919,35 +4912,6 @@ fetchWeather();
   window.addEventListener('resize',function(){});
 })();
 // ---- FINE STELLINE CADENTI ----
-
-// ---- JINGLE XILOFONO ----
-(function(){
-  var jinglePlayed=false;
-  function playXyloJingle(){
-    if(jinglePlayed) return;
-    jinglePlayed=true;
-    try{
-      var ctx=new(window.AudioContext||window.webkitAudioContext)();
-      var notes=[523.25,587.33,659.25,698.46,783.99,880.00,987.77,1046.50];
-      var now=ctx.currentTime;
-      for(var i=0;i<notes.length;i++){
-        var osc=ctx.createOscillator();
-        var gain=ctx.createGain();
-        osc.type='sine';
-        osc.frequency.value=notes[i];
-        gain.gain.setValueAtTime(0.25,now+i*0.18);
-        gain.gain.exponentialRampToValueAtTime(0.001,now+i*0.18+0.35);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(now+i*0.18);
-        osc.stop(now+i*0.18+0.4);
-      }
-    }catch(e){}
-  }
-  document.addEventListener('touchstart',playXyloJingle,{once:true});
-  document.addEventListener('click',playXyloJingle,{once:true});
-})();
-// ---- FINE JINGLE XILOFONO ----
 
 // Aggiorna meteo ogni 30 minuti
 setInterval(function(){fetchWeather();},1800000);
