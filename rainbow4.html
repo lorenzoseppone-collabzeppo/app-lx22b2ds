@@ -4728,7 +4728,7 @@ fetchWeather();
 // ---- FINE ALTALENA ----
 
 // ---- BAMBINI CHE ENTRANO A SCUOLA ----
-// Bambini che scendono dall'altalena e vanno verso la scuola
+// Un bambino alla volta scende dall'altalena e va dentro la scuola
 (function(){
   var boySVG='<svg viewBox="0 0 26 43" width="26" height="43">'+
     '<circle cx="13" cy="7" r="6" fill="#FFD5B8" stroke="#1a1a1a" stroke-width="0.5"/>'+
@@ -4763,101 +4763,82 @@ fetchWeather();
     '<line x1="16" y1="18" x2="21" y2="25" stroke="#FFD5B8" stroke-width="2" stroke-linecap="round"/>'+
   '</svg>';
 
-  function getAltalenaPos(){
-    // Get the bottom of the altalena (where children "step off")
+  // Un solo elemento bambino visibile alla volta
+  var el=document.createElement('div');
+  el.style.cssText='position:fixed;pointer-events:none;z-index:15;opacity:0';
+  document.body.appendChild(el);
+
+  var isGirl=false; // alterna maschio/femmina
+  var x=0, y=0;
+  var targetX=0, targetY=0;
+  var walking=false;
+  var legPhase=0;
+
+  function sendNextChild(){
+    // Prendi posizione altalena (punto di partenza)
     var altalena=document.getElementById('altalena');
-    if(!altalena) return null;
-    var r=altalena.getBoundingClientRect();
-    return{x:r.left+r.width/2, y:r.bottom};
-  }
+    var schoolIcon=document.querySelector('.header-icon');
+    if(!altalena||!schoolIcon) return;
 
-  function getSchoolPos(){
-    // Get the school icon position (where children go)
-    var icon=document.querySelector('.header-icon');
-    if(!icon) return null;
-    var r=icon.getBoundingClientRect();
-    return{x:r.left+r.width/2-13, y:r.bottom-48};
-  }
+    var ar=altalena.getBoundingClientRect();
+    var sr=schoolIcon.getBoundingClientRect();
 
-  function createChildFromSwing(isGirl,delay){
-    var el=document.createElement('div');
-    el.style.cssText='position:fixed;pointer-events:none;z-index:15;opacity:0;transition:opacity 0.3s';
+    // Partenza: in basso all'altalena
+    x=ar.left+ar.width/2-13;
+    y=ar.bottom-10;
+    // Arrivo: all'icona della scuola
+    targetX=sr.left+sr.width/2-13;
+    targetY=sr.bottom-48;
+
+    // Alterna bambino/bambina
     el.innerHTML=isGirl?girlSVG:boySVG;
-    document.body.appendChild(el);
+    isGirl=!isGirl;
+    el.style.opacity='1';
+    walking=true;
+    legPhase=0;
+  }
 
-    var speed=0.5+Math.random()*0.2;
-    var x=0, y=0;
-    var startX=0, startY=0, targetX=0, targetY=0;
-    var state='waiting'; // waiting -> walking -> arrived -> waiting
-    var legPhase=0;
-    var walkStart=0;
+  // Animazione via setInterval (Safari-safe)
+  setInterval(function(){
+    if(!walking) return;
 
-    function startWalk(){
-      var ap=getAltalenaPos();
-      var sp=getSchoolPos();
-      if(!ap||!sp) return;
-      startX=ap.x-13;
-      startY=ap.y-10;
-      targetX=sp.x;
-      targetY=sp.y;
-      x=startX;
-      y=startY;
-      state='walking';
-      el.style.opacity='1';
-      walkStart=Date.now();
-    }
+    var dx=targetX-x;
+    var dy=targetY-y;
+    var dist=Math.sqrt(dx*dx+dy*dy);
 
-    function animate(){
-      if(state==='waiting'){
-        // Check if it's time to start
-      } else if(state==='walking'){
-        // Move toward school
-        var dx=targetX-x;
-        var dy=targetY-y;
-        var dist=Math.sqrt(dx*dx+dy*dy);
-        if(dist<2){
-          // Arrived at school
-          state='arrived';
-          el.style.opacity='0';
-          // Wait then restart from swing
-          setTimeout(function(){
-            state='waiting';
-            setTimeout(startWalk,2000+Math.random()*3000);
-          },6000+Math.random()*8000);
-        } else {
-          var step=Math.min(speed,dist);
-          x+=dx/dist*step;
-          y+=dy/dist*step;
-          legPhase+=0.1;
-          var bob=Math.sin(legPhase)*2;
-          // Face direction of movement
-          var scaleX=dx>0?1:-1;
-          el.style.transform='scaleX('+scaleX+') translateY('+bob+'px)';
-        }
-      }
+    if(dist<3){
+      // Arrivato a scuola - entra e sparisci
+      walking=false;
+      el.style.opacity='0';
+      // Dopo una pausa, manda il prossimo bambino
+      setTimeout(sendNextChild,6000+Math.random()*8000);
+    } else {
+      var speed=0.5;
+      var step=Math.min(speed,dist);
+      x+=dx/dist*step;
+      y+=dy/dist*step;
+      legPhase+=0.1;
+      var bob=Math.sin(legPhase)*2;
+      var scaleX=dx>0?1:-1;
+      el.style.transform='scaleX('+scaleX+') translateY('+bob+'px)';
       el.style.left=Math.round(x)+'px';
       el.style.top=Math.round(y)+'px';
-      requestAnimationFrame(animate);
     }
+  },30);
 
-    // Start after delay
-    setTimeout(function(){
-      startWalk();
-      requestAnimationFrame(animate);
-    },delay);
-
-    window.addEventListener('resize',function(){
-      if(state==='walking'){
-        // Recalculate target on resize
-        var sp=getSchoolPos();
-        if(sp){targetX=sp.x;targetY=sp.y;}
+  window.addEventListener('resize',function(){
+    if(walking){
+      var schoolIcon=document.querySelector('.header-icon');
+      if(schoolIcon){
+        var sr=schoolIcon.getBoundingClientRect();
+        targetX=sr.left+sr.width/2-13;
+        targetY=sr.bottom-48;
       }
-    });
-  }
+    }
+  });
 
-  // Create children that descend from swing with staggered delays
-  setTimeout(function(){createChildFromSwing(false,3000);},2000);
-  setTimeout(function(){createChildFromSwing(true,8000);},5000);
+  // Primo bambino dopo 3 secondi
+  setTimeout(sendNextChild,3000);
 })();
 // ---- FINE BAMBINI CHE ENTRANO A SCUOLA ----
 
