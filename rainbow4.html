@@ -4847,6 +4847,26 @@ fetchWeather();
 })();
 // ---- FINE STRISCE BIANCHE ----
 
+// ---- NASCONDI ELEMENTI HEADER QUANDO SCROLL FUORI ----
+(function(){
+  function checkHeaderVisible(){
+    var header=document.querySelector('.header');
+    if(!header) return;
+    var rect=header.getBoundingClientRect();
+    var visible=rect.bottom>0 && rect.top<window.innerHeight;
+    var bfly=document.getElementById('bfly');
+    var altalena=document.getElementById('altalena');
+    var trails=document.querySelectorAll('.saetta-trail');
+    if(bfly) bfly.style.display=visible?'':'none';
+    if(altalena) altalena.style.display=visible?'':'none';
+    for(var i=0;i<trails.length;i++){
+      trails[i].style.display=visible?'':'none';
+    }
+  }
+  window.addEventListener('scroll',checkHeaderVisible,true);
+  setInterval(checkHeaderVisible,500);
+})();
+
 // Aggiorna meteo ogni 30 minuti
 setInterval(function(){fetchWeather();},1800000);
 
