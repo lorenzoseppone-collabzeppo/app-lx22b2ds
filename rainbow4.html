@@ -4777,9 +4777,9 @@ fetchWeather();
     if(!header) return;
     var rect=header.getBoundingClientRect();
     var startX=rect.left+5;
-    var startY=rect.top+rect.height*0.05+rect.height*Math.random()*0.9;
+    var startY=rect.top+rect.height*Math.random()*0.4;
     var endX=rect.right-5;
-    var endY=rect.top+rect.height*0.05+rect.height*Math.random()*0.9;
+    var endY=rect.top+rect.height*0.6+rect.height*Math.random()*0.38;
     var angle=Math.atan2(endY-startY,endX-startX)*180/Math.PI;
     var dur=400+Math.random()*400;
 
