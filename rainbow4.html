@@ -1930,7 +1930,10 @@ function initFirebase(){
     // Auth persistence = LOCAL so login survives redirect and page close
     try{auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);}catch(e){console.log('[FIREBASE] Auth persistence:',e);}
     
-    // Handle redirect result FIRST (before onAuthStateChanged)
+    // Handle redirect result FIRST - SOLO se c'è stato un redirect login
+    var hadRedirect=false;
+    try{hadRedirect=!!localStorage.getItem('rp_login_redirect');}catch(e){}
+    if(hadRedirect){
     try{
       auth.getRedirectResult().then(function(result){
         if(result&&result.user){
@@ -1963,6 +1966,9 @@ function initFirebase(){
         render();
       });
     }catch(e){console.error('[FIREBASE] getRedirectResult error:',e);loginLoading=false;}
+    }else{
+      console.log('[AUTH] Skip redirect check - nessun redirect in corso');
+    }
     
     // Auth state listener
     auth.onAuthStateChanged(function(u){
