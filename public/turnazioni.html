@@ -17,72 +17,53 @@
 }
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:80px}
 
-/* HEADER */
 .header{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;padding:16px 20px;position:sticky;top:0;z-index:100;box-shadow:0 4px 12px rgba(37,99,235,0.3)}
 .header h1{font-size:20px;font-weight:700;text-align:center}
 .header-sub{font-size:12px;text-align:center;opacity:0.8;margin-top:4px}
 
-/* NAV TABS */
 .tabs{display:flex;background:#fff;border-bottom:2px solid var(--border);position:sticky;top:60px;z-index:99}
-.tab{flex:1;padding:12px 8px;text-align:center;font-size:13px;font-weight:600;color:var(--text-light);cursor:pointer;border-bottom:3px solid transparent;transition:all .2s}
+.tab{flex:1;padding:12px 6px;text-align:center;font-size:12px;font-weight:600;color:var(--text-light);cursor:pointer;border-bottom:3px solid transparent;transition:all .2s}
 .tab.active{color:var(--primary);border-bottom-color:var(--primary);background:#eff6ff}
 
-/* CONTAINER */
 .container{max-width:600px;margin:0 auto;padding:16px}
 .page{display:none}
 .page.active{display:block}
 
-/* CARDS */
 .card{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
 .card-title{font-size:16px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
-.card-title .emoji{font-size:20px}
 
-/* GRUPPI */
-.gruppo-badge{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;font-weight:700;font-size:14px;color:#fff;margin-right:4px}
+.gruppo-badge{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;font-weight:700;font-size:13px;color:#fff}
 .gruppo-A{background:#ef4444}
 .gruppo-B{background:#3b82f6}
 .gruppo-C{background:#10b981}
 .gruppo-J{background:#f59e0b}
 
-.persona-row{display:flex;align-items:center;padding:10px 12px;border-radius:8px;margin-bottom:6px;background:var(--bg);gap:10px}
-.persona-row .nome{font-weight:600;flex:1}
-.persona-row .turno-assegnato{font-size:12px;padding:4px 10px;border-radius:20px;font-weight:600}
+.turno-chip{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+.t-730{background:#fef3c7;color:#92400e}
+.t-800{background:#dbeafe;color:#1e40af}
+.t-830{background:#d1fae5;color:#065f46}
+.t-900{background:#ede9fe;color:#5b21b6}
+.t-930{background:#fce7f3;color:#9d174d}
+.t-fisso{background:#fed7aa;color:#9a3412}
+.t-riposo{background:#fee2e2;color:#991b1b}
+.t-reperibile{background:#fef9c3;color:#854d0e}
 
-/* TURNO COLORS */
-.turno-730{background:#fef3c7;color:#92400e}
-.turno-800{background:#dbeafe;color:#1e40af}
-.turno-830{background:#d1fae5;color:#065f46}
-.turno-900{background:#ede9fe;color:#5b21b6}
-.turno-930{background:#fce7f3;color:#9d174d}
-.turno-fisso{background:#fed7aa;color:#9a3412}
-.turno-riposo{background:#f1f5f9;color:#475569}
-
-/* CALENDARIO */
 .cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.cal-nav{display:flex;gap:8px}
-.cal-nav button{background:var(--primary);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:13px;cursor:pointer;font-weight:600}
+.cal-nav{display:flex;gap:6px}
+.cal-nav button{background:var(--primary);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;font-weight:600}
 .cal-nav button:hover{background:var(--primary-dark)}
-.cal-mese{font-size:18px;font-weight:700}
+.cal-mese{font-size:16px;font-weight:700}
 
-.cal-table{width:100%;border-collapse:collapse;font-size:12px}
-.cal-table th{background:var(--primary);color:#fff;padding:8px 4px;font-weight:600;text-align:center;font-size:11px}
-.cal-table td{border:1px solid var(--border);padding:4px;text-align:center;vertical-align:top;height:60px;position:relative}
-.cal-table td.holiday{background:#fef2f2}
+.cal-table{width:100%;border-collapse:collapse;font-size:11px}
+.cal-table th{background:var(--primary);color:#fff;padding:6px 2px;font-weight:600;text-align:center;font-size:10px}
+.cal-table td{border:1px solid var(--border);padding:3px;text-align:center;vertical-align:top;height:55px;position:relative}
+.cal-table td.weekend{background:#fef2f2}
 .cal-table td.today{outline:2px solid var(--accent);outline-offset:-2px}
-.cal-table .day-num{font-weight:700;font-size:11px;margin-bottom:2px;color:var(--text-light)}
-.cal-table .day-shift{font-size:9px;padding:1px 3px;border-radius:3px;display:block;margin:1px 0;white-space:nowrap}
+.cal-table .day-num{font-weight:700;font-size:10px;margin-bottom:2px;color:var(--text-light)}
+.cal-table .day-shift{font-size:8px;padding:1px 3px;border-radius:2px;display:block;margin:1px 0;white-space:nowrap}
 
-/* SETTIMANA VIEW */
 .settimana-card{background:var(--card);border-radius:var(--radius);padding:12px;margin-bottom:8px;box-shadow:var(--shadow)}
-.settimana-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.settimana-num{font-weight:700;font-size:14px;color:var(--primary)}
-.settimana-periodo{font-size:12px;color:var(--text-light)}
 
-.turno-row{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;margin-bottom:4px;font-size:13px}
-.turno-row .gruppo-label{font-weight:700;min-width:50px}
-.turno-row .orario{flex:1;text-align:right;font-weight:600}
-
-/* ORE MESE */
 .ore-progress{height:8px;background:var(--border);border-radius:4px;overflow:hidden;margin-top:4px}
 .ore-bar{height:100%;border-radius:4px;transition:width .3s}
 .ore-bar.ok{background:var(--success)}
@@ -91,43 +72,45 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 .ore-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)}
 .ore-row:last-child{border:none}
-.ore-nome{font-weight:600;min-width:40px;font-size:13px}
-.ore-value{font-size:13px;color:var(--text-light);min-width:60px;text-align:right}
-.ore-target{font-size:11px;color:var(--text-light)}
 
-/* EXCEL BTN */
 .btn-excel{background:var(--success);color:#fff;border:none;border-radius:var(--radius);padding:14px 24px;font-size:16px;font-weight:700;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 12px rgba(16,185,129,0.3);transition:transform .1s}
 .btn-excel:hover{transform:scale(1.02)}
 .btn-excel:active{transform:scale(0.98)}
 
-/* SETTINGS */
 .setting-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
-.setting-label{font-weight:600;font-size:14px}
-.setting-input{border:2px solid var(--border);border-radius:8px;padding:8px 12px;font-size:14px;width:80px;text-align:center}
+.setting-label{font-weight:600;font-size:13px}
+.setting-input{border:2px solid var(--border);border-radius:8px;padding:6px 10px;font-size:13px;width:80px;text-align:center}
 .setting-input:focus{border-color:var(--primary);outline:none}
 
-/* MODAL */
 .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;display:none;align-items:center;justify-content:center}
 .modal-overlay.show{display:flex}
-.modal{background:#fff;border-radius:16px;padding:24px;max-width:400px;width:90%;max-height:80vh;overflow-y:auto;position:relative}
+.modal{background:#fff;border-radius:16px;padding:24px;max-width:500px;width:95%;max-height:85vh;overflow-y:auto;position:relative}
 .modal h3{font-size:18px;font-weight:700;margin-bottom:16px}
 .modal-close{background:none;border:none;font-size:24px;cursor:pointer;position:absolute;top:12px;right:16px}
 
-/* LEGENDA */
-.legenda{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
-.legenda-item{display:flex;align-items:center;gap:4px;font-size:11px}
-.legenda-dot{width:12px;height:12px;border-radius:3px}
+.legenda{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.legenda-item{display:flex;align-items:center;gap:3px;font-size:10px}
+.legenda-dot{width:10px;height:10px;border-radius:2px}
 
-/* INFO BOX */
-.info-box{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px;margin-bottom:12px;font-size:13px;color:#1e40af}
+.info-box{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px;margin-bottom:10px;font-size:12px;color:#1e40af}
 .info-box strong{display:block;margin-bottom:4px}
 
-/* RESPONSIVE */
+.warn-box{background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:10px;margin-bottom:10px;font-size:12px;color:#92400e}
+
+.copertura-row{display:flex;align-items:center;gap:6px;padding:4px 0;font-size:12px}
+.copertura-bar{flex:1;height:16px;background:var(--border);border-radius:8px;overflow:hidden;position:relative}
+.copertura-fill{height:100%;border-radius:8px;transition:width .3s}
+.copertura-label{position:absolute;top:0;left:50%;transform:translateX(-50%);font-size:9px;font-weight:700;line-height:16px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.5)}
+
+.variante-btn{background:var(--primary-light);color:#fff;border:none;border-radius:8px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;margin:4px;transition:all .2s}
+.variante-btn:hover{background:var(--primary-dark)}
+.variante-btn.active{background:var(--primary-dark);box-shadow:0 0 0 3px rgba(37,99,235,0.3)}
+
 @media(max-width:400px){
-  .cal-table{font-size:10px}
-  .cal-table th{padding:6px 2px;font-size:10px}
-  .cal-table .day-shift{font-size:8px}
-  .header h1{font-size:18px}
+  .cal-table{font-size:9px}
+  .cal-table th{padding:4px 1px;font-size:9px}
+  .cal-table .day-shift{font-size:7px}
+  .header h1{font-size:17px}
 }
 </style>
 </head>
@@ -141,19 +124,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <div class="tabs">
   <div class="tab active" data-page="calendario">📅 Calendario</div>
   <div class="tab" data-page="settimana">📆 Settimana</div>
+  <div class="tab" data-page="coperture">📊 Coperture</div>
   <div class="tab" data-page="ore">⏱️ Ore</div>
-  <div class="tab" data-page="impostazioni">⚙️ Impostazioni</div>
+  <div class="tab" data-page="impostazioni">⚙️</div>
 </div>
 
 <div class="container">
 
-  <!-- CALENDARIO PAGE -->
+  <!-- CALENDARIO -->
   <div id="page-calendario" class="page active">
     <div class="card">
       <div class="cal-header">
-        <div class="cal-nav">
-          <button onclick="cambiaMese(-1)">◀</button>
-        </div>
+        <div class="cal-nav"><button onclick="cambiaMese(-1)">◀</button></div>
         <div class="cal-mese" id="calMeseTitolo"></div>
         <div class="cal-nav">
           <button onclick="cambiaMese(1)">▶</button>
@@ -166,41 +148,53 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     <button class="btn-excel" onclick="exportExcel()">📥 Scarica Excel</button>
   </div>
 
-  <!-- SETTIMANA PAGE -->
+  <!-- SETTIMANA -->
   <div id="page-settimana" class="page">
     <div class="cal-header">
-      <div class="cal-nav">
-        <button onclick="cambiaSettimana(-1)">◀</button>
-      </div>
+      <div class="cal-nav"><button onclick="cambiaSettimana(-1)">◀</button></div>
       <div class="cal-mese" id="settTitolo"></div>
-      <div class="cal-nav">
-        <button onclick="cambiaSettimana(1)">▶</button>
-      </div>
+      <div class="cal-nav"><button onclick="cambiaSettimana(1)">▶</button></div>
     </div>
     <div id="settimanaView"></div>
   </div>
 
-  <!-- ORE PAGE -->
+  <!-- COPERTURE -->
+  <div id="page-coperture" class="page">
+    <div class="card">
+      <div class="card-title">📊 Coperture Orarie</div>
+      <div class="info-box">
+        <strong>Regola fondamentale:</strong> Dalle 9:30 alle 15:30 devono esserci SEMPRE almeno 6 persone.
+      </div>
+      <div id="copertureView"></div>
+    </div>
+  </div>
+
+  <!-- ORE -->
   <div id="page-ore" class="page">
     <div class="card">
-      <div class="card-title"><span class="emoji">⏱️</span> Ore Mensili</div>
-      <div id="oreMeseHeader" style="text-align:center;margin-bottom:12px;font-weight:700;font-size:16px"></div>
+      <div class="card-title">⏱️ Ore Mensili</div>
+      <div id="oreMeseHeader" style="text-align:center;margin-bottom:12px;font-weight:700;font-size:15px"></div>
       <div id="oreList"></div>
     </div>
   </div>
 
-  <!-- IMPOSTAZIONI PAGE -->
+  <!-- IMPOSTAZIONI -->
   <div id="page-impostazioni" class="page">
     <div class="card">
-      <div class="card-title"><span class="emoji">👥</span> Gruppi e Persone</div>
-      <div id="gruppiList"></div>
+      <div class="card-title">🔄 Variante Turnazione</div>
+      <div class="info-box">
+        <strong>Variante 1 (8 persone):</strong> A(2) + B(3) + C(3) + Jolly fisso
+      </div>
+      <div class="info-box">
+        <strong>Variante 2 (9 persone):</strong> A(3) + B(3) + C(3) — senza Jolly, se uno si ammala il reperibile copre
+      </div>
+      <div style="display:flex;flex-wrap:wrap;justify-content:center;margin-top:8px">
+        <button class="variante-btn active" id="btnVar1" onclick="setVariante(1)">8 persone + Jolly</button>
+        <button class="variante-btn" id="btnVar2" onclick="setVariante(2)">9 persone (3+3+3)</button>
+      </div>
     </div>
     <div class="card">
-      <div class="card-title"><span class="emoji">🕐</span> Turni / Orari</div>
-      <div id="turniList"></div>
-    </div>
-    <div class="card">
-      <div class="card-title"><span class="emoji">📊</span> Monte Ore e Giorni</div>
+      <div class="card-title">📊 Monte Ore</div>
       <div class="setting-row">
         <span class="setting-label">Ore mensili target</span>
         <input type="number" class="setting-input" id="oreTarget" value="138" onchange="salvaImpostazioni()">
@@ -215,39 +209,33 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       </div>
     </div>
     <div class="card">
-      <div class="card-title"><span class="emoji">🔄</span> Rotazione Settimanale</div>
+      <div class="card-title">🔄 Rotazione</div>
       <div class="info-box">
-        <strong>Regola rotazione:</strong>
-        Ogni settimana il gruppo intero cambia orario. Il gruppo A fa lo stesso turno per tutta la settimana, poi ruota.
-      </div>
-      <div class="setting-row">
-        <span class="setting-label">Pattern rotazione</span>
-        <select id="patternRotazione" class="setting-input" style="width:120px" onchange="salvaImpostazioni()">
-          <option value="A-B-C">A-B-C (sequenziale)</option>
-          <option value="1-2-2-1">1,2 / 2,1 (alternato)</option>
-        </select>
+        Ogni settimana il gruppo cambia fascia oraria: A→B, B→C, C→A.<br>
+        Dentro ogni gruppo, le persone hanno orari sfalsati per coprire tutti gli ingressi.
       </div>
       <div class="setting-row">
         <span class="setting-label">Inizio rotazione</span>
-        <input type="date" class="setting-input" style="width:150px" id="inizioRotazione" onchange="salvaImpostazioni()">
+        <input type="date" class="setting-input" style="width:140px" id="inizioRotazione" onchange="salvaImpostazioni()">
       </div>
     </div>
     <div class="card">
-      <div class="card-title"><span class="emoji">🛌</span> Giorni di Riposo</div>
-      <div class="info-box">
-        <strong>Regola:</strong> Chi riposa deve essere da gruppi diversi (es. A1 + B2). Mai due dello stesso gruppo insieme a riposo.
+      <div class="card-title">🛌 Regole Riposo</div>
+      <div class="warn-box">
+        ⚠️ Chi riposa deve essere da gruppi diversi (es. A1 + B2).<br>
+        ⚠️ Se uno si ammala, il reperibile deve coprire.<br>
+        ⚠️ Su 2 persone a riposo, 1 deve rimanere reperibile.
       </div>
-      <div id="riposoList"></div>
     </div>
     <div class="card">
-      <div class="card-title"><span class="emoji">💾</span> Dati</div>
-      <button class="btn-excel" style="background:var(--danger);box-shadow:0 4px 12px rgba(239,68,68,0.3);margin-bottom:8px" onclick="resetDati()">🗑️ Reset Tutto</button>
+      <div class="card-title">💾 Dati</div>
+      <button class="btn-excel" style="background:var(--danger);box-shadow:0 4px 12px rgba(239,68,68,0.3)" onclick="resetDati()">🗑️ Reset Tutto</button>
     </div>
   </div>
 
 </div>
 
-<!-- MODAL DETTAGLIO GIORNO -->
+<!-- MODAL -->
 <div class="modal-overlay" id="modalGiorno">
   <div class="modal">
     <button class="modal-close" onclick="chiudiModal()">&times;</button>
@@ -258,41 +246,97 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 <script>
 // ========================
-// CONFIGURAZIONE
+// CONFIGURAZIONE BASE
 // ========================
-const TURNI_DEFAULT = [
-  {id:'730', label:'7:30', inizio:'07:30', fine:'15:00', ore:7.5, color:'#fef3c7',textColor:'#92400e'},
-  {id:'800', label:'8:00', inizio:'08:00', fine:'15:30', ore:7.5, color:'#dbeafe',textColor:'#1e40af'},
-  {id:'830', label:'8:30', inizio:'08:30', fine:'16:00', ore:7.5, color:'#d1fae5',textColor:'#065f46'},
-  {id:'900', label:'9:00', inizio:'09:00', fine:'16:30', ore:7.5, color:'#ede9fe',textColor:'#5b21b6'},
-  {id:'930', label:'9:30', inizio:'09:30', fine:'17:00', ore:7.5, color:'#fce7f3',textColor:'#9d174d'},
-  {id:'fisso', label:'Fisso 16:30-18:00', inizio:'16:30', fine:'18:00', ore:1.5, color:'#fed7aa',textColor:'#9a3412'}
-];
+const ORARI_ENTRATA = ['7:30','8:00','8:30','9:00','9:30'];
+const ORARI_USCITA = ['15:00','15:30','16:00','16:30','17:00','17:30','18:00'];
 
-const GRUPPI_DEFAULT = [
-  {id:'A', nome:'Gruppo A', persone:['A1','A2'], colore:'#ef4444'},
-  {id:'B', nome:'Gruppo B', persone:['B1','B2','B3'], colore:'#3b82f6'},
-  {id:'C', nome:'Gruppo C', persone:['C1','C2','C3'], colore:'#10b981'},
-  {id:'J', nome:'Jolly (Fisso)', persone:['Jolly'], colore:'#f59e0b'}
-];
+// Turno = 7h30min, entrata→uscita calcolata automaticamente
+function calcolaUscita(entrata) {
+  const map = {'7:30':'15:00','8:00':'15:30','8:30':'16:00','9:00':'16:30','9:30':'17:00','10:00':'17:30'};
+  return map[entrata] || '17:00';
+}
+
+const TURNI_COLORS = {
+  '7:30':{bg:'#fef3c7',tx:'#92400e'},
+  '8:00':{bg:'#dbeafe',tx:'#1e40af'},
+  '8:30':{bg:'#d1fae5',tx:'#065f46'},
+  '9:00':{bg:'#ede9fe',tx:'#5b21b6'},
+  '9:30':{bg:'#fce7f3',tx:'#9d174d'},
+  'fisso':{bg:'#fed7aa',tx:'#9a3412'},
+  'riposo':{bg:'#fee2e2',tx:'#991b1b'},
+  'reperibile':{bg:'#fef9c3',tx:'#854d0e'}
+};
 
 const GIORNI_IT = ['Lun','Mar','Mer','Gio','Ven','Sab','Dom'];
 const GIORNI_FULL = ['Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato','Domenica'];
 const MESI_IT = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
 
 // ========================
+// SCHEMA TURNAZIONE
+// Lo schema dal foglio: ogni gruppo ha persone con orari diversi
+// Settimana tipo per Gruppo A:
+//   A1: 7:30-15:00, A2: 9:00-16:30
+// Quando A diventa B, gli orari cambiano:
+//   A1: 8:00-15:30, A2: 9:30-17:00
+// Quando A diventa C:
+//   A1: 8:30-16:00, A2: 9:30-17:30
+// ========================
+
+// Ogni gruppo ha un "fascia" e le persone sono distribuite sugli ingressi di quella fascia
+// Fascia 1 (A): 7:30 e 9:00
+// Fascia 2 (B): 8:00 e 9:30
+// Fascia 3 (C): 8:30 e 9:30
+
+// Per 9 persone (3+3+3):
+// Fascia A: A1=7:30, A2=8:30, A3=riposo
+// Fascia B: B1=8:00, B2=9:30, B3=riposo
+// Fascia C: C1=8:30, C2=9:30, C3=riposo
+
+const SCHEMA_8 = {
+  A: {persone:['A1','A2'], fascia:'A'},
+  B: {persone:['B1','B2','B3'], fascia:'B'},
+  C: {persone:['C1','C2','C3'], fascia:'C'},
+  J: {persone:['Jolly'], fascia:'J'}
+};
+
+const SCHEMA_9 = {
+  A: {persone:['A1','A2','A3'], fascia:'A'},
+  B: {persone:['B1','B2','B3'], fascia:'B'},
+  C: {persone:['C1','C2','C3'], fascia:'C'}
+};
+
+// Assegnazione turni per fascia e posizione
+// fascia A: persone[0]=7:30, persone[1]=9:00, (persone[2]=riposo se c'è)
+// fascia B: persone[0]=8:00, persone[1]=9:30, persone[2]=riposo
+// fascia C: persone[0]=8:30, persone[1]=9:30, persone[2]=riposo
+const FASCE_TURNI = {
+  A: ['7:30','9:00'],  // 2 persone
+  B: ['8:00','9:30'],  // prime 2, terzo riposo
+  C: ['8:30','9:30']   // prime 2, terzo riposo
+};
+
+// Rotazione: le fasce cambiano ogni settimana
+// Settimana 1: A→fasciaA, B→fasciaB, C→fasciaC
+// Settimana 2: A→fasciaB, B→fasciaC, C→fasciaA
+// Settimana 3: A→fasciaC, B→fasciaA, C→fasciaB
+const ROTAZIONE_ABC = [
+  {A:'A', B:'B', C:'C'},
+  {A:'B', B:'C', C:'A'},
+  {A:'C', B:'A', C:'B'}
+];
+
+// ========================
 // STATO
 // ========================
 let stato = {
-  turni: JSON.parse(JSON.stringify(TURNI_DEFAULT)),
-  gruppi: JSON.parse(JSON.stringify(GRUPPI_DEFAULT)),
+  variante: 1, // 1=8persone+jolly, 2=9persone
   oreTarget: 138,
   oreTurno: 7.5,
   giorniRiposo: 2,
-  patternRotazione: 'A-B-C',
   inizioRotazione: getMonday(new Date()).toISOString().split('T')[0],
-  assegnazioni: {},    // key: 'YYYY-MM-DD' -> { gruppoId: { turnoId, persone: [...] } }
-  riposi: {}           // key: 'YYYY-MM-DD' -> [persona1, persona2]  (da gruppi diversi)
+  assegnazioni: {},  // key: date -> { persona: {turno, entrata, uscita, ore, stato} }
+  rotazioneOverride: {}  // key: date -> { gruppo: fascia } per modifiche manuali
 };
 
 let meseCorrente = new Date();
@@ -317,37 +361,46 @@ function dateKey(d) {
   return `${y}-${m}-${dd}`;
 }
 
-function isSameDay(a, b) {
+function isSameDay(a,b) {
   return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
 }
 
 function getWeekNumber(d) {
-  const onejan = new Date(d.getFullYear(), 0, 1);
-  return Math.ceil((((d - onejan) / 86400000) + onejan.getDay() + 1) / 7);
+  const onejan = new Date(d.getFullYear(),0,1);
+  return Math.ceil((((d - onejan)/86400000)+onejan.getDay()+1)/7);
+}
+
+function getGruppi() {
+  return stato.variante === 1 ? SCHEMA_8 : SCHEMA_9;
+}
+
+function getGruppoPersona(persona) {
+  const gruppi = getGruppi();
+  for (const [gid, g] of Object.entries(gruppi)) {
+    if (g.persone.includes(persona)) return gid;
+  }
+  return null;
+}
+
+function getFasciaForWeek(weekIndex, gruppoId) {
+  const rotIdx = weekIndex % 3;
+  return ROTAZIONE_ABC[rotIdx][gruppoId] || gruppoId;
 }
 
 // ========================
-// SALVATAGGIO/Caricamento
+// SALVATAGGIO
 // ========================
-function salvaStato() {
-  localStorage.setItem('turnazioni_stato', JSON.stringify(stato));
-}
+function salvaStato() { localStorage.setItem('turnazioni_stato_v3', JSON.stringify(stato)); }
 
 function caricaStato() {
-  const saved = localStorage.getItem('turnazioni_stato');
-  if (saved) {
-    try {
-      const parsed = JSON.parse(saved);
-      stato = {...stato, ...parsed};
-    } catch(e) {}
-  }
+  const saved = localStorage.getItem('turnazioni_stato_v3');
+  if (saved) { try { stato = {...stato, ...JSON.parse(saved)}; } catch(e) {} }
 }
 
 function salvaImpostazioni() {
-  stato.oreTarget = parseFloat(document.getElementById('oreTarget').value) || 138;
-  stato.oreTurno = parseFloat(document.getElementById('oreTurno').value) || 7.5;
-  stato.giorniRiposo = parseInt(document.getElementById('giorniRiposo').value) || 2;
-  stato.patternRotazione = document.getElementById('patternRotazione').value;
+  stato.oreTarget = parseFloat(document.getElementById('oreTarget').value)||138;
+  stato.oreTurno = parseFloat(document.getElementById('oreTurno').value)||7.5;
+  stato.giorniRiposo = parseInt(document.getElementById('giorniRiposo').value)||2;
   stato.inizioRotazione = document.getElementById('inizioRotazione').value;
   generaAssegnazioni();
   salvaStato();
@@ -355,23 +408,19 @@ function salvaImpostazioni() {
 }
 
 function resetDati() {
-  if (confirm('Sei sicuro? Verranno cancellati tutti i dati delle turnazioni.')) {
-    localStorage.removeItem('turnazioni_stato');
-    stato = {
-      turni: JSON.parse(JSON.stringify(TURNI_DEFAULT)),
-      gruppi: JSON.parse(JSON.stringify(GRUPPI_DEFAULT)),
-      oreTarget: 138,
-      oreTurno: 7.5,
-      giorniRiposo: 2,
-      patternRotazione: 'A-B-C',
-      inizioRotazione: getMonday(new Date()).toISOString().split('T')[0],
-      assegnazioni: {},
-      riposi: {}
-    };
-    generaAssegnazioni();
-    salvaStato();
-    renderAll();
+  if (confirm('Sei sicuro? Verranno cancellati tutti i dati.')) {
+    localStorage.removeItem('turnazioni_stato_v3');
+    location.reload();
   }
+}
+
+function setVariante(v) {
+  stato.variante = v;
+  document.getElementById('btnVar1').classList.toggle('active', v===1);
+  document.getElementById('btnVar2').classList.toggle('active', v===2);
+  generaAssegnazioni();
+  salvaStato();
+  renderAll();
 }
 
 // ========================
@@ -379,138 +428,146 @@ function resetDati() {
 // ========================
 function generaAssegnazioni() {
   const assegnazioni = {};
-  const riposi = {};
   const start = new Date(stato.inizioRotazione + 'T00:00:00');
-  
-  // Turni mattutini (senza fisso)
-  const turniMattina = stato.turni.filter(t => t.id !== 'fisso').map(t => t.id);
-  // ['730','800','830','900','930']
-  
-  // Gruppi che ruotano (A, B, C — non Jolly)
-  const gruppiRotanti = ['A','B','C'];
-  
-  // Genera per 6 mesi
   const today = new Date();
   const endMonth = new Date(today.getFullYear(), today.getMonth() + 6, 0);
+  
+  const gruppi = getGruppi();
+  const tuttiNomi = [];
+  Object.values(gruppi).forEach(g => g.persone.forEach(p => tuttiNomi.push(p)));
   
   let currentMonday = new Date(start);
   let weekIndex = 0;
   
+  // Traccia riposi per equità mensile
+  const riposiMesePersona = {}; // meseKey -> persona -> count
+  
   while (currentMonday <= endMonth) {
-    
-    // Per ogni giorno Lun-Ven
-    for (let g = 0; g < 5; g++) {
+    for (let g = 0; g < 5; g++) { // Lun-Ven
       const day = new Date(currentMonday);
       day.setDate(day.getDate() + g);
       const dk = dateKey(day);
+      const meseKey = day.getFullYear() + '-' + String(day.getMonth()+1).padStart(2,'0');
       
       assegnazioni[dk] = {};
       
-      // Assegnazione turni per ogni gruppo
-      // Con 3 gruppi e 5 turni mattutini, ogni gruppo prende un turno diverso
-      // La rotazione avviene ogni settimana
-      
-      if (stato.patternRotazione === 'A-B-C') {
-        // Rotazione semplice: ogni settimana i gruppi scalano di 1 turno
-        const shift = weekIndex % turniMattina.length;
-        gruppiRotanti.forEach((gid, i) => {
-          const turnoIdx = (i + shift) % turniMattina.length;
-          assegnazioni[dk][gid] = {
-            turnoId: turniMattina[turnoIdx],
-            persone: stato.gruppi.find(gr => gr.id === gid).persone.slice()
+      // Determina la fascia per ogni gruppo questa settimana
+      Object.entries(gruppi).forEach(([gid, gruppo]) => {
+        if (gid === 'J') {
+          // Jolly: fisso 16:30-18:00 + sostituzioni
+          assegnazioni[dk]['Jolly'] = {
+            turno: 'fisso', entrata: '16:30', uscita: '18:00',
+            ore: 1.5, stato: 'lavoro', gruppo: 'J'
           };
-        });
-      } else {
-        // Pattern 1,2 / 2,1 alternato
-        const shift = weekIndex % 2 === 0 ? 0 : 2;
-        gruppiRotanti.forEach((gid, i) => {
-          const turnoIdx = (i + shift) % turniMattina.length;
-          assegnazioni[dk][gid] = {
-            turnoId: turniMattina[turnoIdx],
-            persone: stato.gruppi.find(gr => gr.id === gid).persone.slice()
-          };
-        });
-      }
-      
-      // Jolly: sempre fisso (16:30-18:00) + disponibile per sostituzioni
-      assegnazioni[dk]['J'] = {
-        turnoId: 'fisso',
-        persone: ['Jolly']
-      };
-      
-      // GIORNI DI RIPOSO
-      // 2 persone a riposo, da gruppi diversi
-      // Distribuzione: ruota in modo che a fine mese tutti facciano circa lo stesso numero di riposi
-      const giorniLavorativiMese = getGiorniLavorativiMese(day.getFullYear(), day.getMonth());
-      const riposiPerPersona = stato.giorniRiposo;
-      
-      // Calcola quante volte ogni persona ha riposato questo mese finora
-      const giornoDelMese = day.getDate();
-      const meseKey = day.getFullYear() + '-' + String(day.getMonth()+1).padStart(2,'0');
-      
-      if (!riposi[dk]) {
-        // Trova chi ha riposato di meno finora questo mese
-        const conteggioRiposi = {};
-        gruppiRotanti.forEach(gid => {
-          stato.gruppi.find(gr => gr.id === gid).persone.forEach(p => {
-            conteggioRiposi[p] = 0;
-          });
-        });
+          return;
+        }
         
-        // Conta riposi già assegnati questo mese
-        Object.keys(riposi).forEach(rdk => {
-          if (rdk.startsWith(meseKey)) {
-            (riposi[rdk] || []).forEach(p => {
-              if (conteggioRiposi[p] !== undefined) conteggioRiposi[p]++;
+        const fascia = getFasciaForWeek(weekIndex, gid);
+        const turniFascia = FASCE_TURNI[fascia];
+        
+        gruppo.persone.forEach((persona, idx) => {
+          if (idx < turniFascia.length) {
+            const entrata = turniFascia[idx];
+            const uscita = calcolaUscita(entrata);
+            assegnazioni[dk][persona] = {
+              turno: entrata, entrata: entrata, uscita: uscita,
+              ore: stato.oreTurno, stato: 'lavoro', gruppo: gid
+            };
+          } else {
+            // Terza persona → riposo o reperibile
+            assegnazioni[dk][persona] = {
+              turno: 'riposo', entrata: null, uscita: null,
+              ore: 0, stato: 'riposo', gruppo: gid
+            };
+          }
+        });
+      });
+      
+      // SISTEMA RIPOSI: 2 persone a riposo, da gruppi diversi
+      // 1 delle 2 è reperibile
+      const personeRiposo = [];
+      Object.entries(gruppi).forEach(([gid, gruppo]) => {
+        gruppo.persone.forEach(persona => {
+          if (assegnazioni[dk][persona] && assegnazioni[dk][persona].stato === 'riposo') {
+            personeRiposo.push(persona);
+          }
+        });
+      });
+      
+      // Se ci sono già 2+ persone a riposo, ok
+      // Se ce n'è solo 1, aggiungiamo 1 persona da un altro gruppo
+      if (personeRiposo.length < stato.giorniRiposo) {
+        // Trova chi può andare a riposo (da gruppi diversi da chi è già a riposo)
+        const gruppiGiaRiposo = new Set(personeRiposo.map(p => assegnazioni[dk][p].gruppo));
+        
+        // Scegli chi ha riposato di meno questo mese
+        const conteggio = {};
+        tuttiNomi.forEach(p => conteggio[p] = 0);
+        Object.keys(assegnazioni).forEach(rdk => {
+          if (rdk.startsWith(meseKey) && assegnazioni[rdk]) {
+            Object.entries(assegnazioni[rdk]).forEach(([persona, info]) => {
+              if (info.stato === 'riposo' && conteggio[persona] !== undefined) conteggio[persona]++;
             });
           }
         });
         
-        // Scegli 2 persone da gruppi diversi che hanno riposato di meno
-        const riposoSelezionati = [];
-        const gruppiUsati = new Set();
+        const candidati = tuttiNomi.filter(p => {
+          if (personeRiposo.includes(p)) return false;
+          if (p === 'Jolly') return false;
+          const grp = getGruppoPersona(p);
+          return !gruppiGiaRiposo.has(grp);
+        }).sort((a,b) => conteggio[a] - conteggio[b]);
         
-        // Ordina per conteggio crescente
-        const personeOrdinate = Object.entries(conteggioRiposi)
-          .sort((a,b) => a[1] - b[1]);
-        
-        for (const [persona, count] of personeOrdinate) {
-          if (riposoSelezionati.length >= stato.giorniRiposo) break;
-          // Trova il gruppo di questa persona
-          const gruppoPersona = gruppiRotanti.find(gid => 
-            stato.gruppi.find(gr => gr.id === gid).persone.includes(persona)
-          );
-          if (!gruppiUsati.has(gruppoPersona)) {
-            riposoSelezionati.push(persona);
-            gruppiUsati.add(gruppoPersona);
-          }
+        while (personeRiposo.length < stato.giorniRiposo && candidati.length > 0) {
+          const persona = candidati.shift();
+          const gruppoOld = assegnazioni[dk][persona];
+          const nuovoGruppoRiposo = getGruppoPersona(persona);
+          
+          // Metti a riposo
+          assegnazioni[dk][persona] = {
+            turno: 'riposo', entrata: null, uscita: null,
+            ore: 0, stato: 'riposo', gruppo: nuovoGruppoRiposo
+          };
+          personeRiposo.push(persona);
+          
+          // Aggiungi il gruppo ai già in riposo
+          gruppiGiaRiposo.add(nuovoGruppoRiposo);
         }
-        
-        riposi[dk] = riposoSelezionati;
-        
-        // Aggiorna assegnazioni: le persone a riposo non lavorano
-        riposoSelezionati.forEach(persona => {
-          const gruppoPersona = gruppiRotanti.find(gid => 
-            stato.gruppi.find(gr => gr.id === gid).persone.includes(persona)
-          );
-          if (gruppoPersona && assegnazioni[dk][gruppoPersona]) {
-            // Rimuovi la persona dal turno del suo gruppo
-            assegnazioni[dk][gruppoPersona].persone = 
-              assegnazioni[dk][gruppoPersona].persone.filter(p => p !== persona);
-            
-            // Se il gruppo ha perso qualcuno, il Jolly potrebbe sostituire
-            // (lo segniamo come sostituzione)
-            if (assegnazioni[dk]['J']) {
-              if (!assegnazioni[dk]['J'].sostituzioni) {
-                assegnazioni[dk]['J'].sostituzioni = [];
-              }
-              assegnazioni[dk]['J'].sostituzioni.push({
-                persona: persona,
-                turnoId: assegnazioni[dk][gruppoPersona].turnoId
+      }
+      
+      // Segna 1 riposo come reperibile
+      if (personeRiposo.length >= 2) {
+        // Il secondo diventa reperibile
+        assegnazioni[dk][personeRiposo[1]] = {
+          ...assegnazioni[dk][personeRiposo[1]],
+          stato: 'reperibile',
+          turno: 'reperibile'
+        };
+      }
+      
+      // Jolly: se ci sono persone a riposo, il Jolly copre i loro turni
+      if (gruppi.J && personeRiposo.length > 0) {
+        const sostituzioni = [];
+        personeRiposo.forEach(p => {
+          // Trova il turno che avrebbe dovuto fare
+          const gid = getGruppoPersona(p);
+          if (gid && gid !== 'J') {
+            const fascia = getFasciaForWeek(weekIndex, gid);
+            const turniFascia = FASCE_TURNI[fascia];
+            const idx = gruppi[gid].persone.indexOf(p);
+            if (idx >= 0 && idx < turniFascia.length) {
+              sostituzioni.push({
+                persona: p,
+                entrata: turniFascia[idx],
+                uscita: calcolaUscita(turniFascia[idx])
               });
             }
           }
         });
+        assegnazioni[dk]['Jolly'].sostituzioni = sostituzioni;
+        if (sostituzioni.length > 0) {
+          assegnazioni[dk]['Jolly'].oreTotali = 1.5 + sostituzioni.length * stato.oreTurno;
+        }
       }
     }
     
@@ -519,19 +576,7 @@ function generaAssegnazioni() {
   }
   
   stato.assegnazioni = assegnazioni;
-  stato.riposi = riposi;
   salvaStato();
-}
-
-function getGiorniLavorativiMese(year, month) {
-  let count = 0;
-  const lastDay = new Date(year, month + 1, 0);
-  for (let d = 1; d <= lastDay.getDate(); d++) {
-    const day = new Date(year, month, d);
-    const dow = day.getDay();
-    if (dow >= 1 && dow <= 5) count++;
-  }
-  return count;
 }
 
 // ========================
@@ -540,11 +585,9 @@ function getGiorniLavorativiMese(year, month) {
 function renderAll() {
   renderCalendario();
   renderSettimana();
+  renderCoperture();
   renderOre();
-  renderGruppi();
-  renderTurni();
   renderLegenda();
-  renderRiposi();
 }
 
 // TABS
@@ -557,14 +600,16 @@ document.querySelectorAll('.tab').forEach(tab => {
   });
 });
 
-// LEGENDA
 function renderLegenda() {
   const el = document.getElementById('legenda');
   let html = '';
-  stato.turni.forEach(t => {
-    html += `<div class="legenda-item"><div class="legenda-dot" style="background:${t.color}"></div>${t.label}</div>`;
+  ORARI_ENTRATA.forEach(t => {
+    const c = TURNI_COLORS[t];
+    html += `<div class="legenda-item"><div class="legenda-dot" style="background:${c.bg}"></div>${t}</div>`;
   });
-  html += `<div class="legenda-item"><div class="legenda-dot" style="background:#f1f5f9"></div>Riposo</div>`;
+  html += `<div class="legenda-item"><div class="legenda-dot" style="background:${TURNI_COLORS.fisso.bg}"></div>Fisso</div>`;
+  html += `<div class="legenda-item"><div class="legenda-dot" style="background:${TURNI_COLORS.riposo.bg}"></div>Riposo</div>`;
+  html += `<div class="legenda-item"><div class="legenda-dot" style="background:${TURNI_COLORS.reperibile.bg}"></div>Reperib.</div>`;
   el.innerHTML = html;
 }
 
@@ -572,33 +617,26 @@ function renderLegenda() {
 function renderCalendario() {
   const year = meseCorrente.getFullYear();
   const month = meseCorrente.getMonth();
-  
   document.getElementById('calMeseTitolo').textContent = MESI_IT[month] + ' ' + year;
   
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
-  
   let startDow = firstDay.getDay() - 1;
   if (startDow < 0) startDow = 6;
-  
   const today = new Date();
   
   let html = '<table class="cal-table"><thead><tr>';
   GIORNI_IT.forEach(g => html += `<th>${g}</th>`);
   html += '</tr></thead><tbody>';
   
-  let dayNum = 1;
-  let started = false;
-  
+  let dayNum = 1, started = false;
   for (let row = 0; row < 6; row++) {
     if (dayNum > lastDay.getDate()) break;
     html += '<tr>';
     for (let col = 0; col < 7; col++) {
-      if (!started && col < startDow) {
-        html += '<td></td>';
-      } else if (dayNum > lastDay.getDate()) {
-        html += '<td></td>';
-      } else {
+      if (!started && col < startDow) { html += '<td></td>'; }
+      else if (dayNum > lastDay.getDate()) { html += '<td></td>'; }
+      else {
         started = true;
         const d = new Date(year, month, dayNum);
         const dk = dateKey(d);
@@ -607,29 +645,32 @@ function renderCalendario() {
         
         let cls = '';
         if (isToday) cls += ' today';
-        if (isWeekend) cls += ' holiday';
+        if (isWeekend) cls += ' weekend';
         
         html += `<td class="${cls}" onclick="mostraGiorno('${dk}')">`;
         html += `<div class="day-num">${dayNum}</div>`;
         
         if (!isWeekend) {
-          const assegn = stato.assegnazioni[dk] || {};
-          const riposiGiorno = stato.riposi[dk] || [];
-          
-          ['A','B','C'].forEach(gid => {
-            const info = assegn[gid];
-            if (info && info.turnoId) {
-              const turno = stato.turni.find(t => t.id === info.turnoId);
-              if (turno) {
-                html += `<span class="day-shift" style="background:${turno.color};color:${turno.textColor}">${gid}:${turno.label}</span>`;
+          const ass = stato.assegnazioni[dk] || {};
+          // Mostra ingressi per gruppo
+          Object.entries(getGruppi()).forEach(([gid, gruppo]) => {
+            if (gid === 'J') return;
+            let txt = gid + ':';
+            let turni = [];
+            gruppo.persone.forEach(p => {
+              if (ass[p]) {
+                if (ass[p].entrata) turni.push(ass[p].entrata);
+                else if (ass[p].stato === 'riposo') turni.push('R');
+                else if (ass[p].stato === 'reperibile') turni.push('r');
               }
-            }
+            });
+            txt += turni.join('/');
+            const colore = turni[0] && TURNI_COLORS[turni[0]] ? TURNI_COLORS[turni[0]].bg : '#f1f5f9';
+            const coloreTx = turni[0] && TURNI_COLORS[turni[0]] ? TURNI_COLORS[turni[0]].tx : '#475569';
+            html += `<span class="day-shift" style="background:${colore};color:${coloreTx}">${txt}</span>`;
           });
-          if (assegn.J) {
-            html += `<span class="day-shift turno-fisso">J:16:30</span>`;
-          }
-          if (riposiGiorno.length > 0) {
-            html += `<span class="day-shift turno-riposo" style="font-style:italic">R:${riposiGiorno.join(',')}</span>`;
+          if (ass['Jolly']) {
+            html += `<span class="day-shift" style="background:${TURNI_COLORS.fisso.bg};color:${TURNI_COLORS.fisso.tx}">J:16:30</span>`;
           }
         }
         
@@ -640,79 +681,92 @@ function renderCalendario() {
     html += '</tr>';
   }
   html += '</tbody></table>';
-  
   document.getElementById('calendarioGrid').innerHTML = html;
 }
 
-function cambiaMese(delta) {
-  meseCorrente.setMonth(meseCorrente.getMonth() + delta);
-  renderCalendario();
-  renderOre();
-}
-
-function vaiOggi() {
-  meseCorrente = new Date();
-  renderCalendario();
-  renderOre();
-}
+function cambiaMese(delta) { meseCorrente.setMonth(meseCorrente.getMonth() + delta); renderCalendario(); renderOre(); }
+function vaiOggi() { meseCorrente = new Date(); renderCalendario(); renderOre(); }
 
 // MODAL GIORNO
 function mostraGiorno(dk) {
   const d = new Date(dk + 'T00:00:00');
   const dayIdx = d.getDay() === 0 ? 6 : d.getDay() - 1;
-  const dayName = GIORNI_FULL[dayIdx];
-  document.getElementById('modalGiornoTitolo').textContent = `${dayName} ${d.getDate()} ${MESI_IT[d.getMonth()]}`;
+  document.getElementById('modalGiornoTitolo').textContent = `${GIORNI_FULL[dayIdx]} ${d.getDate()} ${MESI_IT[d.getMonth()]}`;
   
-  const assegn = stato.assegnazioni[dk] || {};
-  const riposiGiorno = stato.riposi[dk] || [];
-  
+  const ass = stato.assegnazioni[dk] || {};
+  const gruppi = getGruppi();
   let html = '';
   
-  // Tabella turni del giorno
-  html += '<table style="width:100%;border-collapse:collapse;font-size:13px">';
-  html += '<tr style="background:var(--primary);color:#fff"><th style="padding:8px">Turno</th><th style="padding:8px">Orario</th><th style="padding:8px">Chi</th></tr>';
+  // Tabella dettagliata per gruppo
+  Object.entries(gruppi).forEach(([gid, gruppo]) => {
+    html += `<div style="margin-bottom:12px">`;
+    html += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">`;
+    html += `<span class="gruppo-badge gruppo-${gid}">${gid}</span>`;
+    html += `<span style="font-weight:700;font-size:14px">Gruppo ${gid}</span>`;
+    html += `</div>`;
+    
+    gruppo.persone.forEach(persona => {
+      const info = ass[persona];
+      if (!info) return;
+      
+      let chip = '';
+      let chipClass = '';
+      if (info.stato === 'lavoro' && info.entrata) {
+        const cls = 't-' + info.entrata.replace(':','');
+        chip = `${info.entrata} - ${info.uscita}`;
+        chipClass = cls;
+      } else if (info.stato === 'reperibile') {
+        chip = '🟡 Reperibile';
+        chipClass = 't-reperibile';
+      } else if (info.stato === 'riposo') {
+        chip = '🔴 Riposo';
+        chipClass = 't-riposo';
+      }
+      
+      html += `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;margin-bottom:3px;background:#f8fafc;border-radius:6px">`;
+      html += `<span style="font-weight:600;font-size:13px;min-width:45px;color:${gruppo.colore || '#333'}">${persona}</span>`;
+      html += `<span class="turno-chip ${chipClass}">${chip}</span>`;
+      if (info.sostituzioni && info.sostituzioni.length > 0) {
+        html += `<span style="font-size:11px;color:var(--text-light)">+sost. ${info.sostituzioni.map(s=>s.persona).join(',')}</span>`;
+      }
+      html += `</div>`;
+    });
+    html += `</div>`;
+  });
   
-  stato.turni.forEach(turno => {
-    // Trova chi fa questo turno
-    let chi = [];
-    ['A','B','C'].forEach(gid => {
-      const info = assegn[gid];
-      if (info && info.turnoId === turno.id) {
-        chi = chi.concat(info.persone || []);
+  // Riepilogo copertura
+  html += `<div style="margin-top:12px;padding:10px;background:#f0fdf4;border-radius:8px;font-size:12px">`;
+  html += `<strong>Copertura oraria:</strong><br>`;
+  
+  // Calcola copertura per ogni fascia oraria
+  const fasce = ['7:30','8:00','8:30','9:00','9:30','10:00','11:00','12:00','13:00','14:00','15:00','15:30','16:00','16:30','17:00','17:30','18:00'];
+  fasce.forEach(fascia => {
+    let count = 0;
+    Object.values(ass).forEach(info => {
+      if (info.stato === 'lavoro' && info.entrata && info.uscita) {
+        const e = tempoAMinuti(info.entrata);
+        const u = tempoAMinuti(info.uscita);
+        const f = tempoAMinuti(fascia);
+        if (f >= e && f < u) count++;
       }
     });
-    // Jolly fisso
-    if (turno.id === 'fisso' && assegn.J) {
-      chi = chi.concat(['Jolly']);
-      if (assegn.J.sostituzioni) {
-        assegn.J.sostituzioni.forEach(s => {
-          chi.push('Jolly→sost.' + s.persona);
-        });
-      }
+    if (count > 0) {
+      const col = count >= 6 ? '#10b981' : count >= 4 ? '#f59e0b' : '#ef4444';
+      html += `<span style="display:inline-block;margin:2px;padding:2px 6px;border-radius:4px;background:${col}20;color:${col};font-size:10px;font-weight:600">${fascia}: ${count}p</span>`;
     }
-    
-    const bgStyle = chi.length > 0 ? `background:${turno.color}` : '';
-    html += `<tr style="${bgStyle}">`;
-    html += `<td style="padding:8px;font-weight:700;color:${turno.textColor}">${turno.label}</td>`;
-    html += `<td style="padding:8px">${turno.inizio}-${turno.fine}</td>`;
-    html += `<td style="padding:8px">${chi.length > 0 ? chi.join(', ') : '—'}</td>`;
-    html += '</tr>';
   });
-  html += '</table>';
-  
-  // Riposi
-  if (riposiGiorno.length > 0) {
-    html += `<div style="margin-top:12px;padding:8px;background:#f1f5f9;border-radius:8px;text-align:center">`;
-    html += `<span style="font-weight:700">🛌 Riposo:</span> ${riposiGiorno.join(', ')}`;
-    html += `</div>`;
-  }
+  html += `</div>`;
   
   document.getElementById('modalGiornoContent').innerHTML = html;
   document.getElementById('modalGiorno').classList.add('show');
 }
 
-function chiudiModal() {
-  document.getElementById('modalGiorno').classList.remove('show');
+function chiudiModal() { document.getElementById('modalGiorno').classList.remove('show'); }
+
+function tempoAMinuti(t) {
+  if (!t) return 0;
+  const [h,m] = t.split(':').map(Number);
+  return h * 60 + (m || 0);
 }
 
 // SETTIMANA
@@ -720,61 +774,105 @@ function renderSettimana() {
   const monday = new Date(settimanaCorrente);
   const sunday = new Date(monday);
   sunday.setDate(sunday.getDate() + 6);
-  
   const wn = getWeekNumber(monday);
   document.getElementById('settTitolo').textContent = `Settimana ${wn} — ${monday.getDate()}/${monday.getMonth()+1} - ${sunday.getDate()}/${sunday.getMonth()+1}`;
   
   let html = '';
+  const gruppi = getGruppi();
   
-  for (let g = 0; g < 5; g++) { // Solo Lun-Ven
+  for (let g = 0; g < 5; g++) {
     const d = new Date(monday);
     d.setDate(d.getDate() + g);
     const dk = dateKey(d);
-    const assegn = stato.assegnazioni[dk] || {};
-    const riposiGiorno = stato.riposi[dk] || [];
+    const ass = stato.assegnazioni[dk] || {};
     const dayName = GIORNI_IT[g];
     
     html += `<div class="settimana-card">`;
-    html += `<div class="settimana-header">`;
-    html += `<span style="font-weight:700">${dayName} ${d.getDate()}</span>`;
-    if (riposiGiorno.length > 0) {
-      html += `<span style="color:var(--danger);font-size:12px;font-weight:600">🛌 Riposo: ${riposiGiorno.join(', ')}</span>`;
-    }
+    html += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">`;
+    html += `<span style="font-weight:700;font-size:14px">${dayName} ${d.getDate()}</span>`;
+    
+    // Conta presenti
+    let presenti = 0;
+    Object.values(ass).forEach(info => { if (info.stato === 'lavoro') presenti++; });
+    html += `<span style="font-size:12px;font-weight:600;color:${presenti>=6?'var(--success)':'var(--danger)'}">${presenti}/9 presenti</span>`;
     html += `</div>`;
     
-    // Tabella turni
+    // Tabella persone
     html += '<table style="width:100%;border-collapse:collapse;font-size:12px">';
-    stato.turni.forEach(turno => {
-      let chi = [];
-      ['A','B','C'].forEach(gid => {
-        const info = assegn[gid];
-        if (info && info.turnoId === turno.id) {
-          chi = chi.concat(info.persone || []);
+    Object.entries(gruppi).forEach(([gid, gruppo]) => {
+      gruppo.persone.forEach(persona => {
+        const info = ass[persona];
+        if (!info) return;
+        
+        let label = '', bgStyle = '';
+        if (info.stato === 'lavoro' && info.entrata) {
+          label = `${info.entrata} - ${info.uscita}`;
+          const c = TURNI_COLORS[info.entrata] || TURNI_COLORS.fisso;
+          bgStyle = `background:${c.bg};color:${c.tx}`;
+        } else if (info.stato === 'reperibile') {
+          label = '🟡 Reperibile';
+          bgStyle = `background:${TURNI_COLORS.reperibile.bg};color:${TURNI_COLORS.reperibile.tx}`;
+        } else if (info.stato === 'riposo') {
+          label = '🔴 Riposo';
+          bgStyle = `background:${TURNI_COLORS.riposo.bg};color:${TURNI_COLORS.riposo.tx}`;
         }
+        
+        html += `<tr style="${bgStyle}">`;
+        html += `<td style="padding:3px 6px;font-weight:700;min-width:40px">${persona}</td>`;
+        html += `<td style="padding:3px 6px">${label}</td>`;
+        if (info.sostituzioni && info.sostituzioni.length > 0) {
+          html += `<td style="padding:3px 6px;font-size:10px">+${info.sostituzioni.map(s=>s.persona).join(',')}</td>`;
+        } else {
+          html += `<td></td>`;
+        }
+        html += `</tr>`;
       });
-      if (turno.id === 'fisso' && assegn.J) {
-        chi = chi.concat(['Jolly']);
-      }
-      
-      if (chi.length > 0) {
-        html += `<tr style="background:${turno.color}">`;
-        html += `<td style="padding:4px 8px;font-weight:700;color:${turno.textColor}">${turno.label}</td>`;
-        html += `<td style="padding:4px 8px">${turno.inizio}-${turno.fine}</td>`;
-        html += `<td style="padding:4px 8px;text-align:right">${chi.join(', ')}</td>`;
-        html += '</tr>';
-      }
     });
-    html += '</table>';
-    
-    html += `</div>`;
+    html += '</table></div>';
   }
   
   document.getElementById('settimanaView').innerHTML = html;
 }
 
-function cambiaSettimana(delta) {
-  settimanaCorrente.setDate(settimanaCorrente.getDate() + delta * 7);
-  renderSettimana();
+function cambiaSettimana(delta) { settimanaCorrente.setDate(settimanaCorrente.getDate() + delta * 7); renderSettimana(); }
+
+// COPERTURE
+function renderCoperture() {
+  const dk = dateKey(settimanaCorrente);
+  const ass = stato.assegnazioni[dk] || {};
+  
+  let html = '<h4 style="margin-bottom:8px">Copertura per fascia oraria</h4>';
+  html += '<div class="info-box"><strong>Obiettivo:</strong> 6 persone sempre presenti dalle 9:30 alle 15:30</div>';
+  
+  const fasce = ['7:30','8:00','8:30','9:00','9:30','10:00','11:00','12:00','13:00','14:00','15:00','15:30','16:00','16:30','17:00','17:30','18:00'];
+  const targetMap = {
+    '7:30':1,'8:00':2,'8:30':3,'9:00':4,'9:30':6,'10:00':6,'11:00':6,'12:00':6,
+    '13:00':6,'14:00':6,'15:00':6,'15:30':6,'16:00':5,'16:30':4,'17:00':3,'17:30':2,'18:00':1
+  };
+  
+  fasce.forEach(fascia => {
+    let count = 0;
+    Object.values(ass).forEach(info => {
+      if (info.stato === 'lavoro' && info.entrata && info.uscita) {
+        const e = tempoAMinuti(info.entrata);
+        const u = tempoAMinuti(info.uscita);
+        const f = tempoAMinuti(fascia);
+        if (f >= e && f < u) count++;
+      }
+    });
+    
+    const target = targetMap[fascia] || 6;
+    const pct = Math.min(100, Math.round((count / target) * 100));
+    const col = count >= target ? '#10b981' : count >= target - 1 ? '#f59e0b' : '#ef4444';
+    
+    html += `<div class="copertura-row">`;
+    html += `<span style="min-width:45px;font-weight:600;font-size:11px">${fascia}</span>`;
+    html += `<div class="copertura-bar"><div class="copertura-fill" style="width:${pct}%;background:${col}"></div>`;
+    html += `<span class="copertura-label" style="color:${count>=target?'#fff':'#333'}">${count}/${target}</span></div>`;
+    html += `</div>`;
+  });
+  
+  document.getElementById('copertureView').innerHTML = html;
 }
 
 // ORE
@@ -785,117 +883,56 @@ function renderOre() {
   
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
+  const gruppi = getGruppi();
   
   let html = '';
   
-  stato.gruppi.forEach(gruppo => {
+  Object.entries(gruppi).forEach(([gid, gruppo]) => {
     gruppo.persone.forEach(persona => {
-      let oreLavorate = 0;
-      let giorniLavorati = 0;
-      let giorniRiposo = 0;
+      let oreLavorate = 0, giorniLavorati = 0, giorniRiposo = 0;
       
       for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
         const dk = dateKey(d);
         const dow = d.getDay();
-        if (dow === 0 || dow === 6) continue; // salta weekend
+        if (dow === 0 || dow === 6) continue;
         
-        const riposiGiorno = stato.riposi[dk] || [];
-        const isRiposo = riposiGiorno.includes(persona);
+        const ass = stato.assegnazioni[dk];
+        if (!ass || !ass[persona]) continue;
         
-        if (isRiposo) {
-          giorniRiposo++;
-          continue;
-        }
-        
-        // Trova il turno di questa persona
-        const assegn = stato.assegnazioni[dk] || {};
-        
-        if (gruppo.id === 'J') {
-          // Jolly: ore fisso (1.5h) + eventuali sostituzioni
-          if (assegn.J) {
-            oreLavorate += 1.5; // fisso 16:30-18:00
-            if (assegn.J.sostituzioni) {
-              oreLavorate += assegn.J.sostituzioni.length * stato.oreTurno;
-            }
-          }
+        const info = ass[persona];
+        if (info.stato === 'lavoro') {
+          oreLavorate += info.ore || stato.oreTurno;
           giorniLavorati++;
-        } else {
-          const info = assegn[gruppo.id];
-          if (info && info.persone && info.persone.includes(persona)) {
-            const turno = stato.turni.find(t => t.id === info.turnoId);
-            if (turno) {
-              oreLavorate += turno.ore;
-              giorniLavorati++;
-            }
-          }
+        } else if (info.stato === 'riposo' || info.stato === 'reperibile') {
+          giorniRiposo++;
         }
       }
       
-      if (gruppo.id === 'J') {
+      if (gid === 'J') {
         html += `<div class="ore-row">`;
-        html += `<span class="ore-nome" style="color:${gruppo.colore}">${persona}</span>`;
+        html += `<span class="gruppo-badge gruppo-J" style="width:28px;height:28px;font-size:11px">${persona}</span>`;
         html += `<div style="flex:1">`;
-        html += `<div style="font-size:12px;color:var(--text-light)">Fisso 16:30-18:00 + sostituzioni — ${oreLavorate.toFixed(1)}h totali (${giorniLavorati}gg)</div>`;
+        html += `<div style="font-size:12px">Fisso + sostituzioni: <strong>${oreLavorate.toFixed(1)}h</strong> (${giorniLavorati}gg)</div>`;
         html += `</div></div>`;
       } else {
-        const percentuale = Math.min(100, Math.round((oreLavorate / stato.oreTarget) * 100));
-        const barClass = percentuale >= 95 ? 'ok' : percentuale >= 80 ? 'warn' : 'danger';
+        const pct = Math.min(100, Math.round((oreLavorate / stato.oreTarget) * 100));
+        const barClass = pct >= 95 ? 'ok' : pct >= 80 ? 'warn' : 'danger';
+        const diff = oreLavorate - stato.oreTarget;
         
         html += `<div class="ore-row">`;
-        html += `<span class="ore-nome" style="color:${gruppo.colore}">${persona}</span>`;
+        html += `<span class="gruppo-badge gruppo-${gid}" style="width:28px;height:28px;font-size:11px">${persona}</span>`;
         html += `<div style="flex:1">`;
         html += `<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px">`;
-        html += `<span>${giorniLavorati}gg lavorati, ${giorniRiposo}gg riposo</span>`;
-        html += `<span style="font-weight:700;color:${barClass==='ok'?'var(--success)':barClass==='warn'?'var(--accent)':'var(--danger)'}">${oreLavorate.toFixed(1)}h / ${stato.oreTarget}h</span>`;
+        html += `<span>${giorniLavorati}gg lav, ${giorniRiposo}gg rip</span>`;
+        html += `<span style="font-weight:700;color:${barClass==='ok'?'var(--success)':barClass==='warn'?'var(--accent)':'var(--danger)'}">${oreLavorate.toFixed(1)}h ${diff>=0?'✓':'('+diff.toFixed(1)+'h)'}</span>`;
         html += `</div>`;
-        html += `<div class="ore-progress"><div class="ore-bar ${barClass}" style="width:${percentuale}%"></div></div>`;
+        html += `<div class="ore-progress"><div class="ore-bar ${barClass}" style="width:${pct}%"></div></div>`;
         html += `</div></div>`;
       }
     });
   });
   
   document.getElementById('oreList').innerHTML = html;
-}
-
-// GRUPPI
-function renderGruppi() {
-  let html = '';
-  stato.gruppi.forEach(gruppo => {
-    html += `<div style="margin-bottom:12px">`;
-    html += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">`;
-    html += `<span class="gruppo-badge gruppo-${gruppo.id}">${gruppo.id}</span>`;
-    html += `<span style="font-weight:700">${gruppo.nome}</span>`;
-    html += `<span style="font-size:12px;color:var(--text-light)">${gruppo.persone.length} persone</span>`;
-    html += `</div>`;
-    gruppo.persone.forEach(p => {
-      html += `<div class="persona-row"><span class="nome">${p}</span></div>`;
-    });
-    html += `</div>`;
-  });
-  document.getElementById('gruppiList').innerHTML = html;
-}
-
-// TURNI
-function renderTurni() {
-  let html = '';
-  stato.turni.forEach(t => {
-    html += `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">`;
-    html += `<div style="width:20px;height:20px;border-radius:4px;background:${t.color}"></div>`;
-    html += `<span style="font-weight:600">${t.label}</span>`;
-    html += `<span style="color:var(--text-light);font-size:13px">${t.inizio}-${t.fine}</span>`;
-    html += `<span style="color:var(--text-light);font-size:12px;margin-left:auto">${t.ore}h</span>`;
-    html += `</div>`;
-  });
-  document.getElementById('turniList').innerHTML = html;
-}
-
-// RIPOSI
-function renderRiposi() {
-  const el = document.getElementById('riposoList');
-  if (!el) return;
-  let html = '<div class="info-box"><strong>Regola:</strong> I riposi vengono assegnati automaticamente scegliendo persone da gruppi diversi, distribuendo equamente nel mese.</div>';
-  html += `<div class="setting-row"><span class="setting-label">Giorni riposo/mese per persona</span><span style="font-weight:700">${stato.giorniRiposo}</span></div>`;
-  el.innerHTML = html;
 }
 
 // ========================
@@ -906,104 +943,74 @@ function exportExcel() {
   const month = meseCorrente.getMonth();
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
+  const gruppi = getGruppi();
   
   // Intestazione
   let csv = 'Data,Giorno,';
-  stato.turni.forEach(t => {
-    csv += t.label + ' (Chi),';
-  });
-  csv += 'Riposo,';
-  // Ore per persona
-  stato.gruppi.forEach(g => {
-    g.persone.forEach(p => {
-      csv += p + ' (Ore),';
+  Object.entries(gruppi).forEach(([gid, gruppo]) => {
+    gruppo.persone.forEach(p => {
+      csv += p + ' Turno,' + p + ' Orario,' + p + ' Ore,';
     });
   });
-  csv += '\n';
+  csv += 'Presenti 9:30-15:30,\n';
   
   let totali = {};
-  stato.gruppi.forEach(g => g.persone.forEach(p => totali[p] = 0));
+  Object.values(gruppi).forEach(g => g.persone.forEach(p => totali[p] = 0));
   
   for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
     const dk = dateKey(d);
     const dow = d.getDay();
-    if (dow === 0 || dow === 6) continue; // salta weekend
+    if (dow === 0 || dow === 6) continue;
     
     const dayName = GIORNI_FULL[dow === 0 ? 6 : dow - 1];
-    const assegn = stato.assegnazioni[dk] || {};
-    const riposiGiorno = stato.riposi[dk] || [];
+    const ass = stato.assegnazioni[dk] || {};
     
     csv += `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()},${dayName},`;
     
-    // Per ogni turno, chi lo fa
-    stato.turni.forEach(turno => {
-      let chi = [];
-      ['A','B','C'].forEach(gid => {
-        const info = assegn[gid];
-        if (info && info.turnoId === turno.id) {
-          chi = chi.concat(info.persone || []);
-        }
-      });
-      if (turno.id === 'fisso' && assegn.J) {
-        chi = chi.concat(['Jolly']);
-      }
-      csv += (chi.length > 0 ? chi.join('+') : '—') + ',';
-    });
-    
-    // Riposi
-    csv += (riposiGiorno.length > 0 ? riposiGiorno.join('+') : '—') + ',';
-    
-    // Ore per persona
-    stato.gruppi.forEach(gruppo => {
+    Object.entries(gruppi).forEach(([gid, gruppo]) => {
       gruppo.persone.forEach(persona => {
-        const isRiposo = riposiGiorno.includes(persona);
-        if (isRiposo) {
-          csv += '0,';
-        } else if (gruppo.id === 'J') {
-          let h = 1.5;
-          if (assegn.J && assegn.J.sostituzioni) {
-            h += assegn.J.sostituzioni.length * stato.oreTurno;
-          }
-          csv += h + ',';
-          totali[persona] += h;
+        const info = ass[persona];
+        if (!info) { csv += '—,,0,'; return; }
+        
+        if (info.stato === 'lavoro') {
+          csv += `${info.entrata},${info.entrata}-${info.uscita},${info.ore},`;
+          totali[persona] += info.ore || stato.oreTurno;
+        } else if (info.stato === 'reperibile') {
+          csv += 'Reperibile,,0,';
         } else {
-          const info = assegn[gruppo.id];
-          if (info && info.persone && info.persone.includes(persona)) {
-            const turno = stato.turni.find(t => t.id === info.turnoId);
-            if (turno) {
-              csv += turno.ore + ',';
-              totali[persona] += turno.ore;
-            } else {
-              csv += '0,';
-            }
-          } else {
-            csv += '0,';
-          }
+          csv += 'Riposo,,0,';
         }
       });
     });
     
-    csv += '\n';
+    // Conta presenti alle 9:30
+    let presenti930 = 0;
+    Object.values(ass).forEach(info => {
+      if (info.stato === 'lavoro' && info.entrata && info.uscita) {
+        const e = tempoAMinuti(info.entrata);
+        const u = tempoAMinuti(info.uscita);
+        if (570 >= e && 930 < u) presenti930++;
+      }
+    });
+    csv += presenti930 + ',\n';
   }
   
   // Totali
-  csv += '\nTOTALI ORE,,,,,,,,';
-  stato.gruppi.forEach(g => {
+  csv += '\nTOTALI ORE,,';
+  Object.values(gruppi).forEach(g => {
     g.persone.forEach(p => {
-      csv += totali[p].toFixed(1) + ',';
+      csv += ',,' + totali[p].toFixed(1) + ',';
     });
   });
   csv += '\n';
   
-  // Target
-  csv += 'TARGET,,,,,,,,';
-  stato.gruppi.forEach(g => {
+  csv += 'TARGET,,';
+  Object.values(gruppi).forEach(g => {
     g.persone.forEach(p => {
-      csv += (g.id === 'J' ? '—' : stato.oreTarget) + ',';
+      csv += ',,' + (g.id === 'J' ? '—' : stato.oreTarget) + ',';
     });
   });
   
-  // Download
   const blob = new Blob(['\ufeff' + csv], {type: 'text/csv;charset=utf-8;'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -1019,16 +1026,18 @@ function exportExcel() {
 caricaStato();
 generaAssegnazioni();
 
-// Sync settings UI
 document.getElementById('oreTarget').value = stato.oreTarget;
 document.getElementById('oreTurno').value = stato.oreTurno;
 document.getElementById('giorniRiposo').value = stato.giorniRiposo;
-document.getElementById('patternRotazione').value = stato.patternRotazione;
 document.getElementById('inizioRotazione').value = stato.inizioRotazione;
+
+if (stato.variante === 2) {
+  document.getElementById('btnVar1').classList.remove('active');
+  document.getElementById('btnVar2').classList.add('active');
+}
 
 renderAll();
 
-// Close modal on overlay click
 document.getElementById('modalGiorno').addEventListener('click', function(e) {
   if (e.target === this) chiudiModal();
 });
