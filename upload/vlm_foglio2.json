@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "04:20  \nTop Repositories  \nType  \nZeppozeppo  \nTURNI-CALENDARIO-  \n0  \nPython",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1781206813,
+  "id": "20260612034012c78cded632854a20",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "20260612034012c78cded632854a20",
+  "usage": {
+    "completion_tokens": 29,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1910,
+    "prompt_tokens_details": {
+      "cached_tokens": 4
+    },
+    "total_tokens": 1939
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "Alza  \nShopping  \n\nOttieni  \n\na.at  \nWas suchen Sie? Z. B. ein iPho...  \nSuchen  \nMein Alza  \nAnmelden  \n\nComputer und Laptops > PC-Komponenten > Festplatten und SSDs > Intern > HDD  \n\nAlles von Seagate  \n\nSeagate IronWolf 2 TB  \n\n★★★★★ 4,6 535 Bewertungen  \n\nFestplatte - 3.5\", SATA III, maximale Übertragungsgeschwindigkeit: 180 MB/s, Cache: 256 MB, 5400 U/min, für PCs, für Datenspeicher, Schreibtechnologie: CMR, Lautstärke: 21 dB, typischer Stromverbrauch: 3,1 W  \n\nGanze Beschreibung anzeigen  \n\nGröße  \n2 TB  \n\nDatenkabel - AlzaPower SATA 3.0 6Gbps 90° 0,5m schwarz  \n3,31 € Sie sparen 0,58 €  \n\nGarantieverlängerung +1 Jahr  \n11,35 €  \n\nGarantierter Sofort-Umtausch bei Defekt  \n18,44 €  \n\nGeschenkpaket - Gold  \n7 €  \n\nAuf Lager > 5 Stk.  \n\nÖsterreichweite Lieferung in die Abholstation für nur 0,99 €  \n\nLieferung: Heute bis 17:30 im Alza Shop 24/7 - Karlsplatz, 1060 Wien - G...  \n\nTermin der Zustellung an die Adresse erfahren  \n\nalza  \nBox  \nWien: Bestellt bis Mitternacht, morgens in die AlzaBox gebracht! Österreichweit: Lieferung in die Poststation für nur 0,99 €.  \nInfo  \n\nSUPER-PREIS  \n141,90 €  \nohne MwSt. 118,25 €  \n\nIn die AlzaBox  \nIn den Warenkorb  \n\nVergleichen  \nPreis beobachten  \nZur Wunschliste hinzufügen  \n\nGarantie 36 Monate. Code: FP995u6b1, Herstellerwebsite  \n\nrtungen 153  \nBeratung und Anleitungen 1  \nTechnische Daten  \nFotos und Videos 3  \nZubehör",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1781206791,
+  "id": "202606120339420d0d122d8f1a4cd7",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "202606120339420d0d122d8f1a4cd7",
+  "usage": {
+    "completion_tokens": 475,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 3006,
+    "prompt_tokens_details": {
+      "cached_tokens": 4
+    },
+    "total_tokens": 3481
+  }
+}
