@@ -447,8 +447,8 @@ function generaAssegnazioni() {
   const weeksDiffFromStart = Math.round((currentMonday - startMonday) / (7 * 86400000));
   let weekIndex = weeksDiffFromStart;
   
-  // Traccia riposi per equità mensile
-  const riposiMesePersona = {};
+  // Conta i giorni lavorativi passati per ruotare i riposi
+  let giornoLavorativoIdx = 0;
   
   while (currentMonday <= endMonth) {
     for (let g = 0; g < 5; g++) { // Lun-Ven
@@ -458,6 +458,7 @@ function generaAssegnazioni() {
       const meseKey = day.getFullYear() + '-' + String(day.getMonth()+1).padStart(2,'0');
       
       assegnazioni[dk] = {};
+      const personeRiposoOggi = [];
       
       // Determina la fascia per ogni gruppo questa settimana
       Object.entries(gruppi).forEach(([gid, gruppo]) => {
@@ -471,96 +472,79 @@ function generaAssegnazioni() {
         }
         
         const fascia = getFasciaForWeek(weekIndex, gid);
-        const turniFascia = FASCE_TURNI[fascia];
+        const turniFascia = FASCE_TURNI[fascia]; // 2 ingressi
+        const numPersone = gruppo.persone.length;
+        const numIngressi = turniFascia.length; // sempre 2
         
-        gruppo.persone.forEach((persona, idx) => {
-          if (idx < turniFascia.length) {
+        // Il riposo ruota SOLO nei gruppi che hanno più persone che ingressi
+        // Es: gruppo B (3 persone, 2 ingressi) → 1 persona a riposo che ruota
+        // Es: gruppo A (2 persone, 2 ingressi) → nessun riposo, tutti lavorano
+        const haRiposo = numPersone > numIngressi;
+        
+        if (haRiposo) {
+          // IL RIPOSO RUOTA: ogni giorno tocca a una persona diversa
+          const riposoIdx = giornoLavorativoIdx % numPersone;
+          
+          let turnoAssegnato = 0;
+          gruppo.persone.forEach((persona, idx) => {
+            if (idx === riposoIdx) {
+              assegnazioni[dk][persona] = {
+                turno: 'riposo', entrata: null, uscita: null,
+                ore: 0, stato: 'riposo', gruppo: gid
+              };
+              personeRiposoOggi.push(persona);
+            } else {
+              const entrata = turniFascia[turnoAssegnato];
+              const uscita = calcolaUscita(entrata);
+              assegnazioni[dk][persona] = {
+                turno: entrata, entrata: entrata, uscita: uscita,
+                ore: stato.oreTurno, stato: 'lavoro', gruppo: gid
+              };
+              turnoAssegnato++;
+            }
+          });
+        } else {
+          // Gruppo con stesso numero di persone e ingressi → tutti lavorano
+          gruppo.persone.forEach((persona, idx) => {
             const entrata = turniFascia[idx];
             const uscita = calcolaUscita(entrata);
             assegnazioni[dk][persona] = {
               turno: entrata, entrata: entrata, uscita: uscita,
               ore: stato.oreTurno, stato: 'lavoro', gruppo: gid
             };
-          } else {
-            // Terza persona → riposo o reperibile
-            assegnazioni[dk][persona] = {
-              turno: 'riposo', entrata: null, uscita: null,
-              ore: 0, stato: 'riposo', gruppo: gid
-            };
-          }
-        });
-      });
-      
-      // SISTEMA RIPOSI: 2 persone a riposo, da gruppi diversi
-      // 1 delle 2 è reperibile
-      const personeRiposo = [];
-      Object.entries(gruppi).forEach(([gid, gruppo]) => {
-        gruppo.persone.forEach(persona => {
-          if (assegnazioni[dk][persona] && assegnazioni[dk][persona].stato === 'riposo') {
-            personeRiposo.push(persona);
-          }
-        });
-      });
-      
-      // Se ci sono già 2+ persone a riposo, ok
-      // Se ce n'è solo 1, aggiungiamo 1 persona da un altro gruppo
-      if (personeRiposo.length < stato.giorniRiposo) {
-        const gruppiGiaRiposo = new Set(personeRiposo.map(p => assegnazioni[dk][p].gruppo));
-        
-        // Scegli chi ha riposato di meno questo mese
-        const conteggio = {};
-        tuttiNomi.forEach(p => conteggio[p] = 0);
-        Object.keys(assegnazioni).forEach(rdk => {
-          if (rdk.startsWith(meseKey) && assegnazioni[rdk]) {
-            Object.entries(assegnazioni[rdk]).forEach(([persona, info]) => {
-              if (info.stato === 'riposo' && conteggio[persona] !== undefined) conteggio[persona]++;
-            });
-          }
-        });
-        
-        const candidati = tuttiNomi.filter(p => {
-          if (personeRiposo.includes(p)) return false;
-          if (p === 'Jolly') return false;
-          const grp = getGruppoPersona(p);
-          return !gruppiGiaRiposo.has(grp);
-        }).sort((a,b) => conteggio[a] - conteggio[b]);
-        
-        while (personeRiposo.length < stato.giorniRiposo && candidati.length > 0) {
-          const persona = candidati.shift();
-          const nuovoGruppoRiposo = getGruppoPersona(persona);
-          
-          assegnazioni[dk][persona] = {
-            turno: 'riposo', entrata: null, uscita: null,
-            ore: 0, stato: 'riposo', gruppo: nuovoGruppoRiposo
-          };
-          personeRiposo.push(persona);
-          gruppiGiaRiposo.add(nuovoGruppoRiposo);
+          });
         }
-      }
+      });
       
-      // Segna 1 riposo come reperibile
-      if (personeRiposo.length >= 2) {
-        assegnazioni[dk][personeRiposo[1]] = {
-          ...assegnazioni[dk][personeRiposo[1]],
+      // 1 delle persone a riposo diventa reperibile
+      if (personeRiposoOggi.length >= 2) {
+        // Il secondo riposo diventa reperibile
+        assegnazioni[dk][personeRiposoOggi[1]] = {
+          ...assegnazioni[dk][personeRiposoOggi[1]],
           stato: 'reperibile',
           turno: 'reperibile'
         };
       }
       
       // Jolly: se ci sono persone a riposo, il Jolly copre i loro turni
-      if (gruppi.J && personeRiposo.length > 0) {
+      if (gruppi.J && personeRiposoOggi.length > 0) {
         const sostituzioni = [];
-        personeRiposo.forEach(p => {
+        personeRiposoOggi.forEach(p => {
           const gid = getGruppoPersona(p);
           if (gid && gid !== 'J') {
             const fascia = getFasciaForWeek(weekIndex, gid);
             const turniFascia = FASCE_TURNI[fascia];
-            const idx = gruppi[gid].persone.indexOf(p);
-            if (idx >= 0 && idx < turniFascia.length) {
+            // Trova quale turno avrebbe fatto (in base alla posizione nel gruppo senza il riposo)
+            const pIdx = gruppi[gid].persone.indexOf(p);
+            let turnoIdx = 0;
+            for (let i = 0; i < pIdx; i++) {
+              if (i !== (giornoLavorativoIdx % gruppi[gid].persone.length)) turnoIdx++;
+            }
+            if (turnoIdx < turniFascia.length) {
               sostituzioni.push({
                 persona: p,
-                entrata: turniFascia[idx],
-                uscita: calcolaUscita(turniFascia[idx])
+                entrata: turniFascia[turnoIdx],
+                uscita: calcolaUscita(turniFascia[turnoIdx])
               });
             }
           }
@@ -570,6 +554,8 @@ function generaAssegnazioni() {
           assegnazioni[dk]['Jolly'].oreTotali = 1.5 + sostituzioni.length * stato.oreTurno;
         }
       }
+      
+      giornoLavorativoIdx++;
     }
     
     weekIndex++;
