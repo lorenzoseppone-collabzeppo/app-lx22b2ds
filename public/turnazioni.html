@@ -133,7 +133,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 <div class="header">
   <h1>📅 Turnazioni</h1>
-  <div class="header-sub">Gestione Turni di Lavoro</div>
+  <div class="header-sub" id="headerSub">9 persone · 1 riposo/giorno · Rotazione A1→C3</div>
 </div>
 
 <div class="tabs">
@@ -201,11 +201,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
         <strong>Variante 1 (8 persone):</strong> A(2) + B(3) + C(3) + Jolly fisso
       </div>
       <div class="info-box">
-        <strong>Variante 2 (9 persone):</strong> A(3) + B(3) + C(3) — senza Jolly, se uno si ammala il reperibile copre
+        <strong>Variante 2 (9 persone):</strong> A(3) + B(3) + C(3) — 1 riposo al giorno, rotazione globale A1-A2-A3-B1-B2-B3-C1-C2-C3
       </div>
       <div style="display:flex;flex-wrap:wrap;justify-content:center;margin-top:8px">
-        <button class="variante-btn active" id="btnVar1" onclick="setVariante(1)">8 persone + Jolly</button>
-        <button class="variante-btn" id="btnVar2" onclick="setVariante(2)">9 persone (3+3+3)</button>
+        <button class="variante-btn" id="btnVar1" onclick="setVariante(1)">8 persone + Jolly</button>
+        <button class="variante-btn active" id="btnVar2" onclick="setVariante(2)">9 persone (3+3+3)</button>
       </div>
     </div>
     <div class="card">
@@ -226,8 +226,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     <div class="card">
       <div class="card-title">🔄 Rotazione</div>
       <div class="info-box">
-        Ogni settimana il gruppo cambia fascia oraria: A→B, B→C, C→A.<br>
-        Dentro ogni gruppo, le persone hanno orari sfalsati per coprire tutti gli ingressi.
+        <strong>Variante 9 persone:</strong> Ogni settimana i gruppi cambiano fascia (A→B, B→C, C→A). Il riposo ruota globalmente: A1→A2→A3→B1→B2→B3→C1→C2→C3→repeat.<br>
+        <strong>Variante 8 persone:</strong> Stessa rotazione fasce, riposo ruota dentro ogni gruppo con 3 persone.
       </div>
       <div class="setting-row">
         <span class="setting-label">Inizio rotazione</span>
@@ -237,9 +237,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     <div class="card">
       <div class="card-title">🛌 Regole Riposo</div>
       <div class="warn-box">
-        ⚠️ Chi riposa deve essere da gruppi diversi (es. A1 + B2).<br>
-        ⚠️ Se uno si ammala, il reperibile deve coprire.<br>
-        ⚠️ Su 2 persone a riposo, 1 deve rimanere reperibile.
+        ⚠️ Variante 9 persone: 1 solo riposo al giorno, che ruota tra tutte le 9 persone.<br>
+        ⚠️ Chi riposa è anche reperibile (on-call) in caso di necessità.<br>
+        ⚠️ Variante 8 persone: 2-3 riposi, di cui 1 reperibile, Jolly copre le sostituzioni.
       </div>
     </div>
     <div class="card">
@@ -330,7 +330,7 @@ const ROTAZIONE_ABC = [
 // STATO
 // ========================
 let stato = {
-  variante: 1,
+  variante: 2,
   oreTarget: 138,
   oreTurno: 7.5,
   giorniRiposo: 2,
@@ -391,10 +391,10 @@ function getFasciaForWeek(weekIndex, gruppoId) {
 // ========================
 // SALVATAGGIO
 // ========================
-function salvaStato() { localStorage.setItem('turnazioni_stato_v3', JSON.stringify(stato)); }
+function salvaStato() { localStorage.setItem('turnazioni_stato_v4', JSON.stringify(stato)); }
 
 function caricaStato() {
-  const saved = localStorage.getItem('turnazioni_stato_v3');
+  const saved = localStorage.getItem('turnazioni_stato_v4');
   if (saved) { try { stato = {...stato, ...JSON.parse(saved)}; } catch(e) {} }
 }
 
@@ -410,7 +410,7 @@ function salvaImpostazioni() {
 
 function resetDati() {
   if (confirm('Sei sicuro? Verranno cancellati tutti i dati.')) {
-    localStorage.removeItem('turnazioni_stato_v3');
+    localStorage.removeItem('turnazioni_stato_v4');
     location.reload();
   }
 }
@@ -431,131 +431,172 @@ function generaAssegnazioni() {
   const assegnazioni = {};
   const start = new Date(stato.inizioRotazione + 'T00:00:00');
   const today = new Date();
-  // Genera dal mese precedente fino a 6 mesi avanti per coprire giorni prima dell'inizio rotazione
   const startMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
   const endMonth = new Date(today.getFullYear(), today.getMonth() + 6, 0);
   
   const gruppi = getGruppi();
-  const tuttiNomi = [];
-  Object.values(gruppi).forEach(g => g.persone.forEach(p => tuttiNomi.push(p)));
+  const isVar9 = stato.variante === 2;
   
-  // Calcola il weekIndex basato sulla data di inizio rotazione
-  // Partiamo da prima del mese corrente per generare anche i giorni precedenti
+  // Variante 2: lista piatta di tutte le 9 persone per la rotazione globale
+  let rotazioneGlobale = [];
+  if (isVar9) {
+    Object.entries(gruppi).forEach(([gid, gruppo]) => {
+      if (gid === 'J') return;
+      gruppo.persone.forEach(p => rotazioneGlobale.push({persona: p, gruppo: gid}));
+    });
+    // rotazioneGlobale = [{persona:'A1',gruppo:'A'}, {persona:'A2',gruppo:'A'}, {persona:'A3',gruppo:'A'},
+    //                      {persona:'B1',gruppo:'B'}, {persona:'B2',gruppo:'B'}, {persona:'B3',gruppo:'B'},
+    //                      {persona:'C1',gruppo:'C'}, {persona:'C2',gruppo:'C'}, {persona:'C3',gruppo:'C'}]
+  }
+  
   let currentMonday = getMonday(startMonth);
-  // Il weekIndex relativo alla data di inizio rotazione
   const startMonday = getMonday(start);
   const weeksDiffFromStart = Math.round((currentMonday - startMonday) / (7 * 86400000));
   let weekIndex = weeksDiffFromStart;
-  
-  // Conta i giorni lavorativi passati per ruotare i riposi
-  let giornoLavorativoIdx = 0;
   
   while (currentMonday <= endMonth) {
     for (let g = 0; g < 5; g++) { // Lun-Ven
       const day = new Date(currentMonday);
       day.setDate(day.getDate() + g);
       const dk = dateKey(day);
-      const meseKey = day.getFullYear() + '-' + String(day.getMonth()+1).padStart(2,'0');
       
       assegnazioni[dk] = {};
       const personeRiposoOggi = [];
       
-      // Determina la fascia per ogni gruppo questa settimana
-      Object.entries(gruppi).forEach(([gid, gruppo]) => {
-        if (gid === 'J') {
-          // Jolly: fisso 16:30-18:00 + sostituzioni
-          assegnazioni[dk]['Jolly'] = {
-            turno: 'fisso', entrata: '16:30', uscita: '18:00',
-            ore: 1.5, stato: 'lavoro', gruppo: 'J'
-          };
-          return;
-        }
+      // Indice globale del giorno lavorativo (deterministico, non dipende da quando si genera)
+      const globalDayIdx = weekIndex * 5 + g;
+      
+      if (isVar9) {
+        // ================================================================
+        // VARIANTE 2: 9 persone (3+3+3)
+        // 1 persona a riposo al giorno, rotazione globale:
+        // A1 → A2 → A3 → B1 → B2 → B3 → C1 → C2 → C3 → repeat
+        // Chi riposa e' anche reperibile (on-call)
+        // ================================================================
+        const riposoIdx = ((globalDayIdx % 9) + 9) % 9;
+        const chiRiposa = rotazioneGlobale[riposoIdx];
         
-        const fascia = getFasciaForWeek(weekIndex, gid);
-        const turniFascia = FASCE_TURNI[fascia]; // 2 ingressi
-        const numPersone = gruppo.persone.length;
-        const numIngressi = turniFascia.length; // sempre 2
-        
-        // Il riposo ruota SOLO nei gruppi che hanno più persone che ingressi
-        // Es: gruppo B (3 persone, 2 ingressi) → 1 persona a riposo che ruota
-        // Es: gruppo A (2 persone, 2 ingressi) → nessun riposo, tutti lavorano
-        const haRiposo = numPersone > numIngressi;
-        
-        if (haRiposo) {
-          // IL RIPOSO RUOTA: ogni giorno tocca a una persona diversa
-          const riposoIdx = giornoLavorativoIdx % numPersone;
+        Object.entries(gruppi).forEach(([gid, gruppo]) => {
+          if (gid === 'J') return;
           
-          let turnoAssegnato = 0;
-          gruppo.persone.forEach((persona, idx) => {
-            if (idx === riposoIdx) {
+          const fascia = getFasciaForWeek(weekIndex, gid);
+          const turniFascia = FASCE_TURNI[fascia]; // 2 ingressi
+          
+          let workingCount = 0;
+          gruppo.persone.forEach((persona) => {
+            if (persona === chiRiposa.persona && gid === chiRiposa.gruppo) {
+              // Questa persona riposa oggi ed e' reperibile
               assegnazioni[dk][persona] = {
-                turno: 'riposo', entrata: null, uscita: null,
-                ore: 0, stato: 'riposo', gruppo: gid
+                turno: 'reperibile', entrata: null, uscita: null,
+                ore: 0, stato: 'reperibile', gruppo: gid
               };
               personeRiposoOggi.push(persona);
             } else {
-              const entrata = turniFascia[turnoAssegnato];
+              // Lavora: assegna ingresso dalla fascia
+              // Se il gruppo ha 3 persone che lavorano, 2 prendono un ingresso e 1 l'altro
+              const entrataIdx = workingCount % turniFascia.length;
+              const entrata = turniFascia[entrataIdx];
               const uscita = calcolaUscita(entrata);
               assegnazioni[dk][persona] = {
                 turno: entrata, entrata: entrata, uscita: uscita,
                 ore: stato.oreTurno, stato: 'lavoro', gruppo: gid
               };
-              turnoAssegnato++;
+              workingCount++;
             }
           });
-        } else {
-          // Gruppo con stesso numero di persone e ingressi → tutti lavorano
-          gruppo.persone.forEach((persona, idx) => {
-            const entrata = turniFascia[idx];
-            const uscita = calcolaUscita(entrata);
-            assegnazioni[dk][persona] = {
-              turno: entrata, entrata: entrata, uscita: uscita,
-              ore: stato.oreTurno, stato: 'lavoro', gruppo: gid
+        });
+        
+      } else {
+        // ================================================================
+        // VARIANTE 1: 8 persone (2+3+3) + Jolly
+        // Il riposo ruota dentro ogni gruppo che ha piu persone che ingressi
+        // ================================================================
+        Object.entries(gruppi).forEach(([gid, gruppo]) => {
+          if (gid === 'J') {
+            // Jolly: fisso 16:30-18:00 + sostituzioni
+            assegnazioni[dk]['Jolly'] = {
+              turno: 'fisso', entrata: '16:30', uscita: '18:00',
+              ore: 1.5, stato: 'lavoro', gruppo: 'J'
             };
-          });
-        }
-      });
-      
-      // 1 delle persone a riposo diventa reperibile
-      if (personeRiposoOggi.length >= 2) {
-        // Il secondo riposo diventa reperibile
-        assegnazioni[dk][personeRiposoOggi[1]] = {
-          ...assegnazioni[dk][personeRiposoOggi[1]],
-          stato: 'reperibile',
-          turno: 'reperibile'
-        };
-      }
-      
-      // Jolly: se ci sono persone a riposo, il Jolly copre i loro turni
-      if (gruppi.J && personeRiposoOggi.length > 0) {
-        const sostituzioni = [];
-        personeRiposoOggi.forEach(p => {
-          const gid = getGruppoPersona(p);
-          if (gid && gid !== 'J') {
-            const fascia = getFasciaForWeek(weekIndex, gid);
-            const turniFascia = FASCE_TURNI[fascia];
-            // Trova quale turno avrebbe fatto (in base alla posizione nel gruppo senza il riposo)
-            const pIdx = gruppi[gid].persone.indexOf(p);
-            let turnoIdx = 0;
-            for (let i = 0; i < pIdx; i++) {
-              if (i !== (giornoLavorativoIdx % gruppi[gid].persone.length)) turnoIdx++;
-            }
-            if (turnoIdx < turniFascia.length) {
-              sostituzioni.push({
-                persona: p,
-                entrata: turniFascia[turnoIdx],
-                uscita: calcolaUscita(turniFascia[turnoIdx])
-              });
-            }
+            return;
+          }
+          
+          const fascia = getFasciaForWeek(weekIndex, gid);
+          const turniFascia = FASCE_TURNI[fascia];
+          const numPersone = gruppo.persone.length;
+          const numIngressi = turniFascia.length;
+          const haRiposo = numPersone > numIngressi;
+          
+          if (haRiposo) {
+            const riposoIdx = ((globalDayIdx % numPersone) + numPersone) % numPersone;
+            let turnoAssegnato = 0;
+            gruppo.persone.forEach((persona, idx) => {
+              if (idx === riposoIdx) {
+                assegnazioni[dk][persona] = {
+                  turno: 'riposo', entrata: null, uscita: null,
+                  ore: 0, stato: 'riposo', gruppo: gid
+                };
+                personeRiposoOggi.push(persona);
+              } else {
+                const entrata = turniFascia[turnoAssegnato];
+                const uscita = calcolaUscita(entrata);
+                assegnazioni[dk][persona] = {
+                  turno: entrata, entrata: entrata, uscita: uscita,
+                  ore: stato.oreTurno, stato: 'lavoro', gruppo: gid
+                };
+                turnoAssegnato++;
+              }
+            });
+          } else {
+            gruppo.persone.forEach((persona, idx) => {
+              const entrata = turniFascia[idx];
+              const uscita = calcolaUscita(entrata);
+              assegnazioni[dk][persona] = {
+                turno: entrata, entrata: entrata, uscita: uscita,
+                ore: stato.oreTurno, stato: 'lavoro', gruppo: gid
+              };
+            });
           }
         });
-        assegnazioni[dk]['Jolly'].sostituzioni = sostituzioni;
-        if (sostituzioni.length > 0) {
-          assegnazioni[dk]['Jolly'].oreTotali = 1.5 + sostituzioni.length * stato.oreTurno;
+        
+        // 1 delle persone a riposo diventa reperibile
+        if (personeRiposoOggi.length >= 2) {
+          assegnazioni[dk][personeRiposoOggi[1]] = {
+            ...assegnazioni[dk][personeRiposoOggi[1]],
+            stato: 'reperibile',
+            turno: 'reperibile'
+          };
+        }
+        
+        // Jolly: se ci sono persone a riposo, il Jolly copre i loro turni
+        if (gruppi.J && personeRiposoOggi.length > 0) {
+          const sostituzioni = [];
+          personeRiposoOggi.forEach(p => {
+            const gid = getGruppoPersona(p);
+            if (gid && gid !== 'J') {
+              const fascia = getFasciaForWeek(weekIndex, gid);
+              const turniFascia = FASCE_TURNI[fascia];
+              const pIdx = gruppi[gid].persone.indexOf(p);
+              let turnoIdx = 0;
+              const riposoIdxGruppo = ((globalDayIdx % gruppi[gid].persone.length) + gruppi[gid].persone.length) % gruppi[gid].persone.length;
+              for (let i = 0; i < pIdx; i++) {
+                if (i !== riposoIdxGruppo) turnoIdx++;
+              }
+              if (turnoIdx < turniFascia.length) {
+                sostituzioni.push({
+                  persona: p,
+                  entrata: turniFascia[turnoIdx],
+                  uscita: calcolaUscita(turniFascia[turnoIdx])
+                });
+              }
+            }
+          });
+          assegnazioni[dk]['Jolly'].sostituzioni = sostituzioni;
+          if (sostituzioni.length > 0) {
+            assegnazioni[dk]['Jolly'].oreTotali = 1.5 + sostituzioni.length * stato.oreTurno;
+          }
         }
       }
-      
-      giornoLavorativoIdx++;
     }
     
     weekIndex++;
@@ -570,11 +611,22 @@ function generaAssegnazioni() {
 // RENDER
 // ========================
 function renderAll() {
+  updateHeaderSub();
   renderCalendario();
   renderSettimana();
   renderCoperture();
   renderOre();
   renderLegenda();
+}
+
+function updateHeaderSub() {
+  const el = document.getElementById('headerSub');
+  if (!el) return;
+  if (stato.variante === 2) {
+    el.textContent = '9 persone · 1 riposo/giorno · Rotazione A1→C3';
+  } else {
+    el.textContent = '8 persone + Jolly · Rotazione per gruppo';
+  }
 }
 
 // TABS
@@ -795,9 +847,10 @@ function renderSettimana() {
     html += `<span style="font-weight:700;font-size:14px">${dayName} ${d.getDate()}</span>`;
     
     // Conta presenti
+    const totalePersone = Object.values(gruppi).reduce((s,g) => s + g.persone.length, 0);
     let presenti = 0;
     Object.values(ass).forEach(info => { if (info.stato === 'lavoro') presenti++; });
-    html += `<span style="font-size:12px;font-weight:600;color:${presenti>=6?'var(--success)':'var(--danger)'}">${presenti}/9 presenti</span>`;
+    html += `<span style="font-size:12px;font-weight:600;color:${presenti>=6?'var(--success)':'var(--danger)'}">${presenti}/${totalePersone} presenti</span>`;
     html += `</div>`;
     
     // Tabella persone
