@@ -1,0 +1,14 @@
+{
+  "created": 1781204100,
+  "id": "202606120254590940fe617d6b464f",
+  "request_id": "202606120254590940fe617d6b464f",
+  "text": "需要工作在指定文档中标记的8小时，并且要覆盖指定的页码。我希望能够为人们创造休息日，轮换工作。此外，我有一个非正式的人物叫吉罗伊，他代表固定时间表和替换计划，当人们休息时。",
+  "usage": {
+    "completion_tokens": 52,
+    "prompt_tokens": 374,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 426
+  }
+}

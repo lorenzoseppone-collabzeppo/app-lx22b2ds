@@ -1,0 +1,22 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "1. Sono lontano da lui, Lori. In un certo senso, non mi fa avvicinare. Sto cercando di pensare, posso dare un'altra indicazione? No, ora sono qui. Ciao.\n\n2. Bisogna lavorare 8 ore sui documenti specificati, coprendo le pagine indicate. Spero di poter dare alle persone un giorno di riposo a rotazione. Inoltre, c'è una persona, si chiama Gjoli. Si occupa del orario fisso e del sostituto, quando le persone sono in riposo.",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1781204178,
+  "id": "202606120256166913849d85f64167",
+  "model": "glm-4-plus",
+  "object": "chat.completion",
+  "request_id": "202606120256166913849d85f64167",
+  "usage": {
+    "completion_tokens": 126,
+    "prompt_tokens": 234,
+    "total_tokens": 360
+  }
+}

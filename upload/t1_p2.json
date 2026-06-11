@@ -1,0 +1,14 @@
+{
+  "created": 1781204101,
+  "id": "20260612025500dc5a19507087409e",
+  "request_id": "20260612025500dc5a19507087409e",
+  "text": "我在这里，我失败了，意味着我无法做到。我在尝试再次给出一个指示，但现在我必须停止。这里，拜拜。",
+  "usage": {
+    "completion_tokens": 28,
+    "prompt_tokens": 340,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 368
+  }
+}

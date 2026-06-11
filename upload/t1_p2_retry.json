@@ -1,0 +1,14 @@
+{
+  "created": 1781204140,
+  "id": "20260612025539f50afa6ee4e4467c",
+  "request_id": "20260612025539f50afa6ee4e4467c",
+  "text": "我离他很远，Lori。在某种意义上，他不能让我靠近。我在尝试思考，还能给出另一个指示吗？不，现在我在这里。拜拜。",
+  "usage": {
+    "completion_tokens": 35,
+    "prompt_tokens": 340,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 375
+  }
+}
