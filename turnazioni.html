@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Turnazioni - Gestione Turni</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --primary:#2563eb;--primary-light:#3b82f6;--primary-dark:#1d4ed8;
+  --accent:#f59e0b;--accent-light:#fbbf24;
+  --success:#10b981;--danger:#ef4444;
+  --bg:#f0f4f8;--card:#fff;--text:#1e293b;--text-light:#64748b;
+  --border:#e2e8f0;--shadow:0 2px 8px rgba(0,0,0,0.08);
+  --radius:12px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:80px}
+
+/* HEADER */
+.header{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;padding:16px 20px;position:sticky;top:0;z-index:100;box-shadow:0 4px 12px rgba(37,99,235,0.3)}
+.header h1{font-size:20px;font-weight:700;text-align:center}
+.header-sub{font-size:12px;text-align:center;opacity:0.8;margin-top:4px}
+
+/* NAV TABS */
+.tabs{display:flex;background:#fff;border-bottom:2px solid var(--border);position:sticky;top:60px;z-index:99}
+.tab{flex:1;padding:12px 8px;text-align:center;font-size:13px;font-weight:600;color:var(--text-light);cursor:pointer;border-bottom:3px solid transparent;transition:all .2s}
+.tab.active{color:var(--primary);border-bottom-color:var(--primary);background:#eff6ff}
+
+/* CONTAINER */
+.container{max-width:600px;margin:0 auto;padding:16px}
+.page{display:none}
+.page.active{display:block}
+
+/* CARDS */
+.card{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
+.card-title{font-size:16px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title .emoji{font-size:20px}
+
+/* GRUPPI */
+.gruppo-badge{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;font-weight:700;font-size:14px;color:#fff;margin-right:4px}
+.gruppo-A{background:#ef4444}
+.gruppo-B{background:#3b82f6}
+.gruppo-C{background:#10b981}
+.gruppo-J{background:#f59e0b}
+
+.persona-row{display:flex;align-items:center;padding:10px 12px;border-radius:8px;margin-bottom:6px;background:var(--bg);gap:10px}
+.persona-row .nome{font-weight:600;flex:1}
+.persona-row .turno-assegnato{font-size:12px;padding:4px 10px;border-radius:20px;font-weight:600}
+
+/* TURNO COLORS */
+.turno-730{background:#fef3c7;color:#92400e}
+.turno-800{background:#dbeafe;color:#1e40af}
+.turno-830{background:#d1fae5;color:#065f46}
+.turno-900{background:#ede9fe;color:#5b21b6}
+.turno-930{background:#fce7f3;color:#9d174d}
+.turno-fisso{background:#fed7aa;color:#9a3412}
+.turno-riposo{background:#f1f5f9;color:#475569}
+
+/* CALENDARIO */
+.cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.cal-nav{display:flex;gap:8px}
+.cal-nav button{background:var(--primary);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:13px;cursor:pointer;font-weight:600}
+.cal-nav button:hover{background:var(--primary-dark)}
+.cal-mese{font-size:18px;font-weight:700}
+
+.cal-table{width:100%;border-collapse:collapse;font-size:12px}
+.cal-table th{background:var(--primary);color:#fff;padding:8px 4px;font-weight:600;text-align:center;font-size:11px}
+.cal-table td{border:1px solid var(--border);padding:4px;text-align:center;vertical-align:top;height:60px;position:relative}
+.cal-table td.holiday{background:#fef2f2}
+.cal-table td.today{outline:2px solid var(--accent);outline-offset:-2px}
+.cal-table .day-num{font-weight:700;font-size:11px;margin-bottom:2px;color:var(--text-light)}
+.cal-table .day-shift{font-size:9px;padding:1px 3px;border-radius:3px;display:block;margin:1px 0;white-space:nowrap}
+
+/* SETTIMANA VIEW */
+.settimana-card{background:var(--card);border-radius:var(--radius);padding:12px;margin-bottom:8px;box-shadow:var(--shadow)}
+.settimana-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.settimana-num{font-weight:700;font-size:14px;color:var(--primary)}
+.settimana-periodo{font-size:12px;color:var(--text-light)}
+
+.turno-row{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;margin-bottom:4px;font-size:13px}
+.turno-row .gruppo-label{font-weight:700;min-width:50px}
+.turno-row .orario{flex:1;text-align:right;font-weight:600}
+
+/* ORE MESE */
+.ore-progress{height:8px;background:var(--border);border-radius:4px;overflow:hidden;margin-top:4px}
+.ore-bar{height:100%;border-radius:4px;transition:width .3s}
+.ore-bar.ok{background:var(--success)}
+.ore-bar.warn{background:var(--accent)}
+.ore-bar.danger{background:var(--danger)}
+
+.ore-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)}
+.ore-row:last-child{border:none}
+.ore-nome{font-weight:600;min-width:40px;font-size:13px}
+.ore-value{font-size:13px;color:var(--text-light);min-width:60px;text-align:right}
+.ore-target{font-size:11px;color:var(--text-light)}
+
+/* EXCEL BTN */
+.btn-excel{background:var(--success);color:#fff;border:none;border-radius:var(--radius);padding:14px 24px;font-size:16px;font-weight:700;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 12px rgba(16,185,129,0.3);transition:transform .1s}
+.btn-excel:hover{transform:scale(1.02)}
+.btn-excel:active{transform:scale(0.98)}
+
+/* SETTINGS */
+.setting-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
+.setting-label{font-weight:600;font-size:14px}
+.setting-input{border:2px solid var(--border);border-radius:8px;padding:8px 12px;font-size:14px;width:80px;text-align:center}
+.setting-input:focus{border-color:var(--primary);outline:none}
+
+/* MODAL */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;display:none;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:#fff;border-radius:16px;padding:24px;max-width:400px;width:90%;max-height:80vh;overflow-y:auto}
+.modal h3{font-size:18px;font-weight:700;margin-bottom:16px}
+.modal-close{background:none;border:none;font-size:24px;cursor:pointer;position:absolute;top:12px;right:16px}
+
+/* LEGENDA */
+.legenda{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.legenda-item{display:flex;align-items:center;gap:4px;font-size:11px}
+.legenda-dot{width:12px;height:12px;border-radius:3px}
+
+/* RESPONSIVE */
+@media(max-width:400px){
+  .cal-table{font-size:10px}
+  .cal-table th{padding:6px 2px;font-size:10px}
+  .cal-table .day-shift{font-size:8px}
+  .header h1{font-size:18px}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📅 Turnazioni</h1>
+  <div class="header-sub">Gestione Turni di Lavoro</div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" data-page="calendario">📅 Calendario</div>
+  <div class="tab" data-page="settimana">📆 Settimana</div>
+  <div class="tab" data-page="ore">⏱️ Ore</div>
+  <div class="tab" data-page="impostazioni">⚙️ Impostazioni</div>
+</div>
+
+<div class="container">
+
+  <!-- CALENDARIO PAGE -->
+  <div id="page-calendario" class="page active">
+    <div class="card">
+      <div class="cal-header">
+        <div class="cal-nav">
+          <button onclick="cambiaMese(-1)">◀</button>
+        </div>
+        <div class="cal-mese" id="calMeseTitolo"></div>
+        <div class="cal-nav">
+          <button onclick="cambiaMese(1)">▶</button>
+          <button onclick="vaiOggi()" style="background:var(--accent)">Oggi</button>
+        </div>
+      </div>
+      <div class="legenda" id="legenda"></div>
+      <div id="calendarioGrid"></div>
+    </div>
+    <button class="btn-excel" onclick="exportExcel()">📥 Scarica Excel</button>
+  </div>
+
+  <!-- SETTIMANA PAGE -->
+  <div id="page-settimana" class="page">
+    <div class="cal-header">
+      <div class="cal-nav">
+        <button onclick="cambiaSettimana(-1)">◀</button>
+      </div>
+      <div class="cal-mese" id="settTitolo"></div>
+      <div class="cal-nav">
+        <button onclick="cambiaSettimana(1)">▶</button>
+      </div>
+    </div>
+    <div id="settimanaView"></div>
+  </div>
+
+  <!-- ORE PAGE -->
+  <div id="page-ore" class="page">
+    <div class="card">
+      <div class="card-title"><span class="emoji">⏱️</span> Ore Mensili</div>
+      <div id="oreMeseHeader" style="text-align:center;margin-bottom:12px;font-weight:700;font-size:16px"></div>
+      <div id="oreList"></div>
+    </div>
+  </div>
+
+  <!-- IMPOSTAZIONI PAGE -->
+  <div id="page-impostazioni" class="page">
+    <div class="card">
+      <div class="card-title"><span class="emoji">👥</span> Gruppi e Persone</div>
+      <div id="gruppiList"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="emoji">🕐</span> Turni / Orari</div>
+      <div id="turniList"></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="emoji">📊</span> Monte Ore</div>
+      <div class="setting-row">
+        <span class="setting-label">Ore mensili target</span>
+        <input type="number" class="setting-input" id="oreTarget" value="138" onchange="salvaImpostazioni()">
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">Ore per turno</span>
+        <input type="number" class="setting-input" id="oreTurno" value="8" onchange="salvaImpostazioni()">
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">Giorni lavorativi/settimana</span>
+        <input type="number" class="setting-input" id="giorniSettimana" value="5" min="1" max="6" onchange="salvaImpostazioni()">
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="emoji">🔄</span> Rotazione</div>
+      <div class="setting-row">
+        <span class="setting-label">Pattern rotazione</span>
+        <select id="patternRotazione" class="setting-input" style="width:120px" onchange="salvaImpostazioni()">
+          <option value="A-B-C">A→B→C</option>
+          <option value="1-2-2-1">1,2 / 2,1</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">Inizio rotazione</span>
+        <input type="date" class="setting-input" style="width:150px" id="inizioRotazione" onchange="salvaImpostazioni()">
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="emoji">💾</span> Dati</div>
+      <button class="btn-excel" style="background:var(--danger);box-shadow:0 4px 12px rgba(239,68,68,0.3);margin-bottom:8px" onclick="resetDati()">🗑️ Reset Tutto</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL DETTAGLIO GIORNO -->
+<div class="modal-overlay" id="modalGiorno">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" onclick="chiudiModal()">&times;</button>
+    <h3 id="modalGiornoTitolo"></h3>
+    <div id="modalGiornoContent"></div>
+  </div>
+</div>
+
+<script>
+// ========================
+// CONFIGURAZIONE
+// ========================
+const TURNI_DEFAULT = [
+  {id:'730', label:'7:30', ora:7.5, color:'#fef3c7',textColor:'#92400e'},
+  {id:'800', label:'8:00', ora:8.0, color:'#dbeafe',textColor:'#1e40af'},
+  {id:'830', label:'8:30', ora:8.5, color:'#d1fae5',textColor:'#065f46'},
+  {id:'900', label:'9:00', ora:9.0, color:'#ede9fe',textColor:'#5b21b6'},
+  {id:'930', label:'9:30', ora:9.5, color:'#fce7f3',textColor:'#9d174d'},
+  {id:'fisso', label:'Fisso', ora:8.0, color:'#fed7aa',textColor:'#9a3412'}
+];
+
+const GRUPPI_DEFAULT = [
+  {id:'A', nome:'Gruppo A', persone:['A1','A2'], colore:'#ef4444'},
+  {id:'B', nome:'Gruppo B', persone:['B1','B2','B3'], colore:'#3b82f6'},
+  {id:'C', nome:'Gruppo C', persone:['C1','C2','C3'], colore:'#10b981'},
+  {id:'J', nome:'Jolly (Fisso)', persone:['Jolly'], colore:'#f59e0b'}
+];
+
+const GIORNI_IT = ['Lun','Mar','Mer','Gio','Ven','Sab','Dom'];
+const GIORNI_FULL = ['Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato','Domenica'];
+const MESI_IT = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+
+// ========================
+// STATO
+// ========================
+let stato = {
+  turni: [...TURNI_DEFAULT],
+  gruppi: JSON.parse(JSON.stringify(GRUPPI_DEFAULT)),
+  oreTarget: 138,
+  oreTurno: 8,
+  giorniSettimana: 5,
+  patternRotazione: 'A-B-C',
+  inizioRotazione: getMonday(new Date()).toISOString().split('T')[0],
+  assegnazioni: {} // key: 'YYYY-MM-DD' -> {gruppoId: turnoId}
+};
+
+let meseCorrente = new Date();
+let settimanaCorrente = getMonday(new Date());
+
+// ========================
+// UTILITY
+// ========================
+function getMonday(d) {
+  d = new Date(d);
+  const day = d.getDay();
+  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+  d.setDate(diff);
+  d.setHours(0,0,0,0);
+  return d;
+}
+
+function dateKey(d) {
+  return d.toISOString().split('T')[0];
+}
+
+function isSameDay(a, b) {
+  return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+}
+
+function getWeekNumber(d) {
+  const onejan = new Date(d.getFullYear(), 0, 1);
+  return Math.ceil((((d - onejan) / 86400000) + onejan.getDay() + 1) / 7);
+}
+
+// ========================
+// SALVATAGGIO/Caricamento
+// ========================
+function salvaStato() {
+  localStorage.setItem('turnazioni_stato', JSON.stringify(stato));
+}
+
+function caricaStato() {
+  const saved = localStorage.getItem('turnazioni_stato');
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      stato = {...stato, ...parsed};
+    } catch(e) {}
+  }
+}
+
+function salvaImpostazioni() {
+  stato.oreTarget = parseInt(document.getElementById('oreTarget').value) || 138;
+  stato.oreTurno = parseInt(document.getElementById('oreTurno').value) || 8;
+  stato.giorniSettimana = parseInt(document.getElementById('giorniSettimana').value) || 5;
+  stato.patternRotazione = document.getElementById('patternRotazione').value;
+  stato.inizioRotazione = document.getElementById('inizioRotazione').value;
+  generaAssegnazioni();
+  salvaStato();
+  renderAll();
+}
+
+function resetDati() {
+  if (confirm('Sei sicuro? Verranno cancellati tutti i dati delle turnazioni.')) {
+    localStorage.removeItem('turnazioni_stato');
+    stato = {
+      turni: [...TURNI_DEFAULT],
+      gruppi: JSON.parse(JSON.stringify(GRUPPI_DEFAULT)),
+      oreTarget: 138,
+      oreTurno: 8,
+      giorniSettimana: 5,
+      patternRotazione: 'A-B-C',
+      inizioRotazione: getMonday(new Date()).toISOString().split('T')[0],
+      assegnazioni: {}
+    };
+    generaAssegnazioni();
+    salvaStato();
+    renderAll();
+  }
+}
+
+// ========================
+// GENERAZIONE TURNAZIONE
+// ========================
+function generaAssegnazioni() {
+  const assegnazioni = {};
+  const start = new Date(stato.inizioRotazione);
+  const gruppiIds = ['A','B','C']; // Gruppi che ruotano
+  const turniIds = stato.turni.filter(t => t.id !== 'fisso').map(t => t.id); // Turni senza fisso
+  
+  // Calcola quante settimane dall'inizio
+  const today = new Date();
+  const endMonth = new Date(today.getFullYear(), today.getMonth() + 3, 0); // 3 mesi avanti
+  
+  let currentMonday = new Date(start);
+  let weekIndex = 0;
+  
+  while (currentMonday <= endMonth) {
+    // Rotazione: ogni settimana i gruppi cambiano turno
+    const rotIndex = weekIndex % 5; // cicla ogni 5 settimane sui 5 turni
+    
+    // Assegnazione per ogni giorno della settimana
+    for (let g = 0; g < 7; g++) {
+      const day = new Date(currentMonday);
+      day.setDate(day.getDate() + g);
+      const dk = dateKey(day);
+      const dayOfWeek = day.getDay(); // 0=dom, 1=lun...
+      
+      // Giorno lavorativo?
+      const isLavorativo = dayOfWeek >= 1 && dayOfWeek <= stato.giorniSettimana;
+      
+      if (!isLavorativo) {
+        assegnazioni[dk] = {A: 'riposo', B: 'riposo', C: 'riposo', J: 'riposo'};
+        continue;
+      }
+      
+      assegnazioni[dk] = {};
+      
+      // Pattern rotazione
+      if (stato.patternRotazione === 'A-B-C') {
+        // Rotazione semplice: A→B→C ogni settimana
+        const shift = weekIndex % 3;
+        const turniOrdinati = [...turniIds];
+        
+        // Ogni gruppo ha il suo turno della settimana
+        gruppiIds.forEach((gid, i) => {
+          const turnoIdx = (i + shift) % turniOrdinati.length;
+          assegnazioni[dk][gid] = turniOrdinati[turnoIdx];
+        });
+      } else {
+        // Pattern 1,2 / 2,1
+        const shift = weekIndex % 2 === 0 ? 0 : 1;
+        gruppiIds.forEach((gid, i) => {
+          const turnoIdx = (i + shift) % turniIds.length;
+          assegnazioni[dk][gid] = turniIds[turnoIdx];
+        });
+      }
+      
+      // Jolly: fisso o sostituzione
+      assegnazioni[dk]['J'] = 'fisso';
+    }
+    
+    weekIndex++;
+    currentMonday.setDate(currentMonday.getDate() + 7);
+  }
+  
+  stato.assegnazioni = assegnazioni;
+  salvaStato();
+}
+
+// ========================
+// RENDER
+// ========================
+function renderAll() {
+  renderCalendario();
+  renderSettimana();
+  renderOre();
+  renderGruppi();
+  renderTurni();
+  renderLegenda();
+}
+
+// TABS
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('page-' + tab.dataset.page).classList.add('active');
+  });
+});
+
+// LEGENDA
+function renderLegenda() {
+  const el = document.getElementById('legenda');
+  let html = '';
+  stato.turni.forEach(t => {
+    html += `<div class="legenda-item"><div class="legenda-dot" style="background:${t.color}"></div>${t.label}</div>`;
+  });
+  html += `<div class="legenda-item"><div class="legenda-dot" style="background:#f1f5f9"></div>Riposo</div>`;
+  el.innerHTML = html;
+}
+
+// CALENDARIO
+function renderCalendario() {
+  const year = meseCorrente.getFullYear();
+  const month = meseCorrente.getMonth();
+  
+  document.getElementById('calMeseTitolo').textContent = MESI_IT[month] + ' ' + year;
+  
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  
+  // Giorno della settimana del primo (0=dom, converted to mon=0)
+  let startDow = firstDay.getDay() - 1;
+  if (startDow < 0) startDow = 6;
+  
+  const today = new Date();
+  
+  let html = '<table class="cal-table"><thead><tr>';
+  GIORNI_IT.forEach(g => html += `<th>${g}</th>`);
+  html += '</tr></thead><tbody>';
+  
+  let dayNum = 1;
+  let started = false;
+  
+  for (let row = 0; row < 6; row++) {
+    if (dayNum > lastDay.getDate()) break;
+    html += '<tr>';
+    for (let col = 0; col < 7; col++) {
+      if (!started && col < startDow) {
+        html += '<td></td>';
+      } else if (dayNum > lastDay.getDate()) {
+        html += '<td></td>';
+      } else {
+        started = true;
+        const d = new Date(year, month, dayNum);
+        const dk = dateKey(d);
+        const isToday = isSameDay(d, today);
+        const isHoliday = d.getDay() === 0;
+        const assegn = stato.assegnazioni[dk] || {};
+        
+        let cls = '';
+        if (isToday) cls += ' today';
+        if (isHoliday) cls += ' holiday';
+        
+        html += `<td class="${cls}" onclick="mostraGiorno('${dk}')">`;
+        html += `<div class="day-num">${dayNum}</div>`;
+        
+        // Mostra turni assegnati
+        ['A','B','C'].forEach(gid => {
+          const turnoId = assegn[gid];
+          if (turnoId && turnoId !== 'riposo') {
+            const turno = stato.turni.find(t => t.id === turnoId);
+            if (turno) {
+              const gruppo = stato.gruppi.find(g => g.id === gid);
+              html += `<span class="day-shift" style="background:${turno.color};color:${turno.textColor}">${gid}:${turno.label}</span>`;
+            }
+          }
+        });
+        if (assegn.J === 'fisso') {
+          html += `<span class="day-shift turno-fisso">J:Fisso</span>`;
+        }
+        
+        html += '</td>';
+        dayNum++;
+      }
+    }
+    html += '</tr>';
+  }
+  html += '</tbody></table>';
+  
+  document.getElementById('calendarioGrid').innerHTML = html;
+}
+
+function cambiaMese(delta) {
+  meseCorrente.setMonth(meseCorrente.getMonth() + delta);
+  renderCalendario();
+}
+
+function vaiOggi() {
+  meseCorrente = new Date();
+  renderCalendario();
+}
+
+// MODAL GIORNO
+function mostraGiorno(dk) {
+  const d = new Date(dk + 'T00:00:00');
+  const dayName = GIORNI_FULL[d.getDay() === 0 ? 6 : d.getDay() - 1];
+  document.getElementById('modalGiornoTitolo').textContent = `${dayName} ${d.getDate()} ${MESI_IT[d.getMonth()]}`;
+  
+  const assegn = stato.assegnazioni[dk] || {};
+  let html = '';
+  
+  stato.gruppi.forEach(gruppo => {
+    const turnoId = assegn[gruppo.id];
+    const turno = turnoId ? stato.turni.find(t => t.id === turnoId) : null;
+    const isRiposo = turnoId === 'riposo';
+    
+    html += `<div style="margin-bottom:12px">`;
+    html += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">`;
+    html += `<span class="gruppo-badge gruppo-${gruppo.id}" style="width:28px;height:28px;font-size:12px">${gruppo.id}</span>`;
+    html += `<span style="font-weight:700">${gruppo.nome}</span>`;
+    html += `</div>`;
+    
+    gruppo.persone.forEach(p => {
+      let turnoLabel = '—';
+      let turnoStyle = 'turno-riposo';
+      if (turno && !isRiposo) {
+        turnoLabel = turno.label;
+        turnoStyle = 'turno-' + turno.id;
+      } else if (isRiposo) {
+        turnoLabel = 'Riposo';
+        turnoStyle = 'turno-riposo';
+      }
+      html += `<div class="persona-row"><span class="nome">${p}</span><span class="turno-assegnato ${turnoStyle}">${turnoLabel}</span></div>`;
+    });
+    html += `</div>`;
+  });
+  
+  document.getElementById('modalGiornoContent').innerHTML = html;
+  document.getElementById('modalGiorno').classList.add('show');
+}
+
+function chiudiModal() {
+  document.getElementById('modalGiorno').classList.remove('show');
+}
+
+// SETTIMANA
+function renderSettimana() {
+  const monday = new Date(settimanaCorrente);
+  const sunday = new Date(monday);
+  sunday.setDate(sunday.getDate() + 6);
+  
+  const wn = getWeekNumber(monday);
+  document.getElementById('settTitolo').textContent = `Settimana ${wn} — ${monday.getDate()}/${monday.getMonth()+1} - ${sunday.getDate()}/${sunday.getMonth()+1}`;
+  
+  let html = '';
+  
+  // Per ogni giorno della settimana
+  for (let g = 0; g < 7; g++) {
+    const d = new Date(monday);
+    d.setDate(d.getDate() + g);
+    const dk = dateKey(d);
+    const assegn = stato.assegnazioni[dk] || {};
+    const dayName = GIORNI_IT[g];
+    const isLavorativo = g < stato.giorniSettimana;
+    
+    html += `<div class="settimana-card">`;
+    html += `<div class="settimana-header">`;
+    html += `<span style="font-weight:700">${dayName} ${d.getDate()}</span>`;
+    if (!isLavorativo) html += `<span style="color:var(--danger);font-size:12px;font-weight:600">Riposo</span>`;
+    html += `</div>`;
+    
+    stato.gruppi.forEach(gruppo => {
+      const turnoId = assegn[gruppo.id];
+      const turno = turnoId ? stato.turni.find(t => t.id === turnoId) : null;
+      const isRiposo = turnoId === 'riposo';
+      
+      let label = '—';
+      let bgColor = '#f1f5f9';
+      if (turno && !isRiposo) {
+        label = turno.label;
+        bgColor = turno.color;
+      } else if (isRiposo) {
+        label = 'Riposo';
+        bgColor = '#f1f5f9';
+      }
+      
+      html += `<div class="turno-row" style="background:${bgColor}">`;
+      html += `<span class="gruppo-label" style="color:${gruppo.colore}">${gruppo.id}</span>`;
+      html += `<span style="font-size:12px;color:var(--text-light)">${gruppo.persone.join(', ')}</span>`;
+      html += `<span class="orario">${label}</span>`;
+      html += `</div>`;
+    });
+    
+    html += `</div>`;
+  }
+  
+  document.getElementById('settimanaView').innerHTML = html;
+}
+
+function cambiaSettimana(delta) {
+  settimanaCorrente.setDate(settimanaCorrente.getDate() + delta * 7);
+  renderSettimana();
+}
+
+// ORE
+function renderOre() {
+  const year = meseCorrente.getFullYear();
+  const month = meseCorrente.getMonth();
+  document.getElementById('oreMeseHeader').textContent = MESI_IT[month] + ' ' + year;
+  
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  
+  let html = '';
+  
+  stato.gruppi.forEach(gruppo => {
+    gruppo.persone.forEach(persona => {
+      let oreLavorate = 0;
+      
+      for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
+        const dk = dateKey(d);
+        const assegn = stato.assegnazioni[dk] || {};
+        const turnoId = assegn[gruppo.id];
+        
+        if (turnoId && turnoId !== 'riposo') {
+          oreLavorate += stato.oreTurno;
+        }
+      }
+      
+      const percentuale = gruppo.id === 'J' ? -1 : Math.min(100, Math.round((oreLavorate / stato.oreTarget) * 100));
+      const barClass = gruppo.id === 'J' ? 'ok' : (percentuale >= 100 ? 'ok' : percentuale >= 80 ? 'warn' : 'danger');
+      const barWidth = gruppo.id === 'J' ? 100 : percentuale;
+      
+      html += `<div class="ore-row">`;
+      html += `<span class="ore-nome" style="color:${gruppo.colore}">${persona}</span>`;
+      html += `<div style="flex:1">`;
+      if (gruppo.id === 'J') {
+        html += `<div style="font-size:12px;color:var(--text-light)">Sostituzioni — nessun monte ore fisso</div>`;
+      } else {
+        html += `<div class="ore-progress"><div class="ore-bar ${barClass}" style="width:${barWidth}%"></div></div>`;
+        html += `<div style="display:flex;justify-content:space-between;font-size:11px;margin-top:2px">`;
+        html += `<span class="ore-target">Target: ${stato.oreTarget}h</span>`;
+        html += `<span class="ore-value" style="color:${barClass==='ok'?'var(--success)':barClass==='warn'?'var(--accent)':'var(--danger)'}">${oreLavorate}h (${percentuale}%)</span>`;
+        html += `</div>`;
+      }
+      html += `</div></div>`;
+    });
+  });
+  
+  document.getElementById('oreList').innerHTML = html;
+}
+
+// GRUPPI
+function renderGruppi() {
+  let html = '';
+  stato.gruppi.forEach(gruppo => {
+    html += `<div style="margin-bottom:12px">`;
+    html += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">`;
+    html += `<span class="gruppo-badge gruppo-${gruppo.id}">${gruppo.id}</span>`;
+    html += `<span style="font-weight:700">${gruppo.nome}</span>`;
+    html += `</div>`;
+    gruppo.persone.forEach(p => {
+      html += `<div class="persona-row"><span class="nome">${p}</span></div>`;
+    });
+    html += `</div>`;
+  });
+  document.getElementById('gruppiList').innerHTML = html;
+}
+
+// TURNI
+function renderTurni() {
+  let html = '';
+  stato.turni.forEach(t => {
+    html += `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">`;
+    html += `<div style="width:20px;height:20px;border-radius:4px;background:${t.color}"></div>`;
+    html += `<span style="font-weight:600">${t.label}</span>`;
+    html += `<span style="color:var(--text-light);font-size:13px;margin-left:auto">${t.ora}h inizio</span>`;
+    html += `</div>`;
+  });
+  document.getElementById('turniList').innerHTML = html;
+}
+
+// ========================
+// EXCEL EXPORT
+// ========================
+function exportExcel() {
+  const year = meseCorrente.getFullYear();
+  const month = meseCorrente.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  
+  let csv = 'Data,Giorno,';
+  stato.gruppi.forEach(g => {
+    g.persone.forEach(p => {
+      csv += p + ' (Turno),' + p + ' (Ore),';
+    });
+  });
+  csv += '\n';
+  
+  let totali = {};
+  stato.gruppi.forEach(g => g.persone.forEach(p => totali[p] = 0));
+  
+  for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
+    const dk = dateKey(d);
+    const dayName = GIORNI_FULL[d.getDay() === 0 ? 6 : d.getDay() - 1];
+    const assegn = stato.assegnazioni[dk] || {};
+    
+    csv += `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()},${dayName},`;
+    
+    stato.gruppi.forEach(gruppo => {
+      const turnoId = assegn[gruppo.id];
+      const turno = turnoId ? stato.turni.find(t => t.id === turnoId) : null;
+      const isRiposo = turnoId === 'riposo';
+      
+      gruppo.persone.forEach(p => {
+        if (turno && !isRiposo) {
+          csv += turno.label + ',' + stato.oreTurno + ',';
+          if (gruppo.id !== 'J') totali[p] += stato.oreTurno;
+        } else if (isRiposo) {
+          csv += 'Riposo,0,';
+        } else {
+          csv += '—,0,';
+        }
+      });
+    });
+    csv += '\n';
+  }
+  
+  // Totali
+  csv += '\nTOTALI ORE,,';
+  stato.gruppi.forEach(g => {
+    g.persone.forEach(p => {
+      if (g.id === 'J') {
+        csv += ',Sostituzioni,';
+      } else {
+        csv += ',' + totali[p] + ',';
+      }
+    });
+  });
+  csv += '\n';
+  
+  // Target
+  csv += 'TARGET,,';
+  stato.gruppi.forEach(g => {
+    g.persone.forEach(p => {
+      csv += ',' + (g.id === 'J' ? '—' : stato.oreTarget) + ',';
+    });
+  });
+  
+  // Download
+  const blob = new Blob(['\ufeff' + csv], {type: 'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Turnazioni_${MESI_IT[month]}_${year}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ========================
+// INIT
+// ========================
+caricaStato();
+generaAssegnazioni();
+
+// Sync settings UI
+document.getElementById('oreTarget').value = stato.oreTarget;
+document.getElementById('oreTurno').value = stato.oreTurno;
+document.getElementById('giorniSettimana').value = stato.giorniSettimana;
+document.getElementById('patternRotazione').value = stato.patternRotazione;
+document.getElementById('inizioRotazione').value = stato.inizioRotazione;
+
+renderAll();
+
+// Close modal on overlay click
+document.getElementById('modalGiorno').addEventListener('click', function(e) {
+  if (e.target === this) chiudiModal();
+});
+</script>
+</body>
+</html>
