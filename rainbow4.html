@@ -4729,7 +4729,8 @@ fetchWeather();
       var star=document.createElement('span');
       star.className='falling-star';
       star.textContent=starSymbols[Math.floor(Math.random()*starSymbols.length)];
-      var x=Math.random()*95; // 0-95% per non uscire dal bordo
+      // Distribuzione uniforme: forza stelle su tutta la larghezza
+      var x=(i/(count-1))*85+Math.random()*10; // distribuite da 0% a 95% con un po' di random
       var size=10+Math.random()*12; // 10-22px
       var dur=7+Math.random()*9; // 7-16s (più lento)
       var delay=Math.random()*8; // 0-8s ritardo
