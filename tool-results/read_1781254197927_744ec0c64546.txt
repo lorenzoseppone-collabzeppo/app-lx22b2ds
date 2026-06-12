@@ -1,0 +1,1160 @@
+     1→<!DOCTYPE html>
+     2→<html lang="it">
+     3→<head>
+     4→<meta charset="UTF-8">
+     5→<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+     6→<meta http-equiv="Pragma" content="no-cache">
+     7→<meta http-equiv="Expires" content="0">
+     8→<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+     9→<title>Turnazioni v6 - 10 persone - 138h</title>
+    10→<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
+    11→<style>
+    12→*{margin:0;padding:0;box-sizing:border-box}
+    13→:root{
+    14→  --primary:#2563eb;--primary-light:#3b82f6;--primary-dark:#1d4ed8;
+    15→  --accent:#f59e0b;--accent-light:#fbbf24;
+    16→  --success:#10b981;--danger:#ef4444;
+    17→  --bg:#f0f4f8;--card:#fff;--text:#1e293b;--text-light:#64748b;
+    18→  --border:#e2e8f0;--shadow:0 2px 8px rgba(0,0,0,0.08);
+    19→  --radius:12px;
+    20→  --grpA:#ef4444;--grpB:#3b82f6;--grpC:#10b981;--grpJ:#f59e0b;
+    21→}
+    22→body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:80px}
+    23→
+    24→.header{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;padding:16px 20px;position:sticky;top:0;z-index:100;box-shadow:0 4px 12px rgba(37,99,235,0.3)}
+    25→.header h1{font-size:20px;font-weight:700;text-align:center}
+    26→.header-sub{font-size:12px;text-align:center;opacity:0.8;margin-top:4px}
+    27→
+    28→.tabs{display:flex;background:#fff;border-bottom:2px solid var(--border);position:sticky;top:60px;z-index:99}
+    29→.tab{flex:1;padding:12px 6px;text-align:center;font-size:12px;font-weight:600;color:var(--text-light);cursor:pointer;border-bottom:3px solid transparent;transition:all .2s}
+    30→.tab.active{color:var(--primary);border-bottom-color:var(--primary);background:#eff6ff}
+    31→
+    32→.container{max-width:600px;margin:0 auto;padding:16px}
+    33→.page{display:none}
+    34→.page.active{display:block}
+    35→
+    36→.card{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:12px;box-shadow:var(--shadow)}
+    37→.card-title{font-size:16px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+    38→
+    39→.gruppo-badge{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;font-weight:700;font-size:13px;color:#fff}
+    40→.gruppo-A{background:var(--grpA)}
+    41→.gruppo-B{background:var(--grpB)}
+    42→.gruppo-C{background:var(--grpC)}
+    43→.gruppo-J{background:var(--grpJ)}
+    44→
+    45→.turno-chip{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+    46→.t-730{background:#fef3c7;color:#92400e}
+    47→.t-800{background:#dbeafe;color:#1e40af}
+    48→.t-830{background:#d1fae5;color:#065f46}
+    49→.t-900{background:#ede9fe;color:#5b21b6}
+    50→.t-930{background:#fce7f3;color:#9d174d}
+    51→.t-fisso{background:#fed7aa;color:#9a3412}
+    52→.t-riposo{background:#fee2e2;color:#991b1b}
+    53→
+    54→
+    55→.cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+    56→.cal-nav{display:flex;gap:6px}
+    57→.cal-nav button{background:var(--primary);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;font-weight:600}
+    58→.cal-nav button:hover{background:var(--primary-dark)}
+    59→.cal-mese{font-size:16px;font-weight:700}
+    60→
+    61→/* ===== CALENDARIO MIGLIORATO ===== */
+    62→.cal-table{width:100%;border-collapse:collapse;font-size:11px}
+    63→.cal-table th{background:var(--primary);color:#fff;padding:6px 2px;font-weight:600;text-align:center;font-size:10px}
+    64→.cal-table td{border:1px solid var(--border);padding:2px 3px;text-align:center;vertical-align:top;min-height:70px;position:relative}
+    65→.cal-table td.weekend{background:#fef2f2}
+    66→.cal-table td.today{outline:2px solid var(--accent);outline-offset:-2px}
+    67→.cal-table .day-num{font-weight:700;font-size:11px;margin-bottom:3px;color:var(--text)}
+    68→.cal-table td.today .day-num{color:var(--accent)}
+    69→
+    70→/* Badge persona nel calendario */
+    71→.cal-person{display:flex;align-items:center;gap:2px;padding:1px 0;font-size:8px;line-height:1.2;white-space:nowrap}
+    72→.cal-person-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+    73→.cal-person-name{font-weight:700;min-width:14px;text-align:right}
+    74→.cal-person-time{font-weight:600;border-radius:3px;padding:0 2px;font-size:7.5px}
+    75→.cal-person-riposo{font-weight:600;border-radius:3px;padding:0 2px;font-size:7px;background:#fee2e2;color:#991b1b}
+    76→
+    77→
+    78→/* Separatore gruppo nel calendario */
+    79→.cal-grp-sep{border-top:1px solid #f1f5f9;margin:1px 0}
+    80→
+    81→.settimana-card{background:var(--card);border-radius:var(--radius);padding:12px;margin-bottom:8px;box-shadow:var(--shadow)}
+    82→
+    83→.ore-progress{height:8px;background:var(--border);border-radius:4px;overflow:hidden;margin-top:4px}
+    84→.ore-bar{height:100%;border-radius:4px;transition:width .3s}
+    85→.ore-bar.ok{background:var(--success)}
+    86→.ore-bar.warn{background:var(--accent)}
+    87→.ore-bar.danger{background:var(--danger)}
+    88→
+    89→.ore-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)}
+    90→.ore-row:last-child{border:none}
+    91→
+    92→.btn-excel{background:var(--success);color:#fff;border:none;border-radius:var(--radius);padding:14px 24px;font-size:16px;font-weight:700;cursor:pointer;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 12px rgba(16,185,129,0.3);transition:transform .1s}
+    93→.btn-excel:hover{transform:scale(1.02)}
+    94→.btn-excel:active{transform:scale(0.98)}
+    95→
+    96→.setting-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
+    97→.setting-label{font-weight:600;font-size:13px}
+    98→.setting-input{border:2px solid var(--border);border-radius:8px;padding:6px 10px;font-size:13px;width:80px;text-align:center}
+    99→.setting-input:focus{border-color:var(--primary);outline:none}
+   100→
+   101→.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;display:none;align-items:center;justify-content:center}
+   102→.modal-overlay.show{display:flex}
+   103→.modal{background:#fff;border-radius:16px;padding:24px;max-width:500px;width:95%;max-height:85vh;overflow-y:auto;position:relative}
+   104→.modal h3{font-size:18px;font-weight:700;margin-bottom:16px}
+   105→.modal-close{background:none;border:none;font-size:24px;cursor:pointer;position:absolute;top:12px;right:16px}
+   106→
+   107→.legenda{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+   108→.legenda-item{display:flex;align-items:center;gap:3px;font-size:10px}
+   109→.legenda-dot{width:10px;height:10px;border-radius:2px}
+   110→
+   111→.info-box{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px;margin-bottom:10px;font-size:12px;color:#1e40af}
+   112→.info-box strong{display:block;margin-bottom:4px}
+   113→
+   114→.warn-box{background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:10px;margin-bottom:10px;font-size:12px;color:#92400e}
+   115→
+   116→.copertura-row{display:flex;align-items:center;gap:6px;padding:4px 0;font-size:12px}
+   117→.copertura-bar{flex:1;height:16px;background:var(--border);border-radius:8px;overflow:hidden;position:relative}
+   118→.copertura-fill{height:100%;border-radius:8px;transition:width .3s}
+   119→.copertura-label{position:absolute;top:0;left:50%;transform:translateX(-50%);font-size:9px;font-weight:700;line-height:16px;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.5)}
+   120→
+   121→.variante-btn{background:var(--primary-light);color:#fff;border:none;border-radius:8px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;margin:4px;transition:all .2s}
+   122→.variante-btn:hover{background:var(--primary-dark)}
+   123→.variante-btn.active{background:var(--primary-dark);box-shadow:0 0 0 3px rgba(37,99,235,0.3)}
+   124→
+   125→@media(max-width:400px){
+   126→  .cal-table{font-size:9px}
+   127→  .cal-table th{padding:4px 1px;font-size:9px}
+   128→  .cal-person{font-size:7px}
+   129→  .cal-person-time{font-size:6.5px}
+   130→  .cal-person-name{min-width:12px}
+   131→  .header h1{font-size:17px}
+   132→}
+   133→</style>
+   134→</head>
+   135→<body>
+   136→
+   137→<div class="header">
+   138→  <h1>📅 Turnazioni</h1>
+   139→  <div class="header-sub" id="headerSub">10 persone · 1 riposo/giorno · Jolly copre turno + 16:30-18:00</div>
+   140→</div>
+   141→
+   142→<div class="tabs">
+   143→  <div class="tab active" data-page="calendario">📅 Calendario</div>
+   144→  <div class="tab" data-page="settimana">📆 Settimana</div>
+   145→  <div class="tab" data-page="coperture">📊 Coperture</div>
+   146→  <div class="tab" data-page="ore">⏱️ Ore</div>
+   147→  <div class="tab" data-page="impostazioni">⚙️</div>
+   148→</div>
+   149→
+   150→<div class="container">
+   151→
+   152→  <!-- CALENDARIO -->
+   153→  <div id="page-calendario" class="page active">
+   154→    <div class="card">
+   155→      <div class="cal-header">
+   156→        <div class="cal-nav"><button onclick="cambiaMese(-1)">◀</button></div>
+   157→        <div class="cal-mese" id="calMeseTitolo"></div>
+   158→        <div class="cal-nav">
+   159→          <button onclick="cambiaMese(1)">▶</button>
+   160→          <button onclick="vaiOggi()" style="background:var(--accent)">Oggi</button>
+   161→        </div>
+   162→      </div>
+   163→      <div class="legenda" id="legenda"></div>
+   164→      <div id="calendarioGrid"></div>
+   165→    </div>
+   166→    <button class="btn-excel" onclick="exportExcel()">📥 Scarica Excel</button>
+   167→  </div>
+   168→
+   169→  <!-- SETTIMANA -->
+   170→  <div id="page-settimana" class="page">
+   171→    <div class="cal-header">
+   172→      <div class="cal-nav"><button onclick="cambiaSettimana(-1)">◀</button></div>
+   173→      <div class="cal-mese" id="settTitolo"></div>
+   174→      <div class="cal-nav"><button onclick="cambiaSettimana(1)">▶</button></div>
+   175→    </div>
+   176→    <div id="settimanaView"></div>
+   177→  </div>
+   178→
+   179→  <!-- COPERTURE -->
+   180→  <div id="page-coperture" class="page">
+   181→    <div class="card">
+   182→      <div class="card-title">📊 Coperture Orarie</div>
+   183→      <div class="info-box">
+   184→        <strong>Regola fondamentale:</strong> Dalle 9:30 alle 15:30 devono esserci SEMPRE almeno 6 persone.
+   185→      </div>
+   186→      <div id="copertureView"></div>
+   187→    </div>
+   188→  </div>
+   189→
+   190→  <!-- ORE -->
+   191→  <div id="page-ore" class="page">
+   192→    <div class="card">
+   193→      <div class="card-title">⏱️ Ore Mensili</div>
+   194→      <div id="oreMeseHeader" style="text-align:center;margin-bottom:12px;font-weight:700;font-size:15px"></div>
+   195→      <div id="oreList"></div>
+   196→    </div>
+   197→  </div>
+   198→
+   199→  <!-- IMPOSTAZIONI -->
+   200→  <div id="page-impostazioni" class="page">
+   201→    <div class="card">
+   202→      <div class="card-title">🔄 Variante Turnazione</div>
+   203→      <div class="info-box">
+   204→        <strong>Variante 1 (8 persone):</strong> A(2) + B(3) + C(3) + Jolly fisso
+   205→      </div>
+   206→      <div class="info-box">
+   207→        <strong>Variante 2 (10 persone):</strong> A(3) + B(3) + C(3) + Jolly — 1 riposo al giorno tra i 9, Jolly copre il turno mancante + 16:30-18:00
+   208→      </div>
+   209→      <div style="display:flex;flex-wrap:wrap;justify-content:center;margin-top:8px">
+   210→        <button class="variante-btn" id="btnVar1" onclick="setVariante(1)">8 persone + Jolly</button>
+   211→        <button class="variante-btn active" id="btnVar2" onclick="setVariante(2)">10 persone (9+Jolly)</button>
+   212→      </div>
+   213→    </div>
+   214→    <div class="card">
+   215→      <div class="card-title">📊 Monte Ore</div>
+   216→      <div class="setting-row">
+   217→        <span class="setting-label">Ore mensili target</span>
+   218→        <input type="number" class="setting-input" id="oreTarget" value="138" onchange="salvaImpostazioni()">
+   219→      </div>
+   220→      <div class="setting-row">
+   221→        <span class="setting-label">Ore per turno</span>
+   222→        <input type="number" class="setting-input" id="oreTurno" value="7.5" step="0.5" onchange="salvaImpostazioni()">
+   223→      </div>
+   224→      <div class="setting-row">
+   225→        <span class="setting-label">Giorni riposo/mese</span>
+   226→        <input type="number" class="setting-input" id="giorniRiposo" value="2" min="1" max="5" onchange="salvaImpostazioni()">
+   227→      </div>
+   228→    </div>
+   229→    <div class="card">
+   230→      <div class="card-title">🔄 Rotazione</div>
+   231→      <div class="info-box">
+   232→        <strong>Variante 10 persone:</strong> Ogni settimana i gruppi cambiano fascia (A→B, B→C, C→A). Il riposo ruota globalmente: A1→A2→A3→B1→B2→B3→C1→C2→C3→repeat. Il Jolly copre il turno di chi riposa + 16:30-18:00 fisso.<br>
+   233→        <strong>Variante 8 persone:</strong> Stessa rotazione fasce, riposo ruota dentro ogni gruppo con 3 persone. Jolly solo fisso 16:30-18:00.
+   234→      </div>
+   235→      <div class="setting-row">
+   236→        <span class="setting-label">Inizio rotazione</span>
+   237→        <input type="date" class="setting-input" style="width:140px" id="inizioRotazione" onchange="salvaImpostazioni()">
+   238→      </div>
+   239→    </div>
+   240→    <div class="card">
+   241→      <div class="card-title">🛌 Regole Riposo</div>
+   242→      <div class="warn-box">
+   243→        ⚠️ Variante 10 persone: 1 riposo al giorno tra i 9, che ruota A1→A2→A3→B1→B2→B3→C1→C2→C3.<br>
+   244→        ⚠️ Chi riposa, riposa e basta.<br>
+   245→        ⚠️ Il Jolly (10ª persona) copre il turno di chi riposa + fa 16:30-18:00 fisso (9h/giorno).
+   246→      </div>
+   247→    </div>
+   248→    <div class="card">
+   249→      <div class="card-title">💾 Dati</div>
+   250→      <button class="btn-excel" style="background:var(--danger);box-shadow:0 4px 12px rgba(239,68,68,0.3)" onclick="resetDati()">🗑️ Reset Tutto</button>
+   251→    </div>
+   252→  </div>
+   253→
+   254→</div>
+   255→
+   256→<!-- MODAL -->
+   257→<div class="modal-overlay" id="modalGiorno">
+   258→  <div class="modal">
+   259→    <button class="modal-close" onclick="chiudiModal()">&times;</button>
+   260→    <h3 id="modalGiornoTitolo"></h3>
+   261→    <div id="modalGiornoContent"></div>
+   262→  </div>
+   263→</div>
+   264→
+   265→<script>
+   266→// ========================
+   267→// CONFIGURAZIONE BASE
+   268→// ========================
+   269→const ORARI_ENTRATA = ['7:30','8:00','8:30','9:00','9:30'];
+   270→const ORARI_USCITA = ['15:00','15:30','16:00','16:30','17:00','17:30','18:00'];
+   271→
+   272→// Turno = 7h30min, entrata→uscita calcolata automaticamente
+   273→function calcolaUscita(entrata) {
+   274→  const map = {'7:30':'15:00','8:00':'15:30','8:30':'16:00','9:00':'16:30','9:30':'17:00','10:00':'17:30'};
+   275→  return map[entrata] || '17:00';
+   276→}
+   277→
+   278→const TURNI_COLORS = {
+   279→  '7:30':{bg:'#fef3c7',tx:'#92400e'},
+   280→  '8:00':{bg:'#dbeafe',tx:'#1e40af'},
+   281→  '8:30':{bg:'#d1fae5',tx:'#065f46'},
+   282→  '9:00':{bg:'#ede9fe',tx:'#5b21b6'},
+   283→  '9:30':{bg:'#fce7f3',tx:'#9d174d'},
+   284→  'fisso':{bg:'#fed7aa',tx:'#9a3412'},
+   285→  'jolly':{bg:'#fed7aa',tx:'#9a3412'},
+   286→  'riposo':{bg:'#fee2e2',tx:'#991b1b'},
+   287→
+   288→};
+   289→
+   290→// Colori gruppo per i pallini
+   291→const GRUPPO_COLORS = {
+   292→  A: '#ef4444',
+   293→  B: '#3b82f6',
+   294→  C: '#10b981',
+   295→  J: '#f59e0b'
+   296→};
+   297→
+   298→const GIORNI_IT = ['Lun','Mar','Mer','Gio','Ven','Sab','Dom'];
+   299→const GIORNI_FULL = ['Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato','Domenica'];
+   300→const MESI_IT = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+   301→
+   302→// ========================
+   303→// SCHEMA TURNAZIONE
+   304→// ========================
+   305→
+   306→const SCHEMA_8 = {
+   307→  A: {persone:['A1','A2'], fascia:'A'},
+   308→  B: {persone:['B1','B2','B3'], fascia:'B'},
+   309→  C: {persone:['C1','C2','C3'], fascia:'C'},
+   310→  J: {persone:['Jolly'], fascia:'J'}
+   311→};
+   312→
+   313→const SCHEMA_9 = {
+   314→  A: {persone:['A1','A2','A3'], fascia:'A'},
+   315→  B: {persone:['B1','B2','B3'], fascia:'B'},
+   316→  C: {persone:['C1','C2','C3'], fascia:'C'},
+   317→  J: {persone:['Jolly'], fascia:'J'}
+   318→};
+   319→
+   320→// Assegnazione turni per fascia e posizione
+   321→const FASCE_TURNI = {
+   322→  A: ['7:30','9:00'],
+   323→  B: ['8:00','9:30'],
+   324→  C: ['8:30','9:30']
+   325→};
+   326→
+   327→// Rotazione: le fasce cambiano ogni settimana
+   328→const ROTAZIONE_ABC = [
+   329→  {A:'A', B:'B', C:'C'},
+   330→  {A:'B', B:'C', C:'A'},
+   331→  {A:'C', B:'A', C:'B'}
+   332→];
+   333→
+   334→// ========================
+   335→// STATO
+   336→// ========================
+   337→let stato = {
+   338→  variante: 2,
+   339→  oreTarget: 138,
+   340→  oreTurno: 7.5,
+   341→  giorniRiposo: 2,
+   342→  inizioRotazione: getMonday(new Date()).toISOString().split('T')[0],
+   343→  assegnazioni: {},
+   344→  rotazioneOverride: {}
+   345→};
+   346→
+   347→let meseCorrente = new Date();
+   348→let settimanaCorrente = getMonday(new Date());
+   349→
+   350→// ========================
+   351→// UTILITY
+   352→// ========================
+   353→function getMonday(d) {
+   354→  d = new Date(d);
+   355→  const day = d.getDay();
+   356→  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+   357→  d.setDate(diff);
+   358→  d.setHours(0,0,0,0);
+   359→  return d;
+   360→}
+   361→
+   362→function dateKey(d) {
+   363→  const y = d.getFullYear();
+   364→  const m = String(d.getMonth()+1).padStart(2,'0');
+   365→  const dd = String(d.getDate()).padStart(2,'0');
+   366→  return `${y}-${m}-${dd}`;
+   367→}
+   368→
+   369→function isSameDay(a,b) {
+   370→  return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+   371→}
+   372→
+   373→function getWeekNumber(d) {
+   374→  const onejan = new Date(d.getFullYear(),0,1);
+   375→  return Math.ceil((((d - onejan)/86400000)+onejan.getDay()+1)/7);
+   376→}
+   377→
+   378→function getGruppi() {
+   379→  return stato.variante === 1 ? SCHEMA_8 : SCHEMA_9;
+   380→}
+   381→
+   382→function getGruppoPersona(persona) {
+   383→  const gruppi = getGruppi();
+   384→  for (const [gid, g] of Object.entries(gruppi)) {
+   385→    if (g.persone.includes(persona)) return gid;
+   386→  }
+   387→  return null;
+   388→}
+   389→
+   390→function getFasciaForWeek(weekIndex, gruppoId) {
+   391→  // Gestisce anche weekIndex negativi correttamente
+   392→  let rotIdx = ((weekIndex % 3) + 3) % 3;
+   393→  return ROTAZIONE_ABC[rotIdx][gruppoId] || gruppoId;
+   394→}
+   395→
+   396→// ========================
+   397→// SALVATAGGIO
+   398→// ========================
+   399→function salvaStato() { localStorage.setItem('turnazioni_stato_v4', JSON.stringify(stato)); }
+   400→
+   401→function caricaStato() {
+   402→  const saved = localStorage.getItem('turnazioni_stato_v4');
+   403→  if (saved) { try { stato = {...stato, ...JSON.parse(saved)}; } catch(e) {} }
+   404→}
+   405→
+   406→function salvaImpostazioni() {
+   407→  stato.oreTarget = parseFloat(document.getElementById('oreTarget').value)||138;
+   408→  stato.oreTurno = parseFloat(document.getElementById('oreTurno').value)||7.5;
+   409→  stato.giorniRiposo = parseInt(document.getElementById('giorniRiposo').value)||2;
+   410→  stato.inizioRotazione = document.getElementById('inizioRotazione').value;
+   411→  generaAssegnazioni();
+   412→  salvaStato();
+   413→  renderAll();
+   414→}
+   415→
+   416→function resetDati() {
+   417→  if (confirm('Sei sicuro? Verranno cancellati tutti i dati.')) {
+   418→    localStorage.removeItem('turnazioni_stato_v4');
+   419→    location.reload();
+   420→  }
+   421→}
+   422→
+   423→function setVariante(v) {
+   424→  stato.variante = v;
+   425→  document.getElementById('btnVar1').classList.toggle('active', v===1);
+   426→  document.getElementById('btnVar2').classList.toggle('active', v===2);
+   427→  generaAssegnazioni();
+   428→  salvaStato();
+   429→  renderAll();
+   430→}
+   431→
+   432→// ========================
+   433→// GENERAZIONE TURNAZIONE
+   434→// ========================
+   435→function generaAssegnazioni() {
+   436→  const assegnazioni = {};
+   437→  const start = new Date(stato.inizioRotazione + 'T00:00:00');
+   438→  const today = new Date();
+   439→  const startMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+   440→  const endMonth = new Date(today.getFullYear(), today.getMonth() + 6, 0);
+   441→  
+   442→  const gruppi = getGruppi();
+   443→  const isVar9 = stato.variante === 2;
+   444→  
+   445→  // Variante 2: lista piatta di tutte le 9 persone per la rotazione globale
+   446→  let rotazioneGlobale = [];
+   447→  if (isVar9) {
+   448→    Object.entries(gruppi).forEach(([gid, gruppo]) => {
+   449→      if (gid === 'J') return;
+   450→      gruppo.persone.forEach(p => rotazioneGlobale.push({persona: p, gruppo: gid}));
+   451→    });
+   452→    // rotazioneGlobale = [{persona:'A1',gruppo:'A'}, {persona:'A2',gruppo:'A'}, {persona:'A3',gruppo:'A'},
+   453→    //                      {persona:'B1',gruppo:'B'}, {persona:'B2',gruppo:'B'}, {persona:'B3',gruppo:'B'},
+   454→    //                      {persona:'C1',gruppo:'C'}, {persona:'C2',gruppo:'C'}, {persona:'C3',gruppo:'C'}]
+   455→  }
+   456→  
+   457→  let currentMonday = getMonday(startMonth);
+   458→  const startMonday = getMonday(start);
+   459→  const weeksDiffFromStart = Math.round((currentMonday - startMonday) / (7 * 86400000));
+   460→  let weekIndex = weeksDiffFromStart;
+   461→  
+   462→  while (currentMonday <= endMonth) {
+   463→    for (let g = 0; g < 5; g++) { // Lun-Ven
+   464→      const day = new Date(currentMonday);
+   465→      day.setDate(day.getDate() + g);
+   466→      const dk = dateKey(day);
+   467→      
+   468→      assegnazioni[dk] = {};
+   469→      const personeRiposoOggi = [];
+   470→      
+   471→      // Indice globale del giorno lavorativo (deterministico, non dipende da quando si genera)
+   472→      const globalDayIdx = weekIndex * 5 + g;
+   473→      
+   474→      if (isVar9) {
+   475→        // ================================================================
+   476→        // VARIANTE 2: 10 persone (3+3+3 + Jolly)
+   477→        // 1 persona a riposo al giorno tra i 9, rotazione globale:
+   478→        // A1 → A2 → A3 → B1 → B2 → B3 → C1 → C2 → C3 → repeat
+   479→        // Chi riposa, riposa e basta
+   480→        // Il Jolly (10ª persona): fisso 16:30-18:00 + copre il turno di chi riposa
+   481→        // ================================================================
+   482→        const riposoIdx = ((globalDayIdx % 9) + 9) % 9;
+   483→        const chiRiposa = rotazioneGlobale[riposoIdx];
+   484→        
+   485→        // Trova la fascia del gruppo dove manca la persona, per il Jolly
+   486→        const fasciaRiposo = getFasciaForWeek(weekIndex, chiRiposa.gruppo);
+   487→        const turniFasciaRiposo = FASCE_TURNI[fasciaRiposo];
+   488→        // Il Jolly copre uno dei 2 ingressi del gruppo dove manca la persona
+   489→        const jollyIngresso = turniFasciaRiposo[0]; // primo ingresso
+   490→        
+   491→        Object.entries(gruppi).forEach(([gid, gruppo]) => {
+   492→          if (gid === 'J') {
+   493→            // Jolly: fisso 16:30-18:00 + copertura del turno di chi riposa
+   494→            assegnazioni[dk]['Jolly'] = {
+   495→              turno: 'jolly', entrata: jollyIngresso, uscita: calcolaUscita(jollyIngresso),
+   496→              ore: stato.oreTurno, stato: 'lavoro', gruppo: 'J',
+   497→              fisso: '16:30-18:00',
+   498→              copre: chiRiposa.persona,
+   499→              copreGruppo: chiRiposa.gruppo,
+   500→              oreTotali: stato.oreTurno + 1.5 // turno + fisso serale
+   501→            };
+   502→            return;
+   503→          }
+   504→          
+   505→          const fascia = getFasciaForWeek(weekIndex, gid);
+   506→          const turniFascia = FASCE_TURNI[fascia]; // 2 ingressi
+   507→          
+   508→          let workingCount = 0;
+   509→          gruppo.persone.forEach((persona) => {
+   510→            if (persona === chiRiposa.persona && gid === chiRiposa.gruppo) {
+   511→              // Questa persona riposa oggi
+   512→              assegnazioni[dk][persona] = {
+   513→                turno: 'riposo', entrata: null, uscita: null,
+   514→                ore: 0, stato: 'riposo', gruppo: gid
+   515→              };
+   516→              personeRiposoOggi.push(persona);
+   517→            } else {
+   518→              // Lavora: assegna ingresso dalla fascia
+   519→              const entrataIdx = workingCount % turniFascia.length;
+   520→              const entrata = turniFascia[entrataIdx];
+   521→              const uscita = calcolaUscita(entrata);
+   522→              assegnazioni[dk][persona] = {
+   523→                turno: entrata, entrata: entrata, uscita: uscita,
+   524→                ore: stato.oreTurno, stato: 'lavoro', gruppo: gid
+   525→              };
+   526→              workingCount++;
+   527→            }
+   528→          });
+   529→        });
+   530→        
+   531→      } else {
+   532→        // ================================================================
+   533→        // VARIANTE 1: 8 persone (2+3+3) + Jolly
+   534→        // Il riposo ruota dentro ogni gruppo che ha piu persone che ingressi
+   535→        // ================================================================
+   536→        Object.entries(gruppi).forEach(([gid, gruppo]) => {
+   537→          if (gid === 'J') {
+   538→            // Jolly: fisso 16:30-18:00 + sostituzioni
+   539→            assegnazioni[dk]['Jolly'] = {
+   540→              turno: 'fisso', entrata: '16:30', uscita: '18:00',
+   541→              ore: 1.5, stato: 'lavoro', gruppo: 'J'
+   542→            };
+   543→            return;
+   544→          }
+   545→          
+   546→          const fascia = getFasciaForWeek(weekIndex, gid);
+   547→          const turniFascia = FASCE_TURNI[fascia];
+   548→          const numPersone = gruppo.persone.length;
+   549→          const numIngressi = turniFascia.length;
+   550→          const haRiposo = numPersone > numIngressi;
+   551→          
+   552→          if (haRiposo) {
+   553→            const riposoIdx = ((globalDayIdx % numPersone) + numPersone) % numPersone;
+   554→            let turnoAssegnato = 0;
+   555→            gruppo.persone.forEach((persona, idx) => {
+   556→              if (idx === riposoIdx) {
+   557→                assegnazioni[dk][persona] = {
+   558→                  turno: 'riposo', entrata: null, uscita: null,
+   559→                  ore: 0, stato: 'riposo', gruppo: gid
+   560→                };
+   561→                personeRiposoOggi.push(persona);
+   562→              } else {
+   563→                const entrata = turniFascia[turnoAssegnato];
+   564→                const uscita = calcolaUscita(entrata);
+   565→                assegnazioni[dk][persona] = {
+   566→                  turno: entrata, entrata: entrata, uscita: uscita,
+   567→                  ore: stato.oreTurno, stato: 'lavoro', gruppo: gid
+   568→                };
+   569→                turnoAssegnato++;
+   570→              }
+   571→            });
+   572→          } else {
+   573→            gruppo.persone.forEach((persona, idx) => {
+   574→              const entrata = turniFascia[idx];
+   575→              const uscita = calcolaUscita(entrata);
+   576→              assegnazioni[dk][persona] = {
+   577→                turno: entrata, entrata: entrata, uscita: uscita,
+   578→                ore: stato.oreTurno, stato: 'lavoro', gruppo: gid
+   579→              };
+   580→            });
+   581→          }
+   582→        });
+   583→        
+   584→        // Jolly: se ci sono persone a riposo, il Jolly copre i loro turni
+   585→        if (gruppi.J && personeRiposoOggi.length > 0) {
+   586→          const sostituzioni = [];
+   587→          personeRiposoOggi.forEach(p => {
+   588→            const gid = getGruppoPersona(p);
+   589→            if (gid && gid !== 'J') {
+   590→              const fascia = getFasciaForWeek(weekIndex, gid);
+   591→              const turniFascia = FASCE_TURNI[fascia];
+   592→              const pIdx = gruppi[gid].persone.indexOf(p);
+   593→              let turnoIdx = 0;
+   594→              const riposoIdxGruppo = ((globalDayIdx % gruppi[gid].persone.length) + gruppi[gid].persone.length) % gruppi[gid].persone.length;
+   595→              for (let i = 0; i < pIdx; i++) {
+   596→                if (i !== riposoIdxGruppo) turnoIdx++;
+   597→              }
+   598→              if (turnoIdx < turniFascia.length) {
+   599→                sostituzioni.push({
+   600→                  persona: p,
+   601→                  entrata: turniFascia[turnoIdx],
+   602→                  uscita: calcolaUscita(turniFascia[turnoIdx])
+   603→                });
+   604→              }
+   605→            }
+   606→          });
+   607→          assegnazioni[dk]['Jolly'].sostituzioni = sostituzioni;
+   608→          if (sostituzioni.length > 0) {
+   609→            assegnazioni[dk]['Jolly'].oreTotali = 1.5 + sostituzioni.length * stato.oreTurno;
+   610→          }
+   611→        }
+   612→      }
+   613→    }
+   614→    
+   615→    weekIndex++;
+   616→    currentMonday.setDate(currentMonday.getDate() + 7);
+   617→  }
+   618→  
+   619→  stato.assegnazioni = assegnazioni;
+   620→  salvaStato();
+   621→}
+   622→
+   623→// ========================
+   624→// RENDER
+   625→// ========================
+   626→function renderAll() {
+   627→  updateHeaderSub();
+   628→  renderCalendario();
+   629→  renderSettimana();
+   630→  renderCoperture();
+   631→  renderOre();
+   632→  renderLegenda();
+   633→}
+   634→
+   635→function updateHeaderSub() {
+   636→  const el = document.getElementById('headerSub');
+   637→  if (!el) return;
+   638→  if (stato.variante === 2) {
+   639→    el.textContent = '10 persone · 1 riposo/giorno · Jolly copre turno + 16:30-18:00';
+   640→  } else {
+   641→    el.textContent = '8 persone + Jolly · Rotazione per gruppo';
+   642→  }
+   643→}
+   644→
+   645→// TABS
+   646→document.querySelectorAll('.tab').forEach(tab => {
+   647→  tab.addEventListener('click', () => {
+   648→    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+   649→    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+   650→    tab.classList.add('active');
+   651→    document.getElementById('page-' + tab.dataset.page).classList.add('active');
+   652→  });
+   653→});
+   654→
+   655→function renderLegenda() {
+   656→  const el = document.getElementById('legenda');
+   657→  let html = '';
+   658→  ORARI_ENTRATA.forEach(t => {
+   659→    const c = TURNI_COLORS[t];
+   660→    html += `<div class="legenda-item"><div class="legenda-dot" style="background:${c.bg}"></div>${t}</div>`;
+   661→  });
+   662→  html += `<div class="legenda-item"><div class="legenda-dot" style="background:${TURNI_COLORS.fisso.bg}"></div>Fisso</div>`;
+   663→  html += `<div class="legenda-item"><div class="legenda-dot" style="background:${TURNI_COLORS.jolly.bg}"></div>Jolly</div>`;
+   664→  html += `<div class="legenda-item"><div class="legenda-dot" style="background:${TURNI_COLORS.riposo.bg}"></div>Riposo</div>`;
+   665→
+   666→  el.innerHTML = html;
+   667→}
+   668→
+   669→// ========================
+   670→// CALENDARIO - VISUALIZZAZIONE MIGLIORATA
+   671→// ========================
+   672→function renderCalendario() {
+   673→  const year = meseCorrente.getFullYear();
+   674→  const month = meseCorrente.getMonth();
+   675→  document.getElementById('calMeseTitolo').textContent = MESI_IT[month] + ' ' + year;
+   676→  
+   677→  const firstDay = new Date(year, month, 1);
+   678→  const lastDay = new Date(year, month + 1, 0);
+   679→  let startDow = firstDay.getDay() - 1;
+   680→  if (startDow < 0) startDow = 6;
+   681→  const today = new Date();
+   682→  const gruppi = getGruppi();
+   683→  
+   684→  let html = '<table class="cal-table"><thead><tr>';
+   685→  GIORNI_IT.forEach(g => html += `<th>${g}</th>`);
+   686→  html += '</tr></thead><tbody>';
+   687→  
+   688→  let dayNum = 1, started = false;
+   689→  for (let row = 0; row < 6; row++) {
+   690→    if (dayNum > lastDay.getDate()) break;
+   691→    html += '<tr>';
+   692→    for (let col = 0; col < 7; col++) {
+   693→      if (!started && col < startDow) { html += '<td></td>'; }
+   694→      else if (dayNum > lastDay.getDate()) { html += '<td></td>'; }
+   695→      else {
+   696→        started = true;
+   697→        const d = new Date(year, month, dayNum);
+   698→        const dk = dateKey(d);
+   699→        const isToday = isSameDay(d, today);
+   700→        const isWeekend = d.getDay() === 0 || d.getDay() === 6;
+   701→        
+   702→        let cls = '';
+   703→        if (isToday) cls += ' today';
+   704→        if (isWeekend) cls += ' weekend';
+   705→        
+   706→        html += `<td class="${cls}" onclick="mostraGiorno('${dk}')">`;
+   707→        html += `<div class="day-num">${dayNum}</div>`;
+   708→        
+   709→        if (!isWeekend) {
+   710→          const ass = stato.assegnazioni[dk] || {};
+   711→          const hasData = Object.keys(ass).length > 0;
+   712→          
+   713→          if (hasData) {
+   714→            // Mostra ogni persona con il proprio turno
+   715→            Object.entries(gruppi).forEach(([gid, gruppo], grpIdx) => {
+   716→              if (grpIdx > 0) html += '<div class="cal-grp-sep"></div>';
+   717→              gruppo.persone.forEach(persona => {
+   718→                const info = ass[persona];
+   719→                if (!info) return;
+   720→                
+   721→                const dotColor = GRUPPO_COLORS[gid] || '#94a3b8';
+   722→                html += '<div class="cal-person">';
+   723→                html += `<span class="cal-person-dot" style="background:${dotColor}"></span>`;
+   724→                
+   725→                // Nome abbreviato (solo numero per A1→1, B2→2, Jolly→J)
+   726→                const shortName = persona === 'Jolly' ? 'J' : persona.replace(/^[ABC]/, '');
+   727→                html += `<span class="cal-person-name" style="color:${dotColor}">${shortName}</span>`;
+   728→                
+   729→                if (info.stato === 'lavoro' && info.entrata) {
+   730→                  if (info.turno === 'jolly') {
+   731→                    const tc = TURNI_COLORS[info.entrata] || TURNI_COLORS.fisso;
+   732→                    html += `<span class="cal-person-time" style="background:${TURNI_COLORS.fisso.bg};color:${TURNI_COLORS.fisso.tx}">${info.entrata}+J</span>`;
+   733→                  } else {
+   734→                    const tc = TURNI_COLORS[info.entrata] || TURNI_COLORS.fisso;
+   735→                    html += `<span class="cal-person-time" style="background:${tc.bg};color:${tc.tx}">${info.entrata}</span>`;
+   736→                  }
+   737→                } else if (info.stato === 'riposo') {
+   738→                  html += `<span class="cal-person-riposo">Rip</span>`;
+   739→                }
+   740→                
+   741→                html += '</div>';
+   742→              });
+   743→            });
+   744→          } else {
+   745→            // Nessun dato per questo giorno
+   746→            html += '<div style="font-size:8px;color:#94a3b8;padding:4px 0">—</div>';
+   747→          }
+   748→        }
+   749→        
+   750→        html += '</td>';
+   751→        dayNum++;
+   752→      }
+   753→    }
+   754→    html += '</tr>';
+   755→  }
+   756→  html += '</tbody></table>';
+   757→  document.getElementById('calendarioGrid').innerHTML = html;
+   758→}
+   759→
+   760→function cambiaMese(delta) { meseCorrente.setMonth(meseCorrente.getMonth() + delta); renderCalendario(); renderOre(); }
+   761→function vaiOggi() { meseCorrente = new Date(); renderCalendario(); renderOre(); }
+   762→
+   763→// MODAL GIORNO
+   764→function mostraGiorno(dk) {
+   765→  const d = new Date(dk + 'T00:00:00');
+   766→  const dayIdx = d.getDay() === 0 ? 6 : d.getDay() - 1;
+   767→  document.getElementById('modalGiornoTitolo').textContent = `${GIORNI_FULL[dayIdx]} ${d.getDate()} ${MESI_IT[d.getMonth()]}`;
+   768→  
+   769→  const ass = stato.assegnazioni[dk] || {};
+   770→  const gruppi = getGruppi();
+   771→  let html = '';
+   772→  
+   773→  // Tabella dettagliata per gruppo
+   774→  Object.entries(gruppi).forEach(([gid, gruppo]) => {
+   775→    html += `<div style="margin-bottom:12px">`;
+   776→    html += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">`;
+   777→    html += `<span class="gruppo-badge gruppo-${gid}">${gid}</span>`;
+   778→    html += `<span style="font-weight:700;font-size:14px">Gruppo ${gid}</span>`;
+   779→    html += `</div>`;
+   780→    
+   781→    gruppo.persone.forEach(persona => {
+   782→      const info = ass[persona];
+   783→      if (!info) return;
+   784→      
+   785→      let chip = '';
+   786→      let chipClass = '';
+   787→      if (info.stato === 'lavoro' && info.entrata) {
+   788→        if (info.turno === 'jolly' || info.turno === 'fisso') {
+   789→          const cls = 't-' + info.entrata.replace(':','');
+   790→          chip = `${info.entrata} - ${info.uscita} + ${info.fisso || '16:30-18:00'}`;
+   791→          chipClass = cls;
+   792→        } else {
+   793→          const cls = 't-' + info.entrata.replace(':','');
+   794→          chip = `${info.entrata} - ${info.uscita}`;
+   795→          chipClass = cls;
+   796→        }
+   797→      } else if (info.stato === 'riposo') {
+   798→        chip = '🔴 Riposo';
+   799→        chipClass = 't-riposo';
+   800→      }
+   801→      
+   802→      html += `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;margin-bottom:3px;background:#f8fafc;border-radius:6px">`;
+   803→      html += `<span style="font-weight:600;font-size:13px;min-width:45px;color:${GRUPPO_COLORS[gid] || '#333'}">${persona}</span>`;
+   804→      html += `<span class="turno-chip ${chipClass}">${chip}</span>`;
+   805→      if (info.copre) {
+   806→        html += `<span style="font-size:11px;color:var(--accent)">↔ copre ${info.copre}</span>`;
+   807→      } else if (info.sostituzioni && info.sostituzioni.length > 0) {
+   808→        html += `<span style="font-size:11px;color:var(--text-light)">+sost. ${info.sostituzioni.map(s=>s.persona).join(',')}</span>`;
+   809→      }
+   810→      html += `</div>`;
+   811→    });
+   812→    html += `</div>`;
+   813→  });
+   814→  
+   815→  // Riepilogo copertura
+   816→  html += `<div style="margin-top:12px;padding:10px;background:#f0fdf4;border-radius:8px;font-size:12px">`;
+   817→  html += `<strong>Copertura oraria:</strong><br>`;
+   818→  
+   819→  const fasce = ['7:30','8:00','8:30','9:00','9:30','10:00','11:00','12:00','13:00','14:00','15:00','15:30','16:00','16:30','17:00','17:30','18:00'];
+   820→  fasce.forEach(fascia => {
+   821→    let count = 0;
+   822→    Object.values(ass).forEach(info => {
+   823→      if (info.stato === 'lavoro' && info.entrata && info.uscita) {
+   824→        const e = tempoAMinuti(info.entrata);
+   825→        const u = tempoAMinuti(info.uscita);
+   826→        const f = tempoAMinuti(fascia);
+   827→        if (f >= e && f < u) count++;
+   828→      }
+   829→      // Il Jolly copre anche 16:30-18:00 (fisso serale)
+   830→      if (info.stato === 'lavoro' && info.turno === 'jolly') {
+   831→        const f = tempoAMinuti(fascia);
+   832→        if (f >= 990 && f < 1080) count++; // 16:30=990, 18:00=1080
+   833→      }
+   834→    });
+   835→    if (count > 0) {
+   836→      const col = count >= 6 ? '#10b981' : count >= 4 ? '#f59e0b' : '#ef4444';
+   837→      html += `<span style="display:inline-block;margin:2px;padding:2px 6px;border-radius:4px;background:${col}20;color:${col};font-size:10px;font-weight:600">${fascia}: ${count}p</span>`;
+   838→    }
+   839→  });
+   840→  html += `</div>`;
+   841→  
+   842→  document.getElementById('modalGiornoContent').innerHTML = html;
+   843→  document.getElementById('modalGiorno').classList.add('show');
+   844→}
+   845→
+   846→function chiudiModal() { document.getElementById('modalGiorno').classList.remove('show'); }
+   847→
+   848→function tempoAMinuti(t) {
+   849→  if (!t) return 0;
+   850→  const [h,m] = t.split(':').map(Number);
+   851→  return h * 60 + (m || 0);
+   852→}
+   853→
+   854→// SETTIMANA
+   855→function renderSettimana() {
+   856→  const monday = new Date(settimanaCorrente);
+   857→  const sunday = new Date(monday);
+   858→  sunday.setDate(sunday.getDate() + 6);
+   859→  const wn = getWeekNumber(monday);
+   860→  document.getElementById('settTitolo').textContent = `Settimana ${wn} — ${monday.getDate()}/${monday.getMonth()+1} - ${sunday.getDate()}/${sunday.getMonth()+1}`;
+   861→  
+   862→  let html = '';
+   863→  const gruppi = getGruppi();
+   864→  
+   865→  for (let g = 0; g < 5; g++) {
+   866→    const d = new Date(monday);
+   867→    d.setDate(d.getDate() + g);
+   868→    const dk = dateKey(d);
+   869→    const ass = stato.assegnazioni[dk] || {};
+   870→    const dayName = GIORNI_IT[g];
+   871→    
+   872→    html += `<div class="settimana-card">`;
+   873→    html += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">`;
+   874→    html += `<span style="font-weight:700;font-size:14px">${dayName} ${d.getDate()}</span>`;
+   875→    
+   876→    // Conta presenti
+   877→    const totalePersone = Object.values(gruppi).reduce((s,g) => s + g.persone.length, 0);
+   878→    let presenti = 0;
+   879→    Object.values(ass).forEach(info => { if (info.stato === 'lavoro') presenti++; });
+   880→    html += `<span style="font-size:12px;font-weight:600;color:${presenti>=6?'var(--success)':'var(--danger)'}">${presenti}/${totalePersone} presenti</span>`;
+   881→    html += `</div>`;
+   882→    
+   883→    // Tabella persone
+   884→    html += '<table style="width:100%;border-collapse:collapse;font-size:12px">';
+   885→    Object.entries(gruppi).forEach(([gid, gruppo]) => {
+   886→      gruppo.persone.forEach(persona => {
+   887→        const info = ass[persona];
+   888→        if (!info) return;
+   889→        
+   890→        let label = '', bgStyle = '';
+   891→        if (info.stato === 'lavoro' && info.entrata) {
+   892→          if (info.turno === 'jolly') {
+   893→            label = `${info.entrata} - ${info.uscita} + 16:30-18:00`;
+   894→            bgStyle = `background:${TURNI_COLORS.fisso.bg};color:${TURNI_COLORS.fisso.tx}`;
+   895→          } else if (info.turno === 'fisso') {
+   896→            label = `Fisso ${info.entrata}-${info.uscita}`;
+   897→            bgStyle = `background:${TURNI_COLORS.fisso.bg};color:${TURNI_COLORS.fisso.tx}`;
+   898→          } else {
+   899→            label = `${info.entrata} - ${info.uscita}`;
+   900→            const c = TURNI_COLORS[info.entrata] || TURNI_COLORS.fisso;
+   901→            bgStyle = `background:${c.bg};color:${c.tx}`;
+   902→          }
+   903→        } else if (info.stato === 'riposo') {
+   904→          label = '🔴 Riposo';
+   905→          bgStyle = `background:${TURNI_COLORS.riposo.bg};color:${TURNI_COLORS.riposo.tx}`;
+   906→        }
+   907→        
+   908→        html += `<tr style="${bgStyle}">`;
+   909→        html += `<td style="padding:3px 6px;font-weight:700;min-width:40px">${persona}</td>`;
+   910→        html += `<td style="padding:3px 6px">${label}</td>`;
+   911→        if (info.copre) {
+   912→          html += `<td style="padding:3px 6px;font-size:10px;color:var(--accent)">↔ copre ${info.copre}</td>`;
+   913→        } else if (info.sostituzioni && info.sostituzioni.length > 0) {
+   914→          html += `<td style="padding:3px 6px;font-size:10px">+${info.sostituzioni.map(s=>s.persona).join(',')}</td>`;
+   915→        } else {
+   916→          html += `<td></td>`;
+   917→        }
+   918→        html += `</tr>`;
+   919→      });
+   920→    });
+   921→    html += '</table></div>';
+   922→  }
+   923→  
+   924→  document.getElementById('settimanaView').innerHTML = html;
+   925→}
+   926→
+   927→function cambiaSettimana(delta) { settimanaCorrente.setDate(settimanaCorrente.getDate() + delta * 7); renderSettimana(); }
+   928→
+   929→// COPERTURE
+   930→function renderCoperture() {
+   931→  const dk = dateKey(settimanaCorrente);
+   932→  const ass = stato.assegnazioni[dk] || {};
+   933→  
+   934→  let html = '<h4 style="margin-bottom:8px">Copertura per fascia oraria</h4>';
+   935→  html += '<div class="info-box"><strong>Obiettivo:</strong> 6 persone sempre presenti dalle 9:30 alle 15:30</div>';
+   936→  
+   937→  const fasce = ['7:30','8:00','8:30','9:00','9:30','10:00','11:00','12:00','13:00','14:00','15:00','15:30','16:00','16:30','17:00','17:30','18:00'];
+   938→  const targetMap = {
+   939→    '7:30':1,'8:00':2,'8:30':3,'9:00':4,'9:30':6,'10:00':6,'11:00':6,'12:00':6,
+   940→    '13:00':6,'14:00':6,'15:00':6,'15:30':6,'16:00':5,'16:30':4,'17:00':3,'17:30':2,'18:00':1
+   941→  };
+   942→  
+   943→  fasce.forEach(fascia => {
+   944→    let count = 0;
+   945→    Object.values(ass).forEach(info => {
+   946→      if (info.stato === 'lavoro' && info.entrata && info.uscita) {
+   947→        const e = tempoAMinuti(info.entrata);
+   948→        const u = tempoAMinuti(info.uscita);
+   949→        const f = tempoAMinuti(fascia);
+   950→        if (f >= e && f < u) count++;
+   951→      }
+   952→    });
+   953→    
+   954→    const target = targetMap[fascia] || 6;
+   955→    const pct = Math.min(100, Math.round((count / target) * 100));
+   956→    const col = count >= target ? '#10b981' : count >= target - 1 ? '#f59e0b' : '#ef4444';
+   957→    
+   958→    html += `<div class="copertura-row">`;
+   959→    html += `<span style="min-width:45px;font-weight:600;font-size:11px">${fascia}</span>`;
+   960→    html += `<div class="copertura-bar"><div class="copertura-fill" style="width:${pct}%;background:${col}"></div>`;
+   961→    html += `<span class="copertura-label" style="color:${count>=target?'#fff':'#333'}">${count}/${target}</span></div>`;
+   962→    html += `</div>`;
+   963→  });
+   964→  
+   965→  document.getElementById('copertureView').innerHTML = html;
+   966→}
+   967→
+   968→// ORE
+   969→function renderOre() {
+   970→  const year = meseCorrente.getFullYear();
+   971→  const month = meseCorrente.getMonth();
+   972→  document.getElementById('oreMeseHeader').textContent = MESI_IT[month] + ' ' + year;
+   973→  
+   974→  const firstDay = new Date(year, month, 1);
+   975→  const lastDay = new Date(year, month + 1, 0);
+   976→  const gruppi = getGruppi();
+   977→  
+   978→  let html = '';
+   979→  
+   980→  Object.entries(gruppi).forEach(([gid, gruppo]) => {
+   981→    gruppo.persone.forEach(persona => {
+   982→      let oreLavorate = 0, giorniLavorati = 0, giorniRiposo = 0;
+   983→      
+   984→      for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
+   985→        const dk = dateKey(d);
+   986→        const dow = d.getDay();
+   987→        if (dow === 0 || dow === 6) continue;
+   988→        
+   989→        const ass = stato.assegnazioni[dk];
+   990→        if (!ass || !ass[persona]) continue;
+   991→        
+   992→        const info = ass[persona];
+   993→        if (info.stato === 'lavoro') {
+   994→          oreLavorate += info.ore || stato.oreTurno;
+   995→          giorniLavorati++;
+   996→        } else if (info.stato === 'riposo') {
+   997→          giorniRiposo++;
+   998→        }
+   999→      }
+  1000→      
+  1001→      if (gid === 'J') {
+  1002→        // Calcola le ore del Jolly includendo il fisso serale
+  1003→        let oreJolly = 0;
+  1004→        for (let d2 = new Date(firstDay); d2 <= lastDay; d2.setDate(d2.getDate() + 1)) {
+  1005→          const dk2 = dateKey(d2);
+  1006→          const dow2 = d2.getDay();
+  1007→          if (dow2 === 0 || dow2 === 6) continue;
+  1008→          const assJ = stato.assegnazioni[dk2];
+  1009→          if (assJ && assJ['Jolly']) {
+  1010→            const jInfo = assJ['Jolly'];
+  1011→            if (jInfo.oreTotali) oreJolly += jInfo.oreTotali;
+  1012→            else oreJolly += (jInfo.ore || stato.oreTurno) + 1.5;
+  1013→          }
+  1014→        }
+  1015→        const jollyDiff = oreJolly - stato.oreTarget;
+  1016→        const jollyPct = Math.min(100, Math.round((oreJolly / stato.oreTarget) * 100));
+  1017→        const jollyBarClass = jollyPct >= 95 ? 'ok' : jollyPct >= 80 ? 'warn' : 'danger';
+  1018→        html += `<div class="ore-row">`;
+  1019→        html += `<span class="gruppo-badge gruppo-J" style="width:28px;height:28px;font-size:11px">${persona}</span>`;
+  1020→        html += `<div style="flex:1">`;
+  1021→        html += `<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px">`;
+  1022→        html += `<span>Turno + 16:30-18:00</span>`;
+  1023→        html += `<span style="font-weight:700;color:${jollyBarClass==='ok'?'var(--success)':jollyBarClass==='warn'?'var(--accent)':'var(--danger)'}">${oreJolly.toFixed(1)}h ${jollyDiff>=0?'✓':'('+jollyDiff.toFixed(1)+'h)'}</span>`;
+  1024→        html += `</div>`;
+  1025→        html += `<div class="ore-progress"><div class="ore-bar ${jollyBarClass}" style="width:${jollyPct}%"></div></div>`;
+  1026→        html += `</div></div>`;
+  1027→      } else {
+  1028→        const pct = Math.min(100, Math.round((oreLavorate / stato.oreTarget) * 100));
+  1029→        const barClass = pct >= 95 ? 'ok' : pct >= 80 ? 'warn' : 'danger';
+  1030→        const diff = oreLavorate - stato.oreTarget;
+  1031→        
+  1032→        html += `<div class="ore-row">`;
+  1033→        html += `<span class="gruppo-badge gruppo-${gid}" style="width:28px;height:28px;font-size:11px">${persona}</span>`;
+  1034→        html += `<div style="flex:1">`;
+  1035→        html += `<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px">`;
+  1036→        html += `<span>${giorniLavorati}gg lav, ${giorniRiposo}gg rip</span>`;
+  1037→        html += `<span style="font-weight:700;color:${barClass==='ok'?'var(--success)':barClass==='warn'?'var(--accent)':'var(--danger)'}">${oreLavorate.toFixed(1)}h ${diff>=0?'✓':'('+diff.toFixed(1)+'h)'}</span>`;
+  1038→        html += `</div>`;
+  1039→        html += `<div class="ore-progress"><div class="ore-bar ${barClass}" style="width:${pct}%"></div></div>`;
+  1040→        html += `</div></div>`;
+  1041→      }
+  1042→    });
+  1043→  });
+  1044→  
+  1045→  document.getElementById('oreList').innerHTML = html;
+  1046→}
+  1047→
+  1048→// ========================
+  1049→// EXCEL EXPORT
+  1050→// ========================
+  1051→function exportExcel() {
+  1052→  const year = meseCorrente.getFullYear();
+  1053→  const month = meseCorrente.getMonth();
+  1054→  const firstDay = new Date(year, month, 1);
+  1055→  const lastDay = new Date(year, month + 1, 0);
+  1056→  const gruppi = getGruppi();
+  1057→  
+  1058→  // Intestazione
+  1059→  let csv = 'Data,Giorno,';
+  1060→  Object.entries(gruppi).forEach(([gid, gruppo]) => {
+  1061→    gruppo.persone.forEach(p => {
+  1062→      csv += p + ' Turno,' + p + ' Orario,' + p + ' Ore,';
+  1063→    });
+  1064→  });
+  1065→  csv += 'Presenti 9:30-15:30,\n';
+  1066→  
+  1067→  let totali = {};
+  1068→  Object.values(gruppi).forEach(g => g.persone.forEach(p => totali[p] = 0));
+  1069→  
+  1070→  for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
+  1071→    const dk = dateKey(d);
+  1072→    const dow = d.getDay();
+  1073→    if (dow === 0 || dow === 6) continue;
+  1074→    
+  1075→    const dayName = GIORNI_FULL[dow === 0 ? 6 : dow - 1];
+  1076→    const ass = stato.assegnazioni[dk] || {};
+  1077→    
+  1078→    csv += `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()},${dayName},`;
+  1079→    
+  1080→    Object.entries(gruppi).forEach(([gid, gruppo]) => {
+  1081→      gruppo.persone.forEach(persona => {
+  1082→        const info = ass[persona];
+  1083→        if (!info) { csv += '—,,0,'; return; }
+  1084→        
+  1085→        if (info.stato === 'lavoro') {
+  1086→          csv += `${info.entrata},${info.entrata}-${info.uscita},${info.ore},`;
+  1087→          totali[persona] += info.ore || stato.oreTurno;
+  1088→
+  1089→        } else {
+  1090→          csv += 'Riposo,,0,';
+  1091→        }
+  1092→      });
+  1093→    });
+  1094→    
+  1095→    // Conta presenti alle 9:30
+  1096→    let presenti930 = 0;
+  1097→    Object.values(ass).forEach(info => {
+  1098→      if (info.stato === 'lavoro' && info.entrata && info.uscita) {
+  1099→        const e = tempoAMinuti(info.entrata);
+  1100→        const u = tempoAMinuti(info.uscita);
+  1101→        if (570 >= e && 930 < u) presenti930++;
+  1102→      }
+  1103→    });
+  1104→    csv += presenti930 + ',\n';
+  1105→  }
+  1106→  
+  1107→  // Totali
+  1108→  csv += '\nTOTALI ORE,,';
+  1109→  Object.values(gruppi).forEach(g => {
+  1110→    g.persone.forEach(p => {
+  1111→      csv += ',,' + totali[p].toFixed(1) + ',';
+  1112→    });
+  1113→  });
+  1114→  csv += '\n';
+  1115→  
+  1116→  csv += 'TARGET,,';
+  1117→  Object.values(gruppi).forEach(g => {
+  1118→    g.persone.forEach(p => {
+  1119→      csv += ',,' + (g.id === 'J' ? '—' : stato.oreTarget) + ',';
+  1120→    });
+  1121→  });
+  1122→  
+  1123→  const blob = new Blob(['\ufeff' + csv], {type: 'text/csv;charset=utf-8;'});
+  1124→  const url = URL.createObjectURL(blob);
+  1125→  const a = document.createElement('a');
+  1126→  a.href = url;
+  1127→  a.download = `Turnazioni_${MESI_IT[month]}_${year}.csv`;
+  1128→  a.click();
+  1129→  URL.revokeObjectURL(url);
+  1130→}
+  1131→
+  1132→// ========================
+  1133→// INIT
+  1134→// ========================
+  1135→// Pulisci vecchi localStorage
+  1136→localStorage.removeItem('turnazioni_stato_v3');
+  1137→localStorage.removeItem('turnazioni_stato_v2');
+  1138→localStorage.removeItem('turnazioni_stato_v1');
+  1139→
+  1140→caricaStato();
+  1141→generaAssegnazioni();
+  1142→
+  1143→document.getElementById('oreTarget').value = stato.oreTarget;
+  1144→document.getElementById('oreTurno').value = stato.oreTurno;
+  1145→document.getElementById('giorniRiposo').value = stato.giorniRiposo;
+  1146→document.getElementById('inizioRotazione').value = stato.inizioRotazione;
+  1147→
+  1148→if (stato.variante === 2) {
+  1149→  document.getElementById('btnVar1').classList.remove('active');
+  1150→  document.getElementById('btnVar2').classList.add('active');
+  1151→}
+  1152→
+  1153→renderAll();
+  1154→
+  1155→document.getElementById('modalGiorno').addEventListener('click', function(e) {
+  1156→  if (e.target === this) chiudiModal();
+  1157→});
+  1158→</script>
+  1159→</body>
+  1160→</html>

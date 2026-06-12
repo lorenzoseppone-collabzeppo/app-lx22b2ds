@@ -6,7 +6,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Turnazioni v6 - 10 persone - 138h</title>
+<title>Turnazioni v9 - Modifica Diretta</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -51,12 +51,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .t-fisso{background:#fed7aa;color:#9a3412}
 .t-riposo{background:#fee2e2;color:#991b1b}
 
-
-.cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.cal-nav{display:flex;gap:6px}
+.cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:6px}
+.cal-nav{display:flex;gap:6px;align-items:center}
 .cal-nav button{background:var(--primary);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer;font-weight:600}
 .cal-nav button:hover{background:var(--primary-dark)}
 .cal-mese{font-size:16px;font-weight:700}
+
+/* Edit toggle button */
+.btn-edit-toggle{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:11px;cursor:pointer;font-weight:700;display:flex;align-items:center;gap:4px;transition:all .2s}
+.btn-edit-toggle:hover{background:#d97706}
+.btn-edit-toggle.active{background:var(--danger);box-shadow:0 0 0 3px rgba(239,68,68,0.3)}
 
 /* ===== CALENDARIO MIGLIORATO ===== */
 .cal-table{width:100%;border-collapse:collapse;font-size:11px}
@@ -68,15 +72,49 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .cal-table td.today .day-num{color:var(--accent)}
 
 /* Badge persona nel calendario */
-.cal-person{display:flex;align-items:center;gap:2px;padding:1px 0;font-size:8px;line-height:1.2;white-space:nowrap}
+.cal-person{display:flex;align-items:center;gap:2px;padding:1px 2px;font-size:8px;line-height:1.2;white-space:nowrap;cursor:pointer;transition:all .15s;border-radius:3px}
+.cal-person:hover{background:rgba(37,99,235,0.12);box-shadow:0 0 0 1px rgba(37,99,235,0.2)}
+.cal-person.editing{cursor:pointer}
+.cal-person.editing:hover{background:rgba(245,158,11,0.2);outline:1px dashed var(--accent)}
 .cal-person-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.cal-person-name{font-weight:700;min-width:14px;text-align:right}
-.cal-person-time{font-weight:600;border-radius:3px;padding:0 2px;font-size:7.5px}
+.cal-person-name{font-weight:700;min-width:14px;text-align:right;transition:color .15s}
+.cal-person:hover .cal-person-name{text-decoration:underline}
+.cal-person-time{font-weight:600;border-radius:3px;padding:0 2px;font-size:7.5px;transition:all .15s}
+.cal-person:hover .cal-person-time{box-shadow:0 0 0 1px rgba(0,0,0,0.1)}
 .cal-person-riposo{font-weight:600;border-radius:3px;padding:0 2px;font-size:7px;background:#fee2e2;color:#991b1b}
 
+/* Override indicator */
+.cal-person-overridden{outline:2px solid var(--accent);border-radius:3px}
+.cal-person-overridden .cal-person-time{font-style:italic}
+
+/* Click hint on calendar person */
+.cal-person::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;border-radius:3px}
+.cal-person:active{transform:scale(0.95)}
 
 /* Separatore gruppo nel calendario */
 .cal-grp-sep{border-top:1px solid #f1f5f9;margin:1px 0}
+
+/* ===== INLINE EDIT POPUP ===== */
+.inline-edit-popup{position:fixed;z-index:300;background:#fff;border-radius:12px;padding:14px;box-shadow:0 8px 30px rgba(0,0,0,0.25);min-width:240px;max-width:300px;border:2px solid var(--primary);animation:popIn .15s ease-out}
+@keyframes popIn{from{opacity:0;transform:scale(0.9)}to{opacity:1;transform:scale(1)}}
+.inline-edit-popup h4{font-size:14px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.inline-edit-popup .ie-row{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.inline-edit-popup .ie-label{font-size:12px;font-weight:600;min-width:50px;color:var(--text-light)}
+.inline-edit-popup input[type="text"]{border:2px solid var(--border);border-radius:8px;padding:6px 8px;font-size:14px;width:80px;text-align:center;font-weight:600}
+.inline-edit-popup input[type="text"]:focus{border-color:var(--primary);outline:none;box-shadow:0 0 0 3px rgba(37,99,235,0.15)}
+.inline-edit-popup .ie-buttons{display:flex;gap:6px;margin-top:10px}
+.inline-edit-popup .ie-btn{border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;flex:1;transition:all .15s}
+.inline-edit-popup .ie-btn:active{transform:scale(0.95)}
+.inline-edit-popup .ie-btn-save{background:var(--success);color:#fff}
+.inline-edit-popup .ie-btn-save:hover{background:#059669}
+.inline-edit-popup .ie-btn-reset{background:var(--danger);color:#fff}
+.inline-edit-popup .ie-btn-reset:hover{background:#dc2626}
+.inline-edit-popup .ie-btn-cancel{background:var(--border);color:var(--text)}
+.inline-edit-popup .ie-btn-cancel:hover{background:#cbd5e1}
+.inline-edit-popup .ie-info{font-size:10px;color:var(--text-light);margin-top:6px;line-height:1.3}
+.inline-edit-popup .ie-overridden{background:var(--accent);color:#fff;font-size:9px;padding:1px 6px;border-radius:4px;font-weight:700}
+.inline-edit-popup .ie-default{font-size:10px;color:var(--text-light);margin-bottom:8px;padding:4px 8px;background:#f0f4f8;border-radius:6px}
+.inline-edit-popup .ie-default b{color:var(--text)}
 
 .settimana-card{background:var(--card);border-radius:var(--radius);padding:12px;margin-bottom:8px;box-shadow:var(--shadow)}
 
@@ -97,6 +135,26 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .setting-label{font-weight:600;font-size:13px}
 .setting-input{border:2px solid var(--border);border-radius:8px;padding:6px 10px;font-size:13px;width:80px;text-align:center}
 .setting-input:focus{border-color:var(--primary);outline:none}
+.setting-input-wide{border:2px solid var(--border);border-radius:8px;padding:6px 10px;font-size:13px;width:140px;text-align:left}
+.setting-input-wide:focus{border-color:var(--primary);outline:none}
+
+/* Name editor */
+.name-grid{display:grid;grid-template-columns:auto 1fr;gap:6px 10px;align-items:center}
+.name-grid .gruppo-badge{width:28px;height:28px;font-size:11px}
+.name-input{border:2px solid var(--border);border-radius:8px;padding:6px 10px;font-size:13px;width:100%}
+.name-input:focus{border-color:var(--primary);outline:none}
+
+/* Edit row in modal */
+.edit-row{display:flex;align-items:center;gap:6px;padding:6px 8px;margin-bottom:3px;background:#f8fafc;border-radius:6px;flex-wrap:wrap}
+.edit-row .name-label{font-weight:600;font-size:13px;min-width:50px}
+.edit-row input[type="text"]{border:2px solid var(--border);border-radius:6px;padding:4px 6px;font-size:12px;width:55px;text-align:center}
+.edit-row input[type="text"]:focus{border-color:var(--primary);outline:none}
+.edit-row .edit-sep{font-size:13px;color:var(--text-light)}
+.edit-row .btn-override{background:var(--success);color:#fff;border:none;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:600;cursor:pointer}
+.edit-row .btn-override:hover{background:#059669}
+.edit-row .btn-reset-override{background:var(--danger);color:#fff;border:none;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:600;cursor:pointer}
+.edit-row .btn-reset-override:hover{background:#dc2626}
+.edit-row .overridden-badge{background:var(--accent);color:#fff;font-size:9px;padding:1px 4px;border-radius:4px;font-weight:700}
 
 .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:200;display:none;align-items:center;justify-content:center}
 .modal-overlay.show{display:flex}
@@ -129,6 +187,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   .cal-person-time{font-size:6.5px}
   .cal-person-name{min-width:12px}
   .header h1{font-size:17px}
+  .inline-edit-popup{min-width:190px;max-width:240px;padding:10px}
+  .inline-edit-popup input[type="text"]{width:65px;font-size:13px}
 }
 </style>
 </head>
@@ -158,9 +218,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
         <div class="cal-nav">
           <button onclick="cambiaMese(1)">▶</button>
           <button onclick="vaiOggi()" style="background:var(--accent)">Oggi</button>
+          <button class="btn-edit-toggle" id="btnEditToggle" onclick="toggleEditMode()">✏️ Modifica</button>
         </div>
       </div>
       <div class="legenda" id="legenda"></div>
+      <div id="calHint" style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:6px 10px;font-size:11px;color:#1e40af;margin-bottom:8px;text-align:center">💡 Clicca su una persona nel calendario per vedere/modificare gli orari</div>
       <div id="calendarioGrid"></div>
     </div>
     <button class="btn-excel" onclick="exportExcel()">📥 Scarica Excel</button>
@@ -199,6 +261,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   <!-- IMPOSTAZIONI -->
   <div id="page-impostazioni" class="page">
     <div class="card">
+      <div class="card-title">👤 Nomi Persone</div>
+      <div class="info-box">
+        <strong>Personalizza:</strong> Inserisci i nomi reali delle persone. I codici (A1, A2...) restano usati internamente. Puoi anche cliccare sul nome di una persona nel calendario per vederlo/modificarlo.
+      </div>
+      <div class="name-grid" id="nameGrid"></div>
+      <button class="btn-excel" style="background:var(--primary);box-shadow:0 4px 12px rgba(37,99,235,0.3);margin-top:12px;font-size:14px;padding:10px" onclick="salvaNomi()">💾 Salva Nomi</button>
+    </div>
+    <div class="card">
       <div class="card-title">🔄 Variante Turnazione</div>
       <div class="info-box">
         <strong>Variante 1 (8 persone):</strong> A(2) + B(3) + C(3) + Jolly fisso
@@ -234,7 +304,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       </div>
       <div class="setting-row">
         <span class="setting-label">Inizio rotazione</span>
-        <input type="date" class="setting-input" style="width:140px" id="inizioRotazione" onchange="salvaImpostazioni()">
+        <input type="date" class="setting-input-wide" id="inizioRotazione" onchange="salvaImpostazioni()">
       </div>
     </div>
     <div class="card">
@@ -253,7 +323,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 </div>
 
-<!-- MODAL -->
+<!-- MODAL GIORNO -->
 <div class="modal-overlay" id="modalGiorno">
   <div class="modal">
     <button class="modal-close" onclick="chiudiModal()">&times;</button>
@@ -262,6 +332,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
   </div>
 </div>
 
+<!-- INLINE EDIT POPUP -->
+<div id="inlineEditPopup" class="inline-edit-popup" style="display:none"></div>
+
 <script>
 // ========================
 // CONFIGURAZIONE BASE
@@ -269,7 +342,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 const ORARI_ENTRATA = ['7:30','8:00','8:30','9:00','9:30'];
 const ORARI_USCITA = ['15:00','15:30','16:00','16:30','17:00','17:30','18:00'];
 
-// Turno = 7h30min, entrata→uscita calcolata automaticamente
 function calcolaUscita(entrata) {
   const map = {'7:30':'15:00','8:00':'15:30','8:30':'16:00','9:00':'16:30','9:30':'17:00','10:00':'17:30'};
   return map[entrata] || '17:00';
@@ -284,10 +356,8 @@ const TURNI_COLORS = {
   'fisso':{bg:'#fed7aa',tx:'#9a3412'},
   'jolly':{bg:'#fed7aa',tx:'#9a3412'},
   'riposo':{bg:'#fee2e2',tx:'#991b1b'},
-
 };
 
-// Colori gruppo per i pallini
 const GRUPPO_COLORS = {
   A: '#ef4444',
   B: '#3b82f6',
@@ -317,14 +387,12 @@ const SCHEMA_9 = {
   J: {persone:['Jolly'], fascia:'J'}
 };
 
-// Assegnazione turni per fascia e posizione
 const FASCE_TURNI = {
   A: ['7:30','9:00'],
   B: ['8:00','9:30'],
   C: ['8:30','9:30']
 };
 
-// Rotazione: le fasce cambiano ogni settimana
 const ROTAZIONE_ABC = [
   {A:'A', B:'B', C:'C'},
   {A:'B', B:'C', C:'A'},
@@ -341,11 +409,14 @@ let stato = {
   giorniRiposo: 2,
   inizioRotazione: getMonday(new Date()).toISOString().split('T')[0],
   assegnazioni: {},
-  rotazioneOverride: {}
+  rotazioneOverride: {},
+  nomiPersone: {},
+  orariOverride: {}
 };
 
 let meseCorrente = new Date();
 let settimanaCorrente = getMonday(new Date());
+let editMode = false;
 
 // ========================
 // UTILITY
@@ -388,19 +459,59 @@ function getGruppoPersona(persona) {
 }
 
 function getFasciaForWeek(weekIndex, gruppoId) {
-  // Gestisce anche weekIndex negativi correttamente
   let rotIdx = ((weekIndex % 3) + 3) % 3;
   return ROTAZIONE_ABC[rotIdx][gruppoId] || gruppoId;
+}
+
+function getNomePersona(codice) {
+  if (stato.nomiPersone && stato.nomiPersone[codice]) {
+    return stato.nomiPersone[codice];
+  }
+  return codice;
+}
+
+function getNomeBreve(codice) {
+  const nome = getNomePersona(codice);
+  if (nome === codice) {
+    return codice === 'Jolly' ? 'J' : codice.replace(/^[ABC]/, '');
+  }
+  if (nome.length <= 4) return nome;
+  return nome.substring(0, 3) + '.';
+}
+
+function getTurnoEffettivo(dk, persona) {
+  const ass = stato.assegnazioni[dk];
+  if (!ass || !ass[persona]) return null;
+  
+  const base = {...ass[persona]};
+  
+  if (stato.orariOverride && stato.orariOverride[dk] && stato.orariOverride[dk][persona]) {
+    const ov = stato.orariOverride[dk][persona];
+    base.entrata = ov.entrata;
+    base.uscita = ov.uscita;
+    base.ore = calcolaOre(ov.entrata, ov.uscita);
+    base.overridden = true;
+  }
+  
+  return base;
+}
+
+function calcolaOre(entrata, uscita) {
+  const eMin = tempoAMinuti(entrata);
+  const uMin = tempoAMinuti(uscita);
+  return Math.max(0, (uMin - eMin) / 60);
 }
 
 // ========================
 // SALVATAGGIO
 // ========================
-function salvaStato() { localStorage.setItem('turnazioni_stato_v4', JSON.stringify(stato)); }
+function salvaStato() { localStorage.setItem('turnazioni_stato_v5', JSON.stringify(stato)); }
 
 function caricaStato() {
-  const saved = localStorage.getItem('turnazioni_stato_v4');
+  const saved = localStorage.getItem('turnazioni_stato_v5');
   if (saved) { try { stato = {...stato, ...JSON.parse(saved)}; } catch(e) {} }
+  if (!stato.nomiPersone) stato.nomiPersone = {};
+  if (!stato.orariOverride) stato.orariOverride = {};
 }
 
 function salvaImpostazioni() {
@@ -413,8 +524,26 @@ function salvaImpostazioni() {
   renderAll();
 }
 
+function salvaNomi() {
+  const gruppi = getGruppi();
+  const nuoviNomi = {};
+  Object.entries(gruppi).forEach(([gid, gruppo]) => {
+    gruppo.persone.forEach(codice => {
+      const input = document.getElementById('nome_' + codice);
+      if (input && input.value.trim()) {
+        nuoviNomi[codice] = input.value.trim();
+      }
+    });
+  });
+  stato.nomiPersone = nuoviNomi;
+  salvaStato();
+  renderAll();
+  alert('Nomi salvati!');
+}
+
 function resetDati() {
-  if (confirm('Sei sicuro? Verranno cancellati tutti i dati.')) {
+  if (confirm('Sei sicuro? Verranno cancellati tutti i dati inclusi nomi e modifiche orari.')) {
+    localStorage.removeItem('turnazioni_stato_v5');
     localStorage.removeItem('turnazioni_stato_v4');
     location.reload();
   }
@@ -427,6 +556,16 @@ function setVariante(v) {
   generaAssegnazioni();
   salvaStato();
   renderAll();
+  renderNameGrid();
+}
+
+function toggleEditMode() {
+  editMode = !editMode;
+  const btn = document.getElementById('btnEditToggle');
+  btn.classList.toggle('active', editMode);
+  btn.innerHTML = editMode ? '✏️ Fine Modifica' : '✏️ Modifica';
+  renderCalendario();
+  renderLegenda();
 }
 
 // ========================
@@ -442,16 +581,12 @@ function generaAssegnazioni() {
   const gruppi = getGruppi();
   const isVar9 = stato.variante === 2;
   
-  // Variante 2: lista piatta di tutte le 9 persone per la rotazione globale
   let rotazioneGlobale = [];
   if (isVar9) {
     Object.entries(gruppi).forEach(([gid, gruppo]) => {
       if (gid === 'J') return;
       gruppo.persone.forEach(p => rotazioneGlobale.push({persona: p, gruppo: gid}));
     });
-    // rotazioneGlobale = [{persona:'A1',gruppo:'A'}, {persona:'A2',gruppo:'A'}, {persona:'A3',gruppo:'A'},
-    //                      {persona:'B1',gruppo:'B'}, {persona:'B2',gruppo:'B'}, {persona:'B3',gruppo:'B'},
-    //                      {persona:'C1',gruppo:'C'}, {persona:'C2',gruppo:'C'}, {persona:'C3',gruppo:'C'}]
   }
   
   let currentMonday = getMonday(startMonth);
@@ -460,7 +595,7 @@ function generaAssegnazioni() {
   let weekIndex = weeksDiffFromStart;
   
   while (currentMonday <= endMonth) {
-    for (let g = 0; g < 5; g++) { // Lun-Ven
+    for (let g = 0; g < 5; g++) {
       const day = new Date(currentMonday);
       day.setDate(day.getDate() + g);
       const dk = dateKey(day);
@@ -468,54 +603,41 @@ function generaAssegnazioni() {
       assegnazioni[dk] = {};
       const personeRiposoOggi = [];
       
-      // Indice globale del giorno lavorativo (deterministico, non dipende da quando si genera)
       const globalDayIdx = weekIndex * 5 + g;
       
       if (isVar9) {
-        // ================================================================
-        // VARIANTE 2: 10 persone (3+3+3 + Jolly)
-        // 1 persona a riposo al giorno tra i 9, rotazione globale:
-        // A1 → A2 → A3 → B1 → B2 → B3 → C1 → C2 → C3 → repeat
-        // Chi riposa, riposa e basta
-        // Il Jolly (10ª persona): fisso 16:30-18:00 + copre il turno di chi riposa
-        // ================================================================
         const riposoIdx = ((globalDayIdx % 9) + 9) % 9;
         const chiRiposa = rotazioneGlobale[riposoIdx];
         
-        // Trova la fascia del gruppo dove manca la persona, per il Jolly
         const fasciaRiposo = getFasciaForWeek(weekIndex, chiRiposa.gruppo);
         const turniFasciaRiposo = FASCE_TURNI[fasciaRiposo];
-        // Il Jolly copre uno dei 2 ingressi del gruppo dove manca la persona
-        const jollyIngresso = turniFasciaRiposo[0]; // primo ingresso
+        const jollyIngresso = turniFasciaRiposo[0];
         
         Object.entries(gruppi).forEach(([gid, gruppo]) => {
           if (gid === 'J') {
-            // Jolly: fisso 16:30-18:00 + copertura del turno di chi riposa
             assegnazioni[dk]['Jolly'] = {
               turno: 'jolly', entrata: jollyIngresso, uscita: calcolaUscita(jollyIngresso),
               ore: stato.oreTurno, stato: 'lavoro', gruppo: 'J',
               fisso: '16:30-18:00',
               copre: chiRiposa.persona,
               copreGruppo: chiRiposa.gruppo,
-              oreTotali: stato.oreTurno + 1.5 // turno + fisso serale
+              oreTotali: stato.oreTurno + 1.5
             };
             return;
           }
           
           const fascia = getFasciaForWeek(weekIndex, gid);
-          const turniFascia = FASCE_TURNI[fascia]; // 2 ingressi
+          const turniFascia = FASCE_TURNI[fascia];
           
           let workingCount = 0;
           gruppo.persone.forEach((persona) => {
             if (persona === chiRiposa.persona && gid === chiRiposa.gruppo) {
-              // Questa persona riposa oggi
               assegnazioni[dk][persona] = {
                 turno: 'riposo', entrata: null, uscita: null,
                 ore: 0, stato: 'riposo', gruppo: gid
               };
               personeRiposoOggi.push(persona);
             } else {
-              // Lavora: assegna ingresso dalla fascia
               const entrataIdx = workingCount % turniFascia.length;
               const entrata = turniFascia[entrataIdx];
               const uscita = calcolaUscita(entrata);
@@ -529,13 +651,8 @@ function generaAssegnazioni() {
         });
         
       } else {
-        // ================================================================
-        // VARIANTE 1: 8 persone (2+3+3) + Jolly
-        // Il riposo ruota dentro ogni gruppo che ha piu persone che ingressi
-        // ================================================================
         Object.entries(gruppi).forEach(([gid, gruppo]) => {
           if (gid === 'J') {
-            // Jolly: fisso 16:30-18:00 + sostituzioni
             assegnazioni[dk]['Jolly'] = {
               turno: 'fisso', entrata: '16:30', uscita: '18:00',
               ore: 1.5, stato: 'lavoro', gruppo: 'J'
@@ -581,7 +698,6 @@ function generaAssegnazioni() {
           }
         });
         
-        // Jolly: se ci sono persone a riposo, il Jolly copre i loro turni
         if (gruppi.J && personeRiposoOggi.length > 0) {
           const sostituzioni = [];
           personeRiposoOggi.forEach(p => {
@@ -630,6 +746,7 @@ function renderAll() {
   renderCoperture();
   renderOre();
   renderLegenda();
+  renderNameGrid();
 }
 
 function updateHeaderSub() {
@@ -662,12 +779,28 @@ function renderLegenda() {
   html += `<div class="legenda-item"><div class="legenda-dot" style="background:${TURNI_COLORS.fisso.bg}"></div>Fisso</div>`;
   html += `<div class="legenda-item"><div class="legenda-dot" style="background:${TURNI_COLORS.jolly.bg}"></div>Jolly</div>`;
   html += `<div class="legenda-item"><div class="legenda-dot" style="background:${TURNI_COLORS.riposo.bg}"></div>Riposo</div>`;
+  if (editMode) {
+    html += `<div class="legenda-item"><div class="legenda-dot" style="background:var(--accent);border:2px dashed var(--accent)"></div>Modificato</div>`;
+  }
+  el.innerHTML = html;
+}
 
+function renderNameGrid() {
+  const el = document.getElementById('nameGrid');
+  if (!el) return;
+  const gruppi = getGruppi();
+  let html = '';
+  Object.entries(gruppi).forEach(([gid, gruppo]) => {
+    gruppo.persone.forEach(codice => {
+      html += `<span class="gruppo-badge gruppo-${gid}" style="width:28px;height:28px;font-size:10px">${codice.replace('Jolly','J')}</span>`;
+      html += `<input class="name-input" id="nome_${codice}" placeholder="${codice}" value="${stato.nomiPersone[codice] || ''}">`;
+    });
+  });
   el.innerHTML = html;
 }
 
 // ========================
-// CALENDARIO - VISUALIZZAZIONE MIGLIORATA
+// CALENDARIO
 // ========================
 function renderCalendario() {
   const year = meseCorrente.getFullYear();
@@ -711,28 +844,31 @@ function renderCalendario() {
           const hasData = Object.keys(ass).length > 0;
           
           if (hasData) {
-            // Mostra ogni persona con il proprio turno
             Object.entries(gruppi).forEach(([gid, gruppo], grpIdx) => {
               if (grpIdx > 0) html += '<div class="cal-grp-sep"></div>';
               gruppo.persone.forEach(persona => {
-                const info = ass[persona];
+                const info = getTurnoEffettivo(dk, persona);
                 if (!info) return;
                 
                 const dotColor = GRUPPO_COLORS[gid] || '#94a3b8';
-                html += '<div class="cal-person">';
+                const isOverridden = info.overridden;
+                const personClass = 'cal-person' + (editMode ? ' editing' : '') + (isOverridden ? ' cal-person-overridden' : '');
+                
+                // ALWAYS allow clicking a person to open inline edit popup
+                const clickHandler = `onclick="event.stopPropagation();apriInlineEdit(event,'${dk}','${persona}')"`;
+                
+                html += `<div class="${personClass}" ${clickHandler}>`;
                 html += `<span class="cal-person-dot" style="background:${dotColor}"></span>`;
                 
-                // Nome abbreviato (solo numero per A1→1, B2→2, Jolly→J)
-                const shortName = persona === 'Jolly' ? 'J' : persona.replace(/^[ABC]/, '');
-                html += `<span class="cal-person-name" style="color:${dotColor}">${shortName}</span>`;
+                const shortName = getNomeBreve(persona);
+                html += `<span class="cal-person-name" style="color:${dotColor}" title="${getNomePersona(persona)}">${shortName}</span>`;
                 
                 if (info.stato === 'lavoro' && info.entrata) {
                   if (info.turno === 'jolly') {
-                    const tc = TURNI_COLORS[info.entrata] || TURNI_COLORS.fisso;
-                    html += `<span class="cal-person-time" style="background:${TURNI_COLORS.fisso.bg};color:${TURNI_COLORS.fisso.tx}">${info.entrata}+J</span>`;
+                    html += `<span class="cal-person-time" style="background:${isOverridden?'var(--accent)':TURNI_COLORS.fisso.bg};color:${isOverridden?'#fff':TURNI_COLORS.fisso.tx}">${info.entrata}+J</span>`;
                   } else {
                     const tc = TURNI_COLORS[info.entrata] || TURNI_COLORS.fisso;
-                    html += `<span class="cal-person-time" style="background:${tc.bg};color:${tc.tx}">${info.entrata}</span>`;
+                    html += `<span class="cal-person-time" style="background:${isOverridden?'var(--accent)':tc.bg};color:${isOverridden?'#fff':tc.tx}">${info.entrata}</span>`;
                   }
                 } else if (info.stato === 'riposo') {
                   html += `<span class="cal-person-riposo">Rip</span>`;
@@ -742,7 +878,6 @@ function renderCalendario() {
               });
             });
           } else {
-            // Nessun dato per questo giorno
             html += '<div style="font-size:8px;color:#94a3b8;padding:4px 0">—</div>';
           }
         }
@@ -760,8 +895,178 @@ function renderCalendario() {
 function cambiaMese(delta) { meseCorrente.setMonth(meseCorrente.getMonth() + delta); renderCalendario(); renderOre(); }
 function vaiOggi() { meseCorrente = new Date(); renderCalendario(); renderOre(); }
 
+// ========================
+// INLINE EDIT POPUP
+// ========================
+function apriInlineEdit(event, dk, persona) {
+  event.stopPropagation();
+  
+  const popup = document.getElementById('inlineEditPopup');
+  const info = getTurnoEffettivo(dk, persona);
+  if (!info) return;
+  
+  const gid = info.gruppo || getGruppoPersona(persona) || 'A';
+  const dotColor = GRUPPO_COLORS[gid] || '#94a3b8';
+  const nomeMostrato = getNomePersona(persona);
+  const isOverridden = info.overridden;
+  
+  // Current effective times
+  const currentEntrata = info.entrata || '';
+  const currentUscita = info.uscita || '';
+  
+  // Base (non-overridden) times for reset
+  const baseInfo = stato.assegnazioni[dk] && stato.assegnazioni[dk][persona];
+  const baseEntrata = baseInfo ? baseInfo.entrata : '';
+  const baseUscita = baseInfo ? baseInfo.uscita : '';
+  
+  // Date display
+  const d = new Date(dk + 'T00:00:00');
+  const dayIdx = d.getDay() === 0 ? 6 : d.getDay() - 1;
+  const dataStr = `${d.getDate()} ${MESI_IT[d.getMonth()].substring(0,3)}`;
+  
+  let html = '';
+  html += `<h4><span class="cal-person-dot" style="background:${dotColor};width:10px;height:10px;border-radius:50%;display:inline-block"></span> ${nomeMostrato} <span style="font-size:11px;color:var(--text-light);font-weight:400">${dataStr}</span></h4>`;
+  
+  if (info.stato === 'riposo') {
+    html += `<div style="padding:8px;background:#fee2e2;border-radius:8px;font-size:13px;font-weight:600;color:#991b1b;margin-bottom:8px">🔴 Riposo</div>`;
+    html += `<div class="ie-info">Questa persona è in riposo per questo giorno.</div>`;
+    html += `<div class="ie-buttons"><button class="ie-btn ie-btn-cancel" onclick="chiudiInlineEdit()">Chiudi</button></div>`;
+  } else {
+    // Show default time info
+    html += `<div class="ie-default">📋 Default: <b>${baseEntrata || '—'} — ${baseUscita || '—'}</b> (lascia vuoto per usare il default)</div>`;
+    
+    if (isOverridden) {
+      html += `<div style="margin-bottom:8px"><span class="ie-overridden">MODIFICATO</span></div>`;
+    }
+    
+    html += `<div class="ie-row">`;
+    html += `<span class="ie-label">Entrata</span>`;
+    html += `<input type="text" id="ie_entrata" value="${currentEntrata}" placeholder="${baseEntrata || '7:30'}">`;
+    html += `</div>`;
+    
+    html += `<div class="ie-row">`;
+    html += `<span class="ie-label">Uscita</span>`;
+    html += `<input type="text" id="ie_uscita" value="${currentUscita}" placeholder="${baseUscita || '15:00'}">`;
+    html += `</div>`;
+    
+    if (info.turno === 'jolly') {
+      html += `<div class="ie-info">⏰ Jolly: turno + fisso 16:30-18:00<br>Modifichi solo l'orario del turno principale.</div>`;
+    }
+    
+    html += `<div class="ie-buttons">`;
+    html += `<button class="ie-btn ie-btn-save" onclick="salvaInlineEdit('${dk}','${persona}')">💾 Salva</button>`;
+    if (isOverridden) {
+      html += `<button class="ie-btn ie-btn-reset" onclick="resetInlineEdit('${dk}','${persona}')">↩ Reset</button>`;
+    }
+    html += `<button class="ie-btn ie-btn-cancel" onclick="chiudiInlineEdit()">✕</button>`;
+    html += `</div>`;
+    
+    html += `<div class="ie-info">Formato: HH:MM (es. 8:00, 15:30). Lascia i campi come sono per confermare il default.</div>`;
+  }
+  
+  popup.innerHTML = html;
+  popup.style.display = 'block';
+  
+  // Position popup near the clicked element
+  const rect = event.target.closest('.cal-person').getBoundingClientRect();
+  const popupW = 240;
+  const popupH = 220;
+  
+  let top = rect.bottom + 6;
+  let left = rect.left;
+  
+  // Check if popup goes off screen
+  if (top + popupH > window.innerHeight) {
+    top = rect.top - popupH - 6;
+  }
+  if (left + popupW > window.innerWidth) {
+    left = window.innerWidth - popupW - 10;
+  }
+  if (left < 10) left = 10;
+  if (top < 10) top = 10;
+  
+  popup.style.top = top + 'px';
+  popup.style.left = left + 'px';
+  
+  // Focus entrata input
+  setTimeout(() => {
+    const entrataInput = document.getElementById('ie_entrata');
+    if (entrataInput) entrataInput.focus();
+  }, 50);
+}
+
+function salvaInlineEdit(dk, persona) {
+  const eInput = document.getElementById('ie_entrata');
+  const uInput = document.getElementById('ie_uscita');
+  if (!eInput || !uInput) return;
+  
+  const entrata = eInput.value.trim();
+  const uscita = uInput.value.trim();
+  
+  if (!entrata || !uscita) {
+    alert('Inserisci sia entrata che uscita.');
+    return;
+  }
+  
+  const timeRegex = /^\d{1,2}:\d{2}$/;
+  if (!timeRegex.test(entrata) || !timeRegex.test(uscita)) {
+    alert('Formato orario non valido. Usa HH:MM (es. 8:00, 15:30).');
+    return;
+  }
+  
+  if (!stato.orariOverride) stato.orariOverride = {};
+  if (!stato.orariOverride[dk]) stato.orariOverride[dk] = {};
+  
+  const baseInfo = stato.assegnazioni[dk] && stato.assegnazioni[dk][persona];
+  if (baseInfo && baseInfo.entrata === entrata && baseInfo.uscita === uscita) {
+    delete stato.orariOverride[dk][persona];
+    if (Object.keys(stato.orariOverride[dk]).length === 0) {
+      delete stato.orariOverride[dk];
+    }
+  } else {
+    stato.orariOverride[dk][persona] = { entrata, uscita };
+  }
+  
+  salvaStato();
+  chiudiInlineEdit();
+  renderCalendario();
+  renderOre();
+}
+
+function resetInlineEdit(dk, persona) {
+  if (stato.orariOverride && stato.orariOverride[dk] && stato.orariOverride[dk][persona]) {
+    delete stato.orariOverride[dk][persona];
+    if (Object.keys(stato.orariOverride[dk]).length === 0) {
+      delete stato.orariOverride[dk];
+    }
+    salvaStato();
+    chiudiInlineEdit();
+    renderCalendario();
+    renderOre();
+  }
+}
+
+function chiudiInlineEdit() {
+  document.getElementById('inlineEditPopup').style.display = 'none';
+}
+
+// Close inline edit when clicking outside
+document.addEventListener('click', function(e) {
+  const popup = document.getElementById('inlineEditPopup');
+  if (popup.style.display === 'block' && !popup.contains(e.target)) {
+    // Only close if not clicking on a cal-person that would reopen it
+    if (!e.target.closest('.cal-person.editing')) {
+      chiudiInlineEdit();
+    }
+  }
+});
+
+// ========================
 // MODAL GIORNO
+// ========================
 function mostraGiorno(dk) {
+  chiudiInlineEdit();
+  
   const d = new Date(dk + 'T00:00:00');
   const dayIdx = d.getDay() === 0 ? 6 : d.getDay() - 1;
   document.getElementById('modalGiornoTitolo').textContent = `${GIORNI_FULL[dayIdx]} ${d.getDate()} ${MESI_IT[d.getMonth()]}`;
@@ -770,7 +1075,12 @@ function mostraGiorno(dk) {
   const gruppi = getGruppi();
   let html = '';
   
-  // Tabella dettagliata per gruppo
+  if (editMode) {
+    html += `<div style="background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:8px;margin-bottom:12px;font-size:12px;color:#92400e">`;
+    html += `✏️ <strong>Modalità Modifica</strong> — Modifica gli orari e clicca Salva. Le celle vuote usano l'orario di default.`;
+    html += `</div>`;
+  }
+  
   Object.entries(gruppi).forEach(([gid, gruppo]) => {
     html += `<div style="margin-bottom:12px">`;
     html += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">`;
@@ -779,35 +1089,60 @@ function mostraGiorno(dk) {
     html += `</div>`;
     
     gruppo.persone.forEach(persona => {
-      const info = ass[persona];
-      if (!info) return;
+      const baseInfo = ass[persona];
+      if (!baseInfo) return;
       
-      let chip = '';
-      let chipClass = '';
-      if (info.stato === 'lavoro' && info.entrata) {
-        if (info.turno === 'jolly' || info.turno === 'fisso') {
-          const cls = 't-' + info.entrata.replace(':','');
-          chip = `${info.entrata} - ${info.uscita} + ${info.fisso || '16:30-18:00'}`;
-          chipClass = cls;
-        } else {
-          const cls = 't-' + info.entrata.replace(':','');
-          chip = `${info.entrata} - ${info.uscita}`;
-          chipClass = cls;
+      const effectiveInfo = getTurnoEffettivo(dk, persona);
+      const isOverridden = effectiveInfo && effectiveInfo.overridden;
+      const nomeMostrato = getNomePersona(persona);
+      
+      if (editMode && effectiveInfo && effectiveInfo.stato === 'lavoro') {
+        const currentEntrata = effectiveInfo.entrata || '';
+        const currentUscita = effectiveInfo.uscita || '';
+        html += `<div class="edit-row" style="${isOverridden?'background:#fef3c7':''}">`;
+        html += `<span class="name-label" style="color:${GRUPPO_COLORS[gid] || '#333'}">${nomeMostrato}</span>`;
+        html += `<input type="text" id="edit_e_${dk}_${persona}" value="${currentEntrata}" placeholder="entrata">`;
+        html += `<span class="edit-sep">—</span>`;
+        html += `<input type="text" id="edit_u_${dk}_${persona}" value="${currentUscita}" placeholder="uscita">`;
+        if (isOverridden) {
+          html += `<span class="overridden-badge">MOD</span>`;
+          html += `<button class="btn-reset-override" onclick="resetOverride('${dk}','${persona}')">Reset</button>`;
         }
-      } else if (info.stato === 'riposo') {
-        chip = '🔴 Riposo';
-        chipClass = 't-riposo';
+        html += `<button class="btn-override" onclick="salvaOverride('${dk}','${persona}')">OK</button>`;
+        if (effectiveInfo.copre) {
+          html += `<span style="font-size:11px;color:var(--accent)">↔ copre ${getNomePersona(effectiveInfo.copre)}</span>`;
+        }
+        html += `</div>`;
+      } else {
+        let chip = '', chipClass = '';
+        if (effectiveInfo && effectiveInfo.stato === 'lavoro' && effectiveInfo.entrata) {
+          if (effectiveInfo.turno === 'jolly' || effectiveInfo.turno === 'fisso') {
+            const cls = 't-' + effectiveInfo.entrata.replace(':','');
+            chip = `${effectiveInfo.entrata} - ${effectiveInfo.uscita} + ${effectiveInfo.fisso || '16:30-18:00'}`;
+            chipClass = cls;
+          } else {
+            const cls = 't-' + effectiveInfo.entrata.replace(':','');
+            chip = `${effectiveInfo.entrata} - ${effectiveInfo.uscita}`;
+            chipClass = cls;
+          }
+        } else if (effectiveInfo && effectiveInfo.stato === 'riposo') {
+          chip = '🔴 Riposo';
+          chipClass = 't-riposo';
+        }
+        
+        html += `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;margin-bottom:3px;background:#f8fafc;border-radius:6px">`;
+        html += `<span style="font-weight:600;font-size:13px;min-width:45px;color:${GRUPPO_COLORS[gid] || '#333'}">${nomeMostrato}</span>`;
+        html += `<span class="turno-chip ${chipClass}" style="${isOverridden?'outline:2px solid var(--accent)':''}">${chip}</span>`;
+        if (effectiveInfo && effectiveInfo.copre) {
+          html += `<span style="font-size:11px;color:var(--accent)">↔ copre ${getNomePersona(effectiveInfo.copre)}</span>`;
+        } else if (effectiveInfo && effectiveInfo.sostituzioni && effectiveInfo.sostituzioni.length > 0) {
+          html += `<span style="font-size:11px;color:var(--text-light)">+sost. ${effectiveInfo.sostituzioni.map(s=>getNomePersona(s.persona)).join(',')}</span>`;
+        }
+        if (isOverridden) {
+          html += `<span style="font-size:10px;background:var(--accent);color:#fff;padding:1px 4px;border-radius:4px;font-weight:700">MOD</span>`;
+        }
+        html += `</div>`;
       }
-      
-      html += `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;margin-bottom:3px;background:#f8fafc;border-radius:6px">`;
-      html += `<span style="font-weight:600;font-size:13px;min-width:45px;color:${GRUPPO_COLORS[gid] || '#333'}">${persona}</span>`;
-      html += `<span class="turno-chip ${chipClass}">${chip}</span>`;
-      if (info.copre) {
-        html += `<span style="font-size:11px;color:var(--accent)">↔ copre ${info.copre}</span>`;
-      } else if (info.sostituzioni && info.sostituzioni.length > 0) {
-        html += `<span style="font-size:11px;color:var(--text-light)">+sost. ${info.sostituzioni.map(s=>s.persona).join(',')}</span>`;
-      }
-      html += `</div>`;
     });
     html += `</div>`;
   });
@@ -819,17 +1154,17 @@ function mostraGiorno(dk) {
   const fasce = ['7:30','8:00','8:30','9:00','9:30','10:00','11:00','12:00','13:00','14:00','15:00','15:30','16:00','16:30','17:00','17:30','18:00'];
   fasce.forEach(fascia => {
     let count = 0;
-    Object.values(ass).forEach(info => {
-      if (info.stato === 'lavoro' && info.entrata && info.uscita) {
+    Object.keys(ass).forEach(persona => {
+      const info = getTurnoEffettivo(dk, persona);
+      if (info && info.stato === 'lavoro' && info.entrata && info.uscita) {
         const e = tempoAMinuti(info.entrata);
         const u = tempoAMinuti(info.uscita);
         const f = tempoAMinuti(fascia);
         if (f >= e && f < u) count++;
       }
-      // Il Jolly copre anche 16:30-18:00 (fisso serale)
-      if (info.stato === 'lavoro' && info.turno === 'jolly') {
+      if (info && info.stato === 'lavoro' && info.turno === 'jolly') {
         const f = tempoAMinuti(fascia);
-        if (f >= 990 && f < 1080) count++; // 16:30=990, 18:00=1080
+        if (f >= 990 && f < 1080) count++;
       }
     });
     if (count > 0) {
@@ -841,6 +1176,55 @@ function mostraGiorno(dk) {
   
   document.getElementById('modalGiornoContent').innerHTML = html;
   document.getElementById('modalGiorno').classList.add('show');
+}
+
+function salvaOverride(dk, persona) {
+  const eInput = document.getElementById('edit_e_' + dk + '_' + persona);
+  const uInput = document.getElementById('edit_u_' + dk + '_' + persona);
+  if (!eInput || !uInput) return;
+  
+  const entrata = eInput.value.trim();
+  const uscita = uInput.value.trim();
+  
+  if (!entrata || !uscita) {
+    alert('Inserisci sia entrata che uscita.');
+    return;
+  }
+  
+  const timeRegex = /^\d{1,2}:\d{2}$/;
+  if (!timeRegex.test(entrata) || !timeRegex.test(uscita)) {
+    alert('Formato orario non valido. Usa HH:MM (es. 8:00, 15:30).');
+    return;
+  }
+  
+  if (!stato.orariOverride) stato.orariOverride = {};
+  if (!stato.orariOverride[dk]) stato.orariOverride[dk] = {};
+  
+  const baseInfo = stato.assegnazioni[dk] && stato.assegnazioni[dk][persona];
+  if (baseInfo && baseInfo.entrata === entrata && baseInfo.uscita === uscita) {
+    delete stato.orariOverride[dk][persona];
+    if (Object.keys(stato.orariOverride[dk]).length === 0) {
+      delete stato.orariOverride[dk];
+    }
+  } else {
+    stato.orariOverride[dk][persona] = { entrata, uscita };
+  }
+  
+  salvaStato();
+  mostraGiorno(dk);
+  renderCalendario();
+}
+
+function resetOverride(dk, persona) {
+  if (stato.orariOverride && stato.orariOverride[dk] && stato.orariOverride[dk][persona]) {
+    delete stato.orariOverride[dk][persona];
+    if (Object.keys(stato.orariOverride[dk]).length === 0) {
+      delete stato.orariOverride[dk];
+    }
+    salvaStato();
+    mostraGiorno(dk);
+    renderCalendario();
+  }
 }
 
 function chiudiModal() { document.getElementById('modalGiorno').classList.remove('show'); }
@@ -873,32 +1257,35 @@ function renderSettimana() {
     html += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">`;
     html += `<span style="font-weight:700;font-size:14px">${dayName} ${d.getDate()}</span>`;
     
-    // Conta presenti
     const totalePersone = Object.values(gruppi).reduce((s,g) => s + g.persone.length, 0);
     let presenti = 0;
-    Object.values(ass).forEach(info => { if (info.stato === 'lavoro') presenti++; });
+    Object.keys(ass).forEach(persona => {
+      const info = getTurnoEffettivo(dk, persona);
+      if (info && info.stato === 'lavoro') presenti++;
+    });
     html += `<span style="font-size:12px;font-weight:600;color:${presenti>=6?'var(--success)':'var(--danger)'}">${presenti}/${totalePersone} presenti</span>`;
     html += `</div>`;
     
-    // Tabella persone
     html += '<table style="width:100%;border-collapse:collapse;font-size:12px">';
     Object.entries(gruppi).forEach(([gid, gruppo]) => {
       gruppo.persone.forEach(persona => {
-        const info = ass[persona];
+        const info = getTurnoEffettivo(dk, persona);
         if (!info) return;
         
+        const nomeMostrato = getNomePersona(persona);
+        const isOverridden = info.overridden;
         let label = '', bgStyle = '';
         if (info.stato === 'lavoro' && info.entrata) {
           if (info.turno === 'jolly') {
             label = `${info.entrata} - ${info.uscita} + 16:30-18:00`;
-            bgStyle = `background:${TURNI_COLORS.fisso.bg};color:${TURNI_COLORS.fisso.tx}`;
+            bgStyle = `background:${isOverridden?'var(--accent)':TURNI_COLORS.fisso.bg};color:${isOverridden?'#fff':TURNI_COLORS.fisso.tx}`;
           } else if (info.turno === 'fisso') {
             label = `Fisso ${info.entrata}-${info.uscita}`;
-            bgStyle = `background:${TURNI_COLORS.fisso.bg};color:${TURNI_COLORS.fisso.tx}`;
+            bgStyle = `background:${isOverridden?'var(--accent)':TURNI_COLORS.fisso.bg};color:${isOverridden?'#fff':TURNI_COLORS.fisso.tx}`;
           } else {
             label = `${info.entrata} - ${info.uscita}`;
             const c = TURNI_COLORS[info.entrata] || TURNI_COLORS.fisso;
-            bgStyle = `background:${c.bg};color:${c.tx}`;
+            bgStyle = `background:${isOverridden?'var(--accent)':c.bg};color:${isOverridden?'#fff':c.tx}`;
           }
         } else if (info.stato === 'riposo') {
           label = '🔴 Riposo';
@@ -906,12 +1293,12 @@ function renderSettimana() {
         }
         
         html += `<tr style="${bgStyle}">`;
-        html += `<td style="padding:3px 6px;font-weight:700;min-width:40px">${persona}</td>`;
-        html += `<td style="padding:3px 6px">${label}</td>`;
+        html += `<td style="padding:3px 6px;font-weight:700;min-width:40px">${nomeMostrato}</td>`;
+        html += `<td style="padding:3px 6px">${label}${isOverridden?' ★':''}</td>`;
         if (info.copre) {
-          html += `<td style="padding:3px 6px;font-size:10px;color:var(--accent)">↔ copre ${info.copre}</td>`;
+          html += `<td style="padding:3px 6px;font-size:10px;color:var(--accent)">↔ copre ${getNomePersona(info.copre)}</td>`;
         } else if (info.sostituzioni && info.sostituzioni.length > 0) {
-          html += `<td style="padding:3px 6px;font-size:10px">+${info.sostituzioni.map(s=>s.persona).join(',')}</td>`;
+          html += `<td style="padding:3px 6px;font-size:10px">+${info.sostituzioni.map(s=>getNomePersona(s.persona)).join(',')}</td>`;
         } else {
           html += `<td></td>`;
         }
@@ -942,8 +1329,9 @@ function renderCoperture() {
   
   fasce.forEach(fascia => {
     let count = 0;
-    Object.values(ass).forEach(info => {
-      if (info.stato === 'lavoro' && info.entrata && info.uscita) {
+    Object.keys(ass).forEach(persona => {
+      const info = getTurnoEffettivo(dk, persona);
+      if (info && info.stato === 'lavoro' && info.entrata && info.uscita) {
         const e = tempoAMinuti(info.entrata);
         const u = tempoAMinuti(info.uscita);
         const f = tempoAMinuti(fascia);
@@ -986,10 +1374,9 @@ function renderOre() {
         const dow = d.getDay();
         if (dow === 0 || dow === 6) continue;
         
-        const ass = stato.assegnazioni[dk];
-        if (!ass || !ass[persona]) continue;
+        const info = getTurnoEffettivo(dk, persona);
+        if (!info) continue;
         
-        const info = ass[persona];
         if (info.stato === 'lavoro') {
           oreLavorate += info.ore || stato.oreTurno;
           giorniLavorati++;
@@ -998,28 +1385,28 @@ function renderOre() {
         }
       }
       
+      const nomeMostrato = getNomePersona(persona);
+      
       if (gid === 'J') {
-        // Calcola le ore del Jolly includendo il fisso serale
         let oreJolly = 0;
         for (let d2 = new Date(firstDay); d2 <= lastDay; d2.setDate(d2.getDate() + 1)) {
           const dk2 = dateKey(d2);
           const dow2 = d2.getDay();
           if (dow2 === 0 || dow2 === 6) continue;
-          const assJ = stato.assegnazioni[dk2];
-          if (assJ && assJ['Jolly']) {
-            const jInfo = assJ['Jolly'];
-            if (jInfo.oreTotali) oreJolly += jInfo.oreTotali;
-            else oreJolly += (jInfo.ore || stato.oreTurno) + 1.5;
+          const infoJ = getTurnoEffettivo(dk2, persona);
+          if (infoJ && infoJ.stato === 'lavoro') {
+            if (infoJ.oreTotali) oreJolly += infoJ.oreTotali;
+            else oreJolly += (infoJ.ore || stato.oreTurno) + 1.5;
           }
         }
         const jollyDiff = oreJolly - stato.oreTarget;
         const jollyPct = Math.min(100, Math.round((oreJolly / stato.oreTarget) * 100));
         const jollyBarClass = jollyPct >= 95 ? 'ok' : jollyPct >= 80 ? 'warn' : 'danger';
         html += `<div class="ore-row">`;
-        html += `<span class="gruppo-badge gruppo-J" style="width:28px;height:28px;font-size:11px">${persona}</span>`;
+        html += `<span class="gruppo-badge gruppo-J" style="width:28px;height:28px;font-size:11px">${nomeMostrato.substring(0,2)}</span>`;
         html += `<div style="flex:1">`;
         html += `<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px">`;
-        html += `<span>Turno + 16:30-18:00</span>`;
+        html += `<span>${nomeMostrato} — Turno + 16:30-18:00</span>`;
         html += `<span style="font-weight:700;color:${jollyBarClass==='ok'?'var(--success)':jollyBarClass==='warn'?'var(--accent)':'var(--danger)'}">${oreJolly.toFixed(1)}h ${jollyDiff>=0?'✓':'('+jollyDiff.toFixed(1)+'h)'}</span>`;
         html += `</div>`;
         html += `<div class="ore-progress"><div class="ore-bar ${jollyBarClass}" style="width:${jollyPct}%"></div></div>`;
@@ -1030,10 +1417,10 @@ function renderOre() {
         const diff = oreLavorate - stato.oreTarget;
         
         html += `<div class="ore-row">`;
-        html += `<span class="gruppo-badge gruppo-${gid}" style="width:28px;height:28px;font-size:11px">${persona}</span>`;
+        html += `<span class="gruppo-badge gruppo-${gid}" style="width:28px;height:28px;font-size:11px">${nomeMostrato.substring(0,2)}</span>`;
         html += `<div style="flex:1">`;
         html += `<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px">`;
-        html += `<span>${giorniLavorati}gg lav, ${giorniRiposo}gg rip</span>`;
+        html += `<span>${nomeMostrato} — ${giorniLavorati}gg lav, ${giorniRiposo}gg rip</span>`;
         html += `<span style="font-weight:700;color:${barClass==='ok'?'var(--success)':barClass==='warn'?'var(--accent)':'var(--danger)'}">${oreLavorate.toFixed(1)}h ${diff>=0?'✓':'('+diff.toFixed(1)+'h)'}</span>`;
         html += `</div>`;
         html += `<div class="ore-progress"><div class="ore-bar ${barClass}" style="width:${pct}%"></div></div>`;
@@ -1055,11 +1442,11 @@ function exportExcel() {
   const lastDay = new Date(year, month + 1, 0);
   const gruppi = getGruppi();
   
-  // Intestazione
   let csv = 'Data,Giorno,';
   Object.entries(gruppi).forEach(([gid, gruppo]) => {
     gruppo.persone.forEach(p => {
-      csv += p + ' Turno,' + p + ' Orario,' + p + ' Ore,';
+      const nome = getNomePersona(p);
+      csv += nome + ' Turno,' + nome + ' Orario,' + nome + ' Ore,';
     });
   });
   csv += 'Presenti 9:30-15:30,\n';
@@ -1073,29 +1460,23 @@ function exportExcel() {
     if (dow === 0 || dow === 6) continue;
     
     const dayName = GIORNI_FULL[dow === 0 ? 6 : dow - 1];
-    const ass = stato.assegnazioni[dk] || {};
-    
     csv += `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()},${dayName},`;
     
     Object.entries(gruppi).forEach(([gid, gruppo]) => {
       gruppo.persone.forEach(persona => {
-        const info = ass[persona];
-        if (!info) { csv += '—,,0,'; return; }
+        const info = getTurnoEffettivo(dk, persona);
+        if (!info || info.stato !== 'lavoro') { csv += 'Riposo,,0,'; return; }
         
-        if (info.stato === 'lavoro') {
-          csv += `${info.entrata},${info.entrata}-${info.uscita},${info.ore},`;
-          totali[persona] += info.ore || stato.oreTurno;
-
-        } else {
-          csv += 'Riposo,,0,';
-        }
+        csv += `${info.entrata},${info.entrata}-${info.uscita},${info.ore.toFixed(1)},`;
+        totali[persona] += info.ore || stato.oreTurno;
       });
     });
     
-    // Conta presenti alle 9:30
+    const ass = stato.assegnazioni[dk] || {};
     let presenti930 = 0;
-    Object.values(ass).forEach(info => {
-      if (info.stato === 'lavoro' && info.entrata && info.uscita) {
+    Object.keys(ass).forEach(persona => {
+      const info = getTurnoEffettivo(dk, persona);
+      if (info && info.stato === 'lavoro' && info.entrata && info.uscita) {
         const e = tempoAMinuti(info.entrata);
         const u = tempoAMinuti(info.uscita);
         if (570 >= e && 930 < u) presenti930++;
@@ -1104,7 +1485,6 @@ function exportExcel() {
     csv += presenti930 + ',\n';
   }
   
-  // Totali
   csv += '\nTOTALI ORE,,';
   Object.values(gruppi).forEach(g => {
     g.persone.forEach(p => {
@@ -1132,7 +1512,7 @@ function exportExcel() {
 // ========================
 // INIT
 // ========================
-// Pulisci vecchi localStorage
+localStorage.removeItem('turnazioni_stato_v4');
 localStorage.removeItem('turnazioni_stato_v3');
 localStorage.removeItem('turnazioni_stato_v2');
 localStorage.removeItem('turnazioni_stato_v1');
