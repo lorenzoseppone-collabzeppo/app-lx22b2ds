@@ -29,6 +29,60 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .tab{flex:1;padding:12px 6px;text-align:center;font-size:12px;font-weight:600;color:var(--text-light);cursor:pointer;border-bottom:3px solid transparent;transition:all .2s}
 .tab.active{color:var(--primary);border-bottom-color:var(--primary);background:#eff6ff}
 
+/* ===== DESKTOP RESPONSIVE ===== */
+@media(min-width:768px){
+  .container{max-width:1200px;padding:24px 40px}
+  .header h1{font-size:26px}
+  .header-sub{font-size:14px}
+  .tab{padding:14px 12px;font-size:14px}
+  .card{padding:20px 24px;border-radius:14px}
+  .card-title{font-size:18px}
+  .cal-table{font-size:13px}
+  .cal-table th{padding:8px 4px;font-size:11px}
+  .cal-table td{padding:4px 6px;min-height:90px}
+  .cal-table .day-num{font-size:13px;margin-bottom:4px}
+  .cal-person{font-size:11px;gap:3px;padding:2px 4px}
+  .cal-person-dot{width:8px;height:8px}
+  .cal-person-name{min-width:20px;font-size:11px}
+  .cal-person-time{font-size:10px;padding:1px 4px;border-radius:4px}
+  .cal-person-riposo{font-size:10px;padding:1px 4px}
+  .cal-grp-sep{margin:2px 0}
+  .cal-mese{font-size:20px}
+  .cal-nav button{padding:8px 16px;font-size:14px;border-radius:10px}
+  .btn-edit-toggle{padding:8px 16px;font-size:13px;border-radius:10px}
+  .btn-excel{padding:16px 28px;font-size:18px;border-radius:14px}
+  .setting-row{padding:14px 0}
+  .setting-label{font-size:15px}
+  .setting-input{padding:8px 12px;font-size:14px;width:100px}
+  .setting-input-wide{padding:8px 12px;font-size:14px;width:180px}
+  .ore-row{padding:10px 0}
+  .ore-progress{height:10px}
+  .modal{max-width:700px;padding:28px}
+  .modal h3{font-size:22px}
+  .settimana-card{padding:16px}
+  .name-grid{gap:8px 14px}
+  .name-input{padding:8px 12px;font-size:15px}
+  .gruppo-badge{width:38px;height:38px;font-size:15px}
+  .turno-chip{padding:3px 10px;font-size:13px}
+  .copertura-row{padding:6px 0;font-size:14px}
+  .copertura-bar{height:20px}
+  .variante-btn{padding:12px 20px;font-size:15px}
+  .legenda{gap:10px}
+  .legenda-item{font-size:12px}
+  .legenda-dot{width:12px;height:12px}
+  .info-box{padding:12px;font-size:13px}
+  .warn-box{padding:12px;font-size:13px}
+}
+
+@media(min-width:1200px){
+  .container{max-width:1400px;padding:24px 60px}
+  .cal-table{font-size:14px}
+  .cal-person{font-size:12px}
+  .cal-person-name{font-size:12px}
+  .cal-person-time{font-size:11px}
+  .cal-person-riposo{font-size:11px}
+}
+
 .container{max-width:600px;margin:0 auto;padding:16px}
 .page{display:none}
 .page.active{display:block}
@@ -476,7 +530,9 @@ function getNomeBreve(codice) {
   if (nome === codice) {
     return codice === 'Jolly' ? 'J' : codice.replace(/^[ABC]/, '');
   }
-  if (nome.length <= 4) return nome;
+  // On desktop (>768px), show full name; on mobile, abbreviate
+  const isDesktop = window.innerWidth >= 768;
+  if (isDesktop || nome.length <= 6) return nome;
   return nome.substring(0, 3) + '.';
 }
 
