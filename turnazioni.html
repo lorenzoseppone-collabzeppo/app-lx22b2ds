@@ -434,7 +434,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
 
 <script>
 // ========================
@@ -476,6 +476,7 @@ const MESI_IT = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyBN3yNgVtgRug-pcjTFAK5PgxxzF2OasfM",
   authDomain: "presenze-pre-post.firebaseapp.com",
+  databaseURL: "https://presenze-pre-post-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "presenze-pre-post",
   storageBucket: "presenze-pre-post.firebasestorage.app",
   messagingSenderId: "291215184515",
@@ -493,7 +494,7 @@ function initFirebase() {
     if (typeof firebase === 'undefined') { console.warn('Firebase SDK non caricato'); return; }
     fbApp = firebase.initializeApp(FIREBASE_CONFIG);
     fbAuth = fbApp.auth();
-    fbDb = fbApp.firestore();
+    fbDb = fbApp.database();
     
     // Ascolta cambiamenti autenticazione
     fbAuth.onAuthStateChanged(async (user) => {
@@ -581,7 +582,7 @@ function updateLoginUI() {
   }
 }
 
-// Salva dati su Firestore
+// Salva dati su Realtime Database
 async function syncToCloud() {
   if (!syncEnabled || !currentUser || !fbDb) return;
   try {
@@ -591,60 +592,58 @@ async function syncToCloud() {
     const dataToSave = JSON.parse(JSON.stringify(stato));
     dataToSave._lastModified = Date.now();
     
-    await fbDb.collection('turnazioni').doc(currentUser.uid).set({
+    await fbDb.ref('turnazioni/' + currentUser.uid).set({
       data: dataToSave,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedAt: firebase.database.ServerValue.TIMESTAMP,
       userEmail: currentUser.email
-    }, { merge: true });
+    });
     
     if (syncEl) { syncEl.textContent = '☁️ Salvato'; syncEl.className = 'sync-indicator'; }
   } catch(e) {
     console.error('Sync to cloud error:', e);
     const syncEl = document.getElementById('syncIndicator');
-    const errMsg = e.code === 'permission-denied' ? '⚠️ Permesso negato' : 
-                   e.code === 'unavailable' ? '⚠️ DB non attivo' :
-                   '⚠️ Errore';
+    const errMsg = e.code === 'PERMISSION_DENIED' ? '⚠️ Permesso negato' : 
+                   '⚠️ Errore sync';
     if (syncEl) { syncEl.textContent = errMsg; syncEl.className = 'sync-indicator'; }
-    // Se Firestore non è configurato, disabilita sync silenziosamente
-    if (e.code === 'permission-denied' || e.code === 'unimplemented') {
+    if (e.code === 'PERMISSION_DENIED') {
       syncEnabled = false;
       if (syncEl) { syncEl.textContent = '📱 Locale'; syncEl.className = 'sync-indicator'; }
     }
   }
 }
 
-// Carica dati da Firestore (solo se più recenti)
+// Carica dati da Realtime Database (solo se più recenti)
 async function syncFromCloud() {
   if (!syncEnabled || !currentUser || !fbDb) return;
   try {
     const syncEl = document.getElementById('syncIndicator');
     if (syncEl) { syncEl.textContent = '⏳ Caricamento...'; syncEl.className = 'sync-indicator syncing'; }
     
-    const doc = await fbDb.collection('turnazioni').doc(currentUser.uid).get();
-    if (doc.exists) {
-      const cloudData = doc.data().data;
-      if (cloudData) {
-        const cloudModified = cloudData._lastModified || 0;
-        const localModified = stato._lastModified || 0;
+    const snapshot = await fbDb.ref('turnazioni/' + currentUser.uid).once('value');
+    const cloudDoc = snapshot.val();
+    
+    if (cloudDoc && cloudDoc.data) {
+      const cloudData = cloudDoc.data;
+      const cloudModified = cloudData._lastModified || 0;
+      const localModified = stato._lastModified || 0;
+      
+      if (cloudModified > localModified) {
+        // I dati cloud sono più recenti, sovrascrivi locali
+        delete cloudData._lastModified;
+        stato = { ...stato, ...cloudData };
+        localStorage.setItem('turnazioni_stato_v5', JSON.stringify(stato));
         
-        if (cloudModified > localModified) {
-          // I dati cloud sono più recenti, sovrascrivi locali
-          delete cloudData._lastModified;
-          stato = { ...stato, ...cloudData };
-          localStorage.setItem('turnazioni_stato_v5', JSON.stringify(stato));
-          
-          // Aggiorna UI
-          if (document.getElementById('oreTarget')) document.getElementById('oreTarget').value = stato.oreTarget;
-          if (document.getElementById('oreTurno')) document.getElementById('oreTurno').value = stato.oreTurno;
-          if (document.getElementById('giorniRiposo')) document.getElementById('giorniRiposo').value = stato.giorniRiposo;
-          if (document.getElementById('inizioRotazione')) document.getElementById('inizioRotazione').value = stato.inizioRotazione;
-          
-          generaAssegnazioni();
-          renderAll();
-        } else {
-          // I dati locali sono più recenti, carica sul cloud
-          await syncToCloud();
-        }
+        // Aggiorna UI
+        if (document.getElementById('oreTarget')) document.getElementById('oreTarget').value = stato.oreTarget;
+        if (document.getElementById('oreTurno')) document.getElementById('oreTurno').value = stato.oreTurno;
+        if (document.getElementById('giorniRiposo')) document.getElementById('giorniRiposo').value = stato.giorniRiposo;
+        if (document.getElementById('inizioRotazione')) document.getElementById('inizioRotazione').value = stato.inizioRotazione;
+        
+        generaAssegnazioni();
+        renderAll();
+      } else {
+        // I dati locali sono più recenti, carica sul cloud
+        await syncToCloud();
       }
     } else {
       // Prima volta: carica dati locali sul cloud
@@ -655,8 +654,7 @@ async function syncFromCloud() {
   } catch(e) {
     console.error('Sync from cloud error:', e);
     const syncEl = document.getElementById('syncIndicator');
-    // Se Firestore non è configurato, disabilita sync e mostra stato locale
-    if (e.code === 'permission-denied' || e.code === 'unimplemented' || e.code === 'not-found') {
+    if (e.code === 'PERMISSION_DENIED') {
       syncEnabled = false;
       if (syncEl) { syncEl.textContent = '📱 Locale'; syncEl.className = 'sync-indicator'; }
     } else {
