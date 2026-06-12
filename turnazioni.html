@@ -6,7 +6,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Turnazioni v13 - Stampa PDF</title>
+<title>Turnazioni v14 - Stampa PDF</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -400,12 +400,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     </div>
     <div class="card">
       <div class="card-title">💾 Dati</div>
-      <button class="btn-excel" style="background:var(--danger);box-shadow:0 4px 12px rgba(239,68,68,0.3)" onclick="resetDati()">🗑️ Reset Tutto</button>
+      <button class="btn-excel" style="background:var(--primary);box-shadow:0 4px 12px rgba(37,99,235,0.3)" onclick="exportDati()">📥 Esporta dati (backup)</button>
+      <button class="btn-excel" style="background:var(--success);box-shadow:0 4px 12px rgba(16,185,129,0.3);margin-top:6px" onclick="importDati()">📤 Importa dati (ripristino)</button>
+      <button class="btn-excel" style="background:var(--danger);box-shadow:0 4px 12px rgba(239,68,68,0.3);margin-top:6px" onclick="resetDati()">🗑️ Reset Tutto</button>
     </div>
     <div class="card">
       <div class="card-title">☁️ Account & Sync</div>
       <div class="info-box">
         <strong>Perché accedere?</strong> Se cancelli i dati del browser, perdi tutti i nomi e le modifiche. Con il tuo account Google, i dati vengono salvati nel cloud e ritornano automaticamente quando riaccedi da qualsiasi dispositivo.
+      </div>
+      <div class="warn-box" style="margin-top:8px">
+        💡 <strong>Consiglio:</strong> Usa "Esporta dati" per fare un backup su file. Così hai sempre una copia di sicurezza anche senza account Google.
       </div>
       <div id="syncStatus" style="margin-top:8px;font-size:13px;color:var(--text-light)"></div>
       <div id="syncButtons" style="margin-top:8px"></div>
@@ -596,7 +601,15 @@ async function syncToCloud() {
   } catch(e) {
     console.error('Sync to cloud error:', e);
     const syncEl = document.getElementById('syncIndicator');
-    if (syncEl) { syncEl.textContent = '⚠️ Errore'; syncEl.className = 'sync-indicator'; }
+    const errMsg = e.code === 'permission-denied' ? '⚠️ Permesso negato' : 
+                   e.code === 'unavailable' ? '⚠️ DB non attivo' :
+                   '⚠️ Errore';
+    if (syncEl) { syncEl.textContent = errMsg; syncEl.className = 'sync-indicator'; }
+    // Se Firestore non è configurato, disabilita sync silenziosamente
+    if (e.code === 'permission-denied' || e.code === 'unimplemented') {
+      syncEnabled = false;
+      if (syncEl) { syncEl.textContent = '📱 Locale'; syncEl.className = 'sync-indicator'; }
+    }
   }
 }
 
@@ -642,7 +655,13 @@ async function syncFromCloud() {
   } catch(e) {
     console.error('Sync from cloud error:', e);
     const syncEl = document.getElementById('syncIndicator');
-    if (syncEl) { syncEl.textContent = '⚠️ Errore'; syncEl.className = 'sync-indicator'; }
+    // Se Firestore non è configurato, disabilita sync e mostra stato locale
+    if (e.code === 'permission-denied' || e.code === 'unimplemented' || e.code === 'not-found') {
+      syncEnabled = false;
+      if (syncEl) { syncEl.textContent = '📱 Locale'; syncEl.className = 'sync-indicator'; }
+    } else {
+      if (syncEl) { syncEl.textContent = '⚠️ Errore'; syncEl.className = 'sync-indicator'; }
+    }
   }
 }
 
@@ -834,6 +853,61 @@ function resetDati() {
     localStorage.removeItem('turnazioni_stato_v4');
     location.reload();
   }
+}
+
+// Esporta dati su file JSON
+function exportDati() {
+  const data = JSON.stringify(stato, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  const dataStr = new Date().toISOString().split('T')[0];
+  a.download = `turnazioni_backup_${dataStr}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// Importa dati da file JSON
+function importDati() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const imported = JSON.parse(ev.target.result);
+        if (!imported.assegnazioni && !imported.nomiPersone) {
+          alert('File non valido. Seleziona un backup di Turnazioni.');
+          return;
+        }
+        if (confirm('Vuoi sostituire tutti i dati attuali con il backup? I dati attuali saranno persi.')) {
+          stato = { ...stato, ...imported };
+          stato._lastModified = Date.now();
+          localStorage.setItem('turnazioni_stato_v5', JSON.stringify(stato));
+          // Sync sul cloud
+          syncToCloud();
+          // Aggiorna UI
+          if (document.getElementById('oreTarget')) document.getElementById('oreTarget').value = stato.oreTarget;
+          if (document.getElementById('oreTurno')) document.getElementById('oreTurno').value = stato.oreTurno;
+          if (document.getElementById('giorniRiposo')) document.getElementById('giorniRiposo').value = stato.giorniRiposo;
+          if (document.getElementById('inizioRotazione')) document.getElementById('inizioRotazione').value = stato.inizioRotazione;
+          generaAssegnazioni();
+          renderAll();
+          alert('✅ Dati importati con successo!');
+        }
+      } catch(err) {
+        alert('Errore nella lettura del file: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
 }
 
 function setVariante(v) {
