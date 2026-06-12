@@ -6,7 +6,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Turnazioni v9 - Modifica Diretta</title>
+<title>Turnazioni v10 - Stampa PDF</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -226,6 +226,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       <div id="calendarioGrid"></div>
     </div>
     <button class="btn-excel" onclick="exportExcel()">📥 Scarica Excel</button>
+    <button class="btn-excel" style="background:var(--primary);box-shadow:0 4px 12px rgba(37,99,235,0.3);margin-top:6px" onclick="exportPDF()">🖨️ Stampa PDF</button>
   </div>
 
   <!-- SETTIMANA -->
@@ -1507,6 +1508,219 @@ function exportExcel() {
   a.download = `Turnazioni_${MESI_IT[month]}_${year}.csv`;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+// ========================
+// PDF EXPORT (Stampa)
+// ========================
+function exportPDF() {
+  const year = meseCorrente.getFullYear();
+  const month = meseCorrente.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const gruppi = getGruppi();
+  const meseNome = MESI_IT[month] + ' ' + year;
+
+  // Build all person names in order
+  const allPersone = [];
+  Object.entries(gruppi).forEach(([gid, gruppo]) => {
+    gruppo.persone.forEach(p => {
+      allPersone.push({ codice: p, gruppo: gid, nome: getNomePersona(p) });
+    });
+  });
+
+  // Calculate working days
+  let workingDays = [];
+  for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
+    const dow = d.getDay();
+    if (dow === 0 || dow === 6) continue;
+    workingDays.push(new Date(d));
+  }
+
+  // Calculate monthly hours for each person
+  const oreMensili = {};
+  Object.entries(gruppi).forEach(([gid, gruppo]) => {
+    gruppo.persone.forEach(persona => {
+      let ore = 0;
+      for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
+        const dk = dateKey(d);
+        const dow = d.getDay();
+        if (dow === 0 || dow === 6) continue;
+        const info = getTurnoEffettivo(dk, persona);
+        if (info && info.stato === 'lavoro') {
+          if (gid === 'J' && info.oreTotali) {
+            ore += info.oreTotali;
+          } else {
+            ore += info.ore || stato.oreTurno;
+          }
+        }
+      }
+      oreMensili[persona] = ore;
+    });
+  });
+
+  // Build HTML for print
+  let html = `<!DOCTYPE html><html lang="it"><head><meta charset="UTF-8">
+<title>Turnazioni ${meseNome}</title>
+<style>
+@page{size:A4 landscape;margin:8mm}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Arial,Helvetica,sans-serif;font-size:9px;color:#1e293b;background:#fff}
+.header-print{text-align:center;margin-bottom:8px;border-bottom:2px solid #2563eb;padding-bottom:6px}
+.header-print h1{font-size:18px;color:#2563eb;margin-bottom:2px}
+.header-print h2{font-size:12px;color:#64748b;font-weight:400}
+table{width:100%;border-collapse:collapse;margin-bottom:10px}
+th,td{border:1px solid #94a3b8;padding:3px 4px;text-align:center;font-size:8px;vertical-align:middle}
+th{background:#2563eb;color:#fff;font-weight:700;font-size:7.5px;position:sticky;top:0}
+td{font-size:7.5px}
+td.riposo{background:#fee2e2;color:#991b1b;font-weight:700}
+td.jolly{background:#fef3c7;color:#92400e;font-weight:700}
+td.lavoro{font-weight:600}
+tr:nth-child(even) td{background:#f8fafc}
+tr:nth-child(even) td.riposo{background:#fee2e2}
+.gruppo-sep td{background:#e2e8f0;font-weight:700;font-size:7px;text-align:left;padding:2px 6px;color:#475569}
+.ore-footer td{background:#eff6ff;font-weight:700;border-top:2px solid #2563eb;font-size:8px}
+.ore-footer td.ok{color:#10b981}
+.ore-footer td.warn{color:#f59e0b}
+.ore-footer td.over{color:#ef4444}
+.legenda-print{display:flex;gap:12px;margin-bottom:8px;font-size:8px;align-items:center;flex-wrap:wrap}
+.legenda-print span{display:flex;align-items:center;gap:3px}
+.dot{width:8px;height:8px;border-radius:2px;display:inline-block}
+.note{font-size:7.5px;color:#64748b;margin-top:6px;text-align:center;font-style:italic}
+@media print{
+  body{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .no-print{display:none}
+}
+</style></head><body>`;
+
+  // Header
+  html += `<div class="header-print">
+<h1>📅 Turnazioni — ${meseNome}</h1>
+<h2>${stato.variante === 2 ? '10 persone · 1 riposo/giorno · Jolly copre turno + 16:30-18:00' : '8 persone + Jolly'}</h2>
+</div>`;
+
+  // Legenda
+  html += `<div class="legenda-print">
+<span><span class="dot" style="background:#ef4444"></span> Gruppo A</span>
+<span><span class="dot" style="background:#3b82f6"></span> Gruppo B</span>
+<span><span class="dot" style="background:#10b981"></span> Gruppo C</span>
+<span><span class="dot" style="background:#f59e0b"></span> Jolly</span>
+<span style="background:#fee2e2;padding:1px 6px;border-radius:3px;font-weight:600">Riposo</span>
+<span style="background:#fef3c7;padding:1px 6px;border-radius:3px;font-weight:600">Jolly</span>
+</div>`;
+
+  // TABLE 1: Tabella per giorno (righe = giorni, colonne = persone)
+  html += `<h3 style="font-size:11px;margin-bottom:4px;color:#2563eb">📅 Calendario Giornaliero</h3>`;
+  html += `<table><thead><tr><th style="min-width:28px">Data</th><th style="min-width:24px">Giorno</th>`;
+  allPersone.forEach(p => {
+    const gc = GRUPPO_COLORS[p.gruppo] || '#94a3b8';
+    html += `<th style="color:${gc};min-width:55px">${p.nome}<br><span style="font-size:6px;opacity:0.8">(${p.gruppo})</span></th>`;
+  });
+  html += `<th style="min-width:30px">Pres.</th></tr></thead><tbody>`;
+
+  for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
+    const dk = dateKey(d);
+    const dow = d.getDay();
+    if (dow === 0 || dow === 6) continue;
+    const dayName = GIORNI_IT[dow === 0 ? 6 : dow - 1];
+
+    html += `<tr>`;
+    html += `<td style="font-weight:700">${d.getDate()}/${month+1}</td>`;
+    html += `<td style="font-weight:600">${dayName}</td>`;
+
+    let presenti = 0;
+    allPersone.forEach(p => {
+      const info = getTurnoEffettivo(dk, p.codice);
+      if (!info) { html += `<td>—</td>`; return; }
+      if (info.stato === 'riposo') {
+        html += `<td class="riposo">RIP</td>`;
+      } else if (info.turno === 'jolly') {
+        html += `<td class="jolly">${info.entrata}-${info.uscita}<br>+16:30-18:00</td>`;
+        presenti++;
+      } else if (info.stato === 'lavoro') {
+        const isOv = info.overridden;
+        html += `<td class="lavoro" ${isOv?'style="outline:2px solid #f59e0b"':''}>${info.entrata}-${info.uscita}${isOv?' ★':''}</td>`;
+        presenti++;
+      } else {
+        html += `<td>—</td>`;
+      }
+    });
+
+    html += `<td style="font-weight:700;color:${presenti>=6?'#10b981':'#ef4444'}">${presenti}</td>`;
+    html += `</tr>`;
+  }
+
+  // Ore totali row
+  html += `<tr class="ore-footer"><td colspan="2" style="text-align:right">ORE TOTALI</td>`;
+  allPersone.forEach(p => {
+    const ore = oreMensili[p.codice] || 0;
+    const diff = ore - stato.oreTarget;
+    const cls = Math.abs(diff) <= 3 ? 'ok' : diff > 0 ? 'over' : 'warn';
+    html += `<td class="${cls}">${ore.toFixed(1)}h</td>`;
+  });
+  html += `<td></td></tr>`;
+
+  // Target row
+  html += `<tr class="ore-footer"><td colspan="2" style="text-align:right">TARGET</td>`;
+  allPersone.forEach(p => {
+    html += `<td>${stato.oreTarget}h</td>`;
+  });
+  html += `<td></td></tr>`;
+
+  html += `</tbody></table>`;
+
+  // TABLE 2: Riepilogo per persona
+  html += `<div style="page-break-before:auto;margin-top:12px">`;
+  html += `<h3 style="font-size:11px;margin-bottom:4px;color:#2563eb">📊 Riepilogo Ore Mensili — ${meseNome}</h3>`;
+  html += `<table><thead><tr><th>Persona</th><th>Gruppo</th><th>Giorni Lavoro</th><th>Giorni Riposo</th><th>Ore Totali</th><th>Target</th><th>Differenza</th></tr></thead><tbody>`;
+
+  Object.entries(gruppi).forEach(([gid, gruppo]) => {
+    gruppo.persone.forEach(persona => {
+      const nome = getNomePersona(persona);
+      let ggLav = 0, ggRip = 0;
+      for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
+        const dk = dateKey(d);
+        const dow = d.getDay();
+        if (dow === 0 || dow === 6) continue;
+        const info = getTurnoEffettivo(dk, persona);
+        if (!info) continue;
+        if (info.stato === 'lavoro') ggLav++;
+        else if (info.stato === 'riposo') ggRip++;
+      }
+      const ore = oreMensili[persona] || 0;
+      const diff = ore - stato.oreTarget;
+      const diffColor = Math.abs(diff) <= 3 ? '#10b981' : diff > 0 ? '#ef4444' : '#f59e0b';
+
+      html += `<tr>`;
+      html += `<td style="font-weight:700;color:${GRUPPO_COLORS[gid]}">${nome}</td>`;
+      html += `<td>${gid}</td>`;
+      html += `<td>${ggLav}</td>`;
+      html += `<td>${ggRip}</td>`;
+      html += `<td style="font-weight:700">${ore.toFixed(1)}h</td>`;
+      html += `<td>${stato.oreTarget}h</td>`;
+      html += `<td style="color:${diffColor};font-weight:700">${diff>=0?'+':''}${diff.toFixed(1)}h</td>`;
+      html += `</tr>`;
+    });
+  });
+
+  html += `</tbody></table></div>`;
+
+  // Note
+  html += `<div class="note">Generato il ${new Date().toLocaleDateString('it-IT')} — Turnazioni v9 — Target: ${stato.oreTarget}h/mese — ★ = orario modificato manualmente</div>`;
+
+  html += `</body></html>`;
+
+  // Open in new window for printing
+  const printWin = window.open('', '_blank', 'width=1000,height=700');
+  if (printWin) {
+    printWin.document.write(html);
+    printWin.document.close();
+    setTimeout(() => {
+      printWin.print();
+    }, 500);
+  } else {
+    alert('Impossibile aprire la finestra di stampa. Disabilita il blocco popup e riprova.');
+  }
 }
 
 // ========================
