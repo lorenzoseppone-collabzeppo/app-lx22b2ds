@@ -2,8 +2,11 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Turnazioni - Gestione Turni</title>
+<title>Turnazioni v5 - 10 persone</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -47,7 +50,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .t-930{background:#fce7f3;color:#9d174d}
 .t-fisso{background:#fed7aa;color:#9a3412}
 .t-riposo{background:#fee2e2;color:#991b1b}
-.t-reperibile{background:#fef9c3;color:#854d0e}
+
 
 .cal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .cal-nav{display:flex;gap:6px}
@@ -70,7 +73,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .cal-person-name{font-weight:700;min-width:14px;text-align:right}
 .cal-person-time{font-weight:600;border-radius:3px;padding:0 2px;font-size:7.5px}
 .cal-person-riposo{font-weight:600;border-radius:3px;padding:0 2px;font-size:7px;background:#fee2e2;color:#991b1b}
-.cal-person-reperib{font-weight:600;border-radius:3px;padding:0 2px;font-size:7px;background:#fef9c3;color:#854d0e}
+
 
 /* Separatore gruppo nel calendario */
 .cal-grp-sep{border-top:1px solid #f1f5f9;margin:1px 0}
@@ -133,7 +136,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 <div class="header">
   <h1>📅 Turnazioni</h1>
-  <div class="header-sub">Gestione Turni di Lavoro</div>
+  <div class="header-sub" id="headerSub">10 persone · 1 riposo/giorno · Jolly copre turno + 16:30-18:00</div>
 </div>
 
 <div class="tabs">
@@ -201,11 +204,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
         <strong>Variante 1 (8 persone):</strong> A(2) + B(3) + C(3) + Jolly fisso
       </div>
       <div class="info-box">
-        <strong>Variante 2 (9 persone):</strong> A(3) + B(3) + C(3) — senza Jolly, se uno si ammala il reperibile copre
+        <strong>Variante 2 (10 persone):</strong> A(3) + B(3) + C(3) + Jolly — 1 riposo al giorno tra i 9, Jolly copre il turno mancante + 16:30-18:00
       </div>
       <div style="display:flex;flex-wrap:wrap;justify-content:center;margin-top:8px">
-        <button class="variante-btn active" id="btnVar1" onclick="setVariante(1)">8 persone + Jolly</button>
-        <button class="variante-btn" id="btnVar2" onclick="setVariante(2)">9 persone (3+3+3)</button>
+        <button class="variante-btn" id="btnVar1" onclick="setVariante(1)">8 persone + Jolly</button>
+        <button class="variante-btn active" id="btnVar2" onclick="setVariante(2)">10 persone (9+Jolly)</button>
       </div>
     </div>
     <div class="card">
@@ -226,8 +229,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     <div class="card">
       <div class="card-title">🔄 Rotazione</div>
       <div class="info-box">
-        Ogni settimana il gruppo cambia fascia oraria: A→B, B→C, C→A.<br>
-        Dentro ogni gruppo, le persone hanno orari sfalsati per coprire tutti gli ingressi.
+        <strong>Variante 10 persone:</strong> Ogni settimana i gruppi cambiano fascia (A→B, B→C, C→A). Il riposo ruota globalmente: A1→A2→A3→B1→B2→B3→C1→C2→C3→repeat. Il Jolly copre il turno di chi riposa + 16:30-18:00 fisso.<br>
+        <strong>Variante 8 persone:</strong> Stessa rotazione fasce, riposo ruota dentro ogni gruppo con 3 persone. Jolly solo fisso 16:30-18:00.
       </div>
       <div class="setting-row">
         <span class="setting-label">Inizio rotazione</span>
@@ -237,9 +240,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
     <div class="card">
       <div class="card-title">🛌 Regole Riposo</div>
       <div class="warn-box">
-        ⚠️ Chi riposa deve essere da gruppi diversi (es. A1 + B2).<br>
-        ⚠️ Se uno si ammala, il reperibile deve coprire.<br>
-        ⚠️ Su 2 persone a riposo, 1 deve rimanere reperibile.
+        ⚠️ Variante 10 persone: 1 riposo al giorno tra i 9, che ruota A1→A2→A3→B1→B2→B3→C1→C2→C3.<br>
+        ⚠️ Chi riposa, riposa e basta.<br>
+        ⚠️ Il Jolly (10ª persona) copre il turno di chi riposa + fa 16:30-18:00 fisso (9h/giorno).
       </div>
     </div>
     <div class="card">
@@ -279,8 +282,9 @@ const TURNI_COLORS = {
   '9:00':{bg:'#ede9fe',tx:'#5b21b6'},
   '9:30':{bg:'#fce7f3',tx:'#9d174d'},
   'fisso':{bg:'#fed7aa',tx:'#9a3412'},
+  'jolly':{bg:'#fed7aa',tx:'#9a3412'},
   'riposo':{bg:'#fee2e2',tx:'#991b1b'},
-  'reperibile':{bg:'#fef9c3',tx:'#854d0e'}
+
 };
 
 // Colori gruppo per i pallini
@@ -309,7 +313,8 @@ const SCHEMA_8 = {
 const SCHEMA_9 = {
   A: {persone:['A1','A2','A3'], fascia:'A'},
   B: {persone:['B1','B2','B3'], fascia:'B'},
-  C: {persone:['C1','C2','C3'], fascia:'C'}
+  C: {persone:['C1','C2','C3'], fascia:'C'},
+  J: {persone:['Jolly'], fascia:'J'}
 };
 
 // Assegnazione turni per fascia e posizione
@@ -330,7 +335,7 @@ const ROTAZIONE_ABC = [
 // STATO
 // ========================
 let stato = {
-  variante: 1,
+  variante: 2,
   oreTarget: 138,
   oreTurno: 7.5,
   giorniRiposo: 2,
@@ -391,10 +396,10 @@ function getFasciaForWeek(weekIndex, gruppoId) {
 // ========================
 // SALVATAGGIO
 // ========================
-function salvaStato() { localStorage.setItem('turnazioni_stato_v3', JSON.stringify(stato)); }
+function salvaStato() { localStorage.setItem('turnazioni_stato_v4', JSON.stringify(stato)); }
 
 function caricaStato() {
-  const saved = localStorage.getItem('turnazioni_stato_v3');
+  const saved = localStorage.getItem('turnazioni_stato_v4');
   if (saved) { try { stato = {...stato, ...JSON.parse(saved)}; } catch(e) {} }
 }
 
@@ -410,7 +415,7 @@ function salvaImpostazioni() {
 
 function resetDati() {
   if (confirm('Sei sicuro? Verranno cancellati tutti i dati.')) {
-    localStorage.removeItem('turnazioni_stato_v3');
+    localStorage.removeItem('turnazioni_stato_v4');
     location.reload();
   }
 }
@@ -431,143 +436,178 @@ function generaAssegnazioni() {
   const assegnazioni = {};
   const start = new Date(stato.inizioRotazione + 'T00:00:00');
   const today = new Date();
-  // Genera dal mese precedente fino a 6 mesi avanti per coprire giorni prima dell'inizio rotazione
   const startMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
   const endMonth = new Date(today.getFullYear(), today.getMonth() + 6, 0);
   
   const gruppi = getGruppi();
-  const tuttiNomi = [];
-  Object.values(gruppi).forEach(g => g.persone.forEach(p => tuttiNomi.push(p)));
+  const isVar9 = stato.variante === 2;
   
-  // Calcola il weekIndex basato sulla data di inizio rotazione
-  // Partiamo da prima del mese corrente per generare anche i giorni precedenti
+  // Variante 2: lista piatta di tutte le 9 persone per la rotazione globale
+  let rotazioneGlobale = [];
+  if (isVar9) {
+    Object.entries(gruppi).forEach(([gid, gruppo]) => {
+      if (gid === 'J') return;
+      gruppo.persone.forEach(p => rotazioneGlobale.push({persona: p, gruppo: gid}));
+    });
+    // rotazioneGlobale = [{persona:'A1',gruppo:'A'}, {persona:'A2',gruppo:'A'}, {persona:'A3',gruppo:'A'},
+    //                      {persona:'B1',gruppo:'B'}, {persona:'B2',gruppo:'B'}, {persona:'B3',gruppo:'B'},
+    //                      {persona:'C1',gruppo:'C'}, {persona:'C2',gruppo:'C'}, {persona:'C3',gruppo:'C'}]
+  }
+  
   let currentMonday = getMonday(startMonth);
-  // Il weekIndex relativo alla data di inizio rotazione
   const startMonday = getMonday(start);
   const weeksDiffFromStart = Math.round((currentMonday - startMonday) / (7 * 86400000));
   let weekIndex = weeksDiffFromStart;
-  
-  // Traccia riposi per equità mensile
-  const riposiMesePersona = {};
   
   while (currentMonday <= endMonth) {
     for (let g = 0; g < 5; g++) { // Lun-Ven
       const day = new Date(currentMonday);
       day.setDate(day.getDate() + g);
       const dk = dateKey(day);
-      const meseKey = day.getFullYear() + '-' + String(day.getMonth()+1).padStart(2,'0');
       
       assegnazioni[dk] = {};
+      const personeRiposoOggi = [];
       
-      // Determina la fascia per ogni gruppo questa settimana
-      Object.entries(gruppi).forEach(([gid, gruppo]) => {
-        if (gid === 'J') {
-          // Jolly: fisso 16:30-18:00 + sostituzioni
-          assegnazioni[dk]['Jolly'] = {
-            turno: 'fisso', entrata: '16:30', uscita: '18:00',
-            ore: 1.5, stato: 'lavoro', gruppo: 'J'
-          };
-          return;
-        }
+      // Indice globale del giorno lavorativo (deterministico, non dipende da quando si genera)
+      const globalDayIdx = weekIndex * 5 + g;
+      
+      if (isVar9) {
+        // ================================================================
+        // VARIANTE 2: 10 persone (3+3+3 + Jolly)
+        // 1 persona a riposo al giorno tra i 9, rotazione globale:
+        // A1 → A2 → A3 → B1 → B2 → B3 → C1 → C2 → C3 → repeat
+        // Chi riposa, riposa e basta
+        // Il Jolly (10ª persona): fisso 16:30-18:00 + copre il turno di chi riposa
+        // ================================================================
+        const riposoIdx = ((globalDayIdx % 9) + 9) % 9;
+        const chiRiposa = rotazioneGlobale[riposoIdx];
         
-        const fascia = getFasciaForWeek(weekIndex, gid);
-        const turniFascia = FASCE_TURNI[fascia];
+        // Trova la fascia del gruppo dove manca la persona, per il Jolly
+        const fasciaRiposo = getFasciaForWeek(weekIndex, chiRiposa.gruppo);
+        const turniFasciaRiposo = FASCE_TURNI[fasciaRiposo];
+        // Il Jolly copre uno dei 2 ingressi del gruppo dove manca la persona
+        const jollyIngresso = turniFasciaRiposo[0]; // primo ingresso
         
-        gruppo.persone.forEach((persona, idx) => {
-          if (idx < turniFascia.length) {
-            const entrata = turniFascia[idx];
-            const uscita = calcolaUscita(entrata);
-            assegnazioni[dk][persona] = {
-              turno: entrata, entrata: entrata, uscita: uscita,
-              ore: stato.oreTurno, stato: 'lavoro', gruppo: gid
+        Object.entries(gruppi).forEach(([gid, gruppo]) => {
+          if (gid === 'J') {
+            // Jolly: fisso 16:30-18:00 + copertura del turno di chi riposa
+            assegnazioni[dk]['Jolly'] = {
+              turno: 'jolly', entrata: jollyIngresso, uscita: calcolaUscita(jollyIngresso),
+              ore: stato.oreTurno, stato: 'lavoro', gruppo: 'J',
+              fisso: '16:30-18:00',
+              copre: chiRiposa.persona,
+              copreGruppo: chiRiposa.gruppo,
+              oreTotali: stato.oreTurno + 1.5 // turno + fisso serale
             };
+            return;
+          }
+          
+          const fascia = getFasciaForWeek(weekIndex, gid);
+          const turniFascia = FASCE_TURNI[fascia]; // 2 ingressi
+          
+          let workingCount = 0;
+          gruppo.persone.forEach((persona) => {
+            if (persona === chiRiposa.persona && gid === chiRiposa.gruppo) {
+              // Questa persona riposa oggi
+              assegnazioni[dk][persona] = {
+                turno: 'riposo', entrata: null, uscita: null,
+                ore: 0, stato: 'riposo', gruppo: gid
+              };
+              personeRiposoOggi.push(persona);
+            } else {
+              // Lavora: assegna ingresso dalla fascia
+              const entrataIdx = workingCount % turniFascia.length;
+              const entrata = turniFascia[entrataIdx];
+              const uscita = calcolaUscita(entrata);
+              assegnazioni[dk][persona] = {
+                turno: entrata, entrata: entrata, uscita: uscita,
+                ore: stato.oreTurno, stato: 'lavoro', gruppo: gid
+              };
+              workingCount++;
+            }
+          });
+        });
+        
+      } else {
+        // ================================================================
+        // VARIANTE 1: 8 persone (2+3+3) + Jolly
+        // Il riposo ruota dentro ogni gruppo che ha piu persone che ingressi
+        // ================================================================
+        Object.entries(gruppi).forEach(([gid, gruppo]) => {
+          if (gid === 'J') {
+            // Jolly: fisso 16:30-18:00 + sostituzioni
+            assegnazioni[dk]['Jolly'] = {
+              turno: 'fisso', entrata: '16:30', uscita: '18:00',
+              ore: 1.5, stato: 'lavoro', gruppo: 'J'
+            };
+            return;
+          }
+          
+          const fascia = getFasciaForWeek(weekIndex, gid);
+          const turniFascia = FASCE_TURNI[fascia];
+          const numPersone = gruppo.persone.length;
+          const numIngressi = turniFascia.length;
+          const haRiposo = numPersone > numIngressi;
+          
+          if (haRiposo) {
+            const riposoIdx = ((globalDayIdx % numPersone) + numPersone) % numPersone;
+            let turnoAssegnato = 0;
+            gruppo.persone.forEach((persona, idx) => {
+              if (idx === riposoIdx) {
+                assegnazioni[dk][persona] = {
+                  turno: 'riposo', entrata: null, uscita: null,
+                  ore: 0, stato: 'riposo', gruppo: gid
+                };
+                personeRiposoOggi.push(persona);
+              } else {
+                const entrata = turniFascia[turnoAssegnato];
+                const uscita = calcolaUscita(entrata);
+                assegnazioni[dk][persona] = {
+                  turno: entrata, entrata: entrata, uscita: uscita,
+                  ore: stato.oreTurno, stato: 'lavoro', gruppo: gid
+                };
+                turnoAssegnato++;
+              }
+            });
           } else {
-            // Terza persona → riposo o reperibile
-            assegnazioni[dk][persona] = {
-              turno: 'riposo', entrata: null, uscita: null,
-              ore: 0, stato: 'riposo', gruppo: gid
-            };
-          }
-        });
-      });
-      
-      // SISTEMA RIPOSI: 2 persone a riposo, da gruppi diversi
-      // 1 delle 2 è reperibile
-      const personeRiposo = [];
-      Object.entries(gruppi).forEach(([gid, gruppo]) => {
-        gruppo.persone.forEach(persona => {
-          if (assegnazioni[dk][persona] && assegnazioni[dk][persona].stato === 'riposo') {
-            personeRiposo.push(persona);
-          }
-        });
-      });
-      
-      // Se ci sono già 2+ persone a riposo, ok
-      // Se ce n'è solo 1, aggiungiamo 1 persona da un altro gruppo
-      if (personeRiposo.length < stato.giorniRiposo) {
-        const gruppiGiaRiposo = new Set(personeRiposo.map(p => assegnazioni[dk][p].gruppo));
-        
-        // Scegli chi ha riposato di meno questo mese
-        const conteggio = {};
-        tuttiNomi.forEach(p => conteggio[p] = 0);
-        Object.keys(assegnazioni).forEach(rdk => {
-          if (rdk.startsWith(meseKey) && assegnazioni[rdk]) {
-            Object.entries(assegnazioni[rdk]).forEach(([persona, info]) => {
-              if (info.stato === 'riposo' && conteggio[persona] !== undefined) conteggio[persona]++;
+            gruppo.persone.forEach((persona, idx) => {
+              const entrata = turniFascia[idx];
+              const uscita = calcolaUscita(entrata);
+              assegnazioni[dk][persona] = {
+                turno: entrata, entrata: entrata, uscita: uscita,
+                ore: stato.oreTurno, stato: 'lavoro', gruppo: gid
+              };
             });
           }
         });
         
-        const candidati = tuttiNomi.filter(p => {
-          if (personeRiposo.includes(p)) return false;
-          if (p === 'Jolly') return false;
-          const grp = getGruppoPersona(p);
-          return !gruppiGiaRiposo.has(grp);
-        }).sort((a,b) => conteggio[a] - conteggio[b]);
-        
-        while (personeRiposo.length < stato.giorniRiposo && candidati.length > 0) {
-          const persona = candidati.shift();
-          const nuovoGruppoRiposo = getGruppoPersona(persona);
-          
-          assegnazioni[dk][persona] = {
-            turno: 'riposo', entrata: null, uscita: null,
-            ore: 0, stato: 'riposo', gruppo: nuovoGruppoRiposo
-          };
-          personeRiposo.push(persona);
-          gruppiGiaRiposo.add(nuovoGruppoRiposo);
-        }
-      }
-      
-      // Segna 1 riposo come reperibile
-      if (personeRiposo.length >= 2) {
-        assegnazioni[dk][personeRiposo[1]] = {
-          ...assegnazioni[dk][personeRiposo[1]],
-          stato: 'reperibile',
-          turno: 'reperibile'
-        };
-      }
-      
-      // Jolly: se ci sono persone a riposo, il Jolly copre i loro turni
-      if (gruppi.J && personeRiposo.length > 0) {
-        const sostituzioni = [];
-        personeRiposo.forEach(p => {
-          const gid = getGruppoPersona(p);
-          if (gid && gid !== 'J') {
-            const fascia = getFasciaForWeek(weekIndex, gid);
-            const turniFascia = FASCE_TURNI[fascia];
-            const idx = gruppi[gid].persone.indexOf(p);
-            if (idx >= 0 && idx < turniFascia.length) {
-              sostituzioni.push({
-                persona: p,
-                entrata: turniFascia[idx],
-                uscita: calcolaUscita(turniFascia[idx])
-              });
+        // Jolly: se ci sono persone a riposo, il Jolly copre i loro turni
+        if (gruppi.J && personeRiposoOggi.length > 0) {
+          const sostituzioni = [];
+          personeRiposoOggi.forEach(p => {
+            const gid = getGruppoPersona(p);
+            if (gid && gid !== 'J') {
+              const fascia = getFasciaForWeek(weekIndex, gid);
+              const turniFascia = FASCE_TURNI[fascia];
+              const pIdx = gruppi[gid].persone.indexOf(p);
+              let turnoIdx = 0;
+              const riposoIdxGruppo = ((globalDayIdx % gruppi[gid].persone.length) + gruppi[gid].persone.length) % gruppi[gid].persone.length;
+              for (let i = 0; i < pIdx; i++) {
+                if (i !== riposoIdxGruppo) turnoIdx++;
+              }
+              if (turnoIdx < turniFascia.length) {
+                sostituzioni.push({
+                  persona: p,
+                  entrata: turniFascia[turnoIdx],
+                  uscita: calcolaUscita(turniFascia[turnoIdx])
+                });
+              }
             }
+          });
+          assegnazioni[dk]['Jolly'].sostituzioni = sostituzioni;
+          if (sostituzioni.length > 0) {
+            assegnazioni[dk]['Jolly'].oreTotali = 1.5 + sostituzioni.length * stato.oreTurno;
           }
-        });
-        assegnazioni[dk]['Jolly'].sostituzioni = sostituzioni;
-        if (sostituzioni.length > 0) {
-          assegnazioni[dk]['Jolly'].oreTotali = 1.5 + sostituzioni.length * stato.oreTurno;
         }
       }
     }
@@ -584,11 +624,22 @@ function generaAssegnazioni() {
 // RENDER
 // ========================
 function renderAll() {
+  updateHeaderSub();
   renderCalendario();
   renderSettimana();
   renderCoperture();
   renderOre();
   renderLegenda();
+}
+
+function updateHeaderSub() {
+  const el = document.getElementById('headerSub');
+  if (!el) return;
+  if (stato.variante === 2) {
+    el.textContent = '10 persone · 1 riposo/giorno · Jolly copre turno + 16:30-18:00';
+  } else {
+    el.textContent = '8 persone + Jolly · Rotazione per gruppo';
+  }
 }
 
 // TABS
@@ -609,8 +660,9 @@ function renderLegenda() {
     html += `<div class="legenda-item"><div class="legenda-dot" style="background:${c.bg}"></div>${t}</div>`;
   });
   html += `<div class="legenda-item"><div class="legenda-dot" style="background:${TURNI_COLORS.fisso.bg}"></div>Fisso</div>`;
+  html += `<div class="legenda-item"><div class="legenda-dot" style="background:${TURNI_COLORS.jolly.bg}"></div>Jolly</div>`;
   html += `<div class="legenda-item"><div class="legenda-dot" style="background:${TURNI_COLORS.riposo.bg}"></div>Riposo</div>`;
-  html += `<div class="legenda-item"><div class="legenda-dot" style="background:${TURNI_COLORS.reperibile.bg}"></div>Reperib.</div>`;
+
   el.innerHTML = html;
 }
 
@@ -675,12 +727,15 @@ function renderCalendario() {
                 html += `<span class="cal-person-name" style="color:${dotColor}">${shortName}</span>`;
                 
                 if (info.stato === 'lavoro' && info.entrata) {
-                  const tc = TURNI_COLORS[info.entrata] || TURNI_COLORS.fisso;
-                  html += `<span class="cal-person-time" style="background:${tc.bg};color:${tc.tx}">${info.entrata}</span>`;
+                  if (info.turno === 'jolly') {
+                    const tc = TURNI_COLORS[info.entrata] || TURNI_COLORS.fisso;
+                    html += `<span class="cal-person-time" style="background:${TURNI_COLORS.fisso.bg};color:${TURNI_COLORS.fisso.tx}">${info.entrata}+J</span>`;
+                  } else {
+                    const tc = TURNI_COLORS[info.entrata] || TURNI_COLORS.fisso;
+                    html += `<span class="cal-person-time" style="background:${tc.bg};color:${tc.tx}">${info.entrata}</span>`;
+                  }
                 } else if (info.stato === 'riposo') {
                   html += `<span class="cal-person-riposo">Rip</span>`;
-                } else if (info.stato === 'reperibile') {
-                  html += `<span class="cal-person-reperib">Rep</span>`;
                 }
                 
                 html += '</div>';
@@ -730,12 +785,15 @@ function mostraGiorno(dk) {
       let chip = '';
       let chipClass = '';
       if (info.stato === 'lavoro' && info.entrata) {
-        const cls = 't-' + info.entrata.replace(':','');
-        chip = `${info.entrata} - ${info.uscita}`;
-        chipClass = cls;
-      } else if (info.stato === 'reperibile') {
-        chip = '🟡 Reperibile';
-        chipClass = 't-reperibile';
+        if (info.turno === 'jolly' || info.turno === 'fisso') {
+          const cls = 't-' + info.entrata.replace(':','');
+          chip = `${info.entrata} - ${info.uscita} + ${info.fisso || '16:30-18:00'}`;
+          chipClass = cls;
+        } else {
+          const cls = 't-' + info.entrata.replace(':','');
+          chip = `${info.entrata} - ${info.uscita}`;
+          chipClass = cls;
+        }
       } else if (info.stato === 'riposo') {
         chip = '🔴 Riposo';
         chipClass = 't-riposo';
@@ -744,7 +802,9 @@ function mostraGiorno(dk) {
       html += `<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;margin-bottom:3px;background:#f8fafc;border-radius:6px">`;
       html += `<span style="font-weight:600;font-size:13px;min-width:45px;color:${GRUPPO_COLORS[gid] || '#333'}">${persona}</span>`;
       html += `<span class="turno-chip ${chipClass}">${chip}</span>`;
-      if (info.sostituzioni && info.sostituzioni.length > 0) {
+      if (info.copre) {
+        html += `<span style="font-size:11px;color:var(--accent)">↔ copre ${info.copre}</span>`;
+      } else if (info.sostituzioni && info.sostituzioni.length > 0) {
         html += `<span style="font-size:11px;color:var(--text-light)">+sost. ${info.sostituzioni.map(s=>s.persona).join(',')}</span>`;
       }
       html += `</div>`;
@@ -765,6 +825,11 @@ function mostraGiorno(dk) {
         const u = tempoAMinuti(info.uscita);
         const f = tempoAMinuti(fascia);
         if (f >= e && f < u) count++;
+      }
+      // Il Jolly copre anche 16:30-18:00 (fisso serale)
+      if (info.stato === 'lavoro' && info.turno === 'jolly') {
+        const f = tempoAMinuti(fascia);
+        if (f >= 990 && f < 1080) count++; // 16:30=990, 18:00=1080
       }
     });
     if (count > 0) {
@@ -809,9 +874,10 @@ function renderSettimana() {
     html += `<span style="font-weight:700;font-size:14px">${dayName} ${d.getDate()}</span>`;
     
     // Conta presenti
+    const totalePersone = Object.values(gruppi).reduce((s,g) => s + g.persone.length, 0);
     let presenti = 0;
     Object.values(ass).forEach(info => { if (info.stato === 'lavoro') presenti++; });
-    html += `<span style="font-size:12px;font-weight:600;color:${presenti>=6?'var(--success)':'var(--danger)'}">${presenti}/9 presenti</span>`;
+    html += `<span style="font-size:12px;font-weight:600;color:${presenti>=6?'var(--success)':'var(--danger)'}">${presenti}/${totalePersone} presenti</span>`;
     html += `</div>`;
     
     // Tabella persone
@@ -823,12 +889,17 @@ function renderSettimana() {
         
         let label = '', bgStyle = '';
         if (info.stato === 'lavoro' && info.entrata) {
-          label = `${info.entrata} - ${info.uscita}`;
-          const c = TURNI_COLORS[info.entrata] || TURNI_COLORS.fisso;
-          bgStyle = `background:${c.bg};color:${c.tx}`;
-        } else if (info.stato === 'reperibile') {
-          label = '🟡 Reperibile';
-          bgStyle = `background:${TURNI_COLORS.reperibile.bg};color:${TURNI_COLORS.reperibile.tx}`;
+          if (info.turno === 'jolly') {
+            label = `${info.entrata} - ${info.uscita} + 16:30-18:00`;
+            bgStyle = `background:${TURNI_COLORS.fisso.bg};color:${TURNI_COLORS.fisso.tx}`;
+          } else if (info.turno === 'fisso') {
+            label = `Fisso ${info.entrata}-${info.uscita}`;
+            bgStyle = `background:${TURNI_COLORS.fisso.bg};color:${TURNI_COLORS.fisso.tx}`;
+          } else {
+            label = `${info.entrata} - ${info.uscita}`;
+            const c = TURNI_COLORS[info.entrata] || TURNI_COLORS.fisso;
+            bgStyle = `background:${c.bg};color:${c.tx}`;
+          }
         } else if (info.stato === 'riposo') {
           label = '🔴 Riposo';
           bgStyle = `background:${TURNI_COLORS.riposo.bg};color:${TURNI_COLORS.riposo.tx}`;
@@ -837,7 +908,9 @@ function renderSettimana() {
         html += `<tr style="${bgStyle}">`;
         html += `<td style="padding:3px 6px;font-weight:700;min-width:40px">${persona}</td>`;
         html += `<td style="padding:3px 6px">${label}</td>`;
-        if (info.sostituzioni && info.sostituzioni.length > 0) {
+        if (info.copre) {
+          html += `<td style="padding:3px 6px;font-size:10px;color:var(--accent)">↔ copre ${info.copre}</td>`;
+        } else if (info.sostituzioni && info.sostituzioni.length > 0) {
           html += `<td style="padding:3px 6px;font-size:10px">+${info.sostituzioni.map(s=>s.persona).join(',')}</td>`;
         } else {
           html += `<td></td>`;
@@ -920,16 +993,36 @@ function renderOre() {
         if (info.stato === 'lavoro') {
           oreLavorate += info.ore || stato.oreTurno;
           giorniLavorati++;
-        } else if (info.stato === 'riposo' || info.stato === 'reperibile') {
+        } else if (info.stato === 'riposo') {
           giorniRiposo++;
         }
       }
       
       if (gid === 'J') {
+        // Calcola le ore del Jolly includendo il fisso serale
+        let oreJolly = 0;
+        for (let d2 = new Date(firstDay); d2 <= lastDay; d2.setDate(d2.getDate() + 1)) {
+          const dk2 = dateKey(d2);
+          const dow2 = d2.getDay();
+          if (dow2 === 0 || dow2 === 6) continue;
+          const assJ = stato.assegnazioni[dk2];
+          if (assJ && assJ['Jolly']) {
+            const jInfo = assJ['Jolly'];
+            if (jInfo.oreTotali) oreJolly += jInfo.oreTotali;
+            else oreJolly += (jInfo.ore || stato.oreTurno) + 1.5;
+          }
+        }
+        const jollyDiff = oreJolly - stato.oreTarget;
+        const jollyPct = Math.min(100, Math.round((oreJolly / stato.oreTarget) * 100));
+        const jollyBarClass = jollyPct >= 95 ? 'ok' : jollyPct >= 80 ? 'warn' : 'danger';
         html += `<div class="ore-row">`;
         html += `<span class="gruppo-badge gruppo-J" style="width:28px;height:28px;font-size:11px">${persona}</span>`;
         html += `<div style="flex:1">`;
-        html += `<div style="font-size:12px">Fisso + sostituzioni: <strong>${oreLavorate.toFixed(1)}h</strong> (${giorniLavorati}gg)</div>`;
+        html += `<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px">`;
+        html += `<span>Turno + 16:30-18:00</span>`;
+        html += `<span style="font-weight:700;color:${jollyBarClass==='ok'?'var(--success)':jollyBarClass==='warn'?'var(--accent)':'var(--danger)'}">${oreJolly.toFixed(1)}h ${jollyDiff>=0?'✓':'('+jollyDiff.toFixed(1)+'h)'}</span>`;
+        html += `</div>`;
+        html += `<div class="ore-progress"><div class="ore-bar ${jollyBarClass}" style="width:${jollyPct}%"></div></div>`;
         html += `</div></div>`;
       } else {
         const pct = Math.min(100, Math.round((oreLavorate / stato.oreTarget) * 100));
@@ -992,8 +1085,7 @@ function exportExcel() {
         if (info.stato === 'lavoro') {
           csv += `${info.entrata},${info.entrata}-${info.uscita},${info.ore},`;
           totali[persona] += info.ore || stato.oreTurno;
-        } else if (info.stato === 'reperibile') {
-          csv += 'Reperibile,,0,';
+
         } else {
           csv += 'Riposo,,0,';
         }
@@ -1040,6 +1132,11 @@ function exportExcel() {
 // ========================
 // INIT
 // ========================
+// Pulisci vecchi localStorage
+localStorage.removeItem('turnazioni_stato_v3');
+localStorage.removeItem('turnazioni_stato_v2');
+localStorage.removeItem('turnazioni_stato_v1');
+
 caricaStato();
 generaAssegnazioni();
 
