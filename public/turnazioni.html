@@ -6,7 +6,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Turnazioni v12 - Stampa PDF</title>
+<title>Turnazioni v13 - Stampa PDF</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -24,6 +24,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .header{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;padding:16px 20px;position:sticky;top:0;z-index:100;box-shadow:0 4px 12px rgba(37,99,235,0.3)}
 .header h1{font-size:20px;font-weight:700;text-align:center}
 .header-sub{font-size:12px;text-align:center;opacity:0.8;margin-top:4px}
+
+/* Login button nell'header */
+.header-login{position:absolute;right:12px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:8px}
+.btn-login{background:#fff;color:var(--primary);border:none;border-radius:20px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;white-space:nowrap}
+.btn-login:hover{background:#eff6ff;transform:scale(1.03)}
+.btn-login img{width:18px;height:18px;border-radius:50%}
+.user-info{display:flex;align-items:center;gap:8px}
+.user-avatar{width:30px;height:30px;border-radius:50%;border:2px solid #fff}
+.user-name{font-size:12px;font-weight:600;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn-logout{background:rgba(255,255,255,0.2);color:#fff;border:1px solid rgba(255,255,255,0.4);border-radius:16px;padding:4px 10px;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-logout:hover{background:rgba(255,255,255,0.35)}
+.sync-indicator{font-size:10px;opacity:0.8;display:flex;align-items:center;gap:3px}
+.sync-indicator.syncing{animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:0.5}50%{opacity:1}}
 
 .tabs{display:flex;background:#fff;border-bottom:2px solid var(--border);position:sticky;top:60px;z-index:99}
 .tab{flex:1;padding:12px 6px;text-align:center;font-size:12px;font-weight:600;color:var(--text-light);cursor:pointer;border-bottom:3px solid transparent;transition:all .2s}
@@ -260,6 +274,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 <div class="header">
   <h1>📅 Turnazioni</h1>
   <div class="header-sub" id="headerSub">10 persone · 1 riposo/giorno · Jolly copre turno + 16:30-18:00</div>
+  <div class="header-login" id="headerLogin">
+    <button class="btn-login" id="btnLogin" onclick="loginGoogle()">
+      <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G"> Accedi
+    </button>
+  </div>
 </div>
 
 <div class="tabs">
@@ -383,6 +402,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
       <div class="card-title">💾 Dati</div>
       <button class="btn-excel" style="background:var(--danger);box-shadow:0 4px 12px rgba(239,68,68,0.3)" onclick="resetDati()">🗑️ Reset Tutto</button>
     </div>
+    <div class="card">
+      <div class="card-title">☁️ Account & Sync</div>
+      <div class="info-box">
+        <strong>Perché accedere?</strong> Se cancelli i dati del browser, perdi tutti i nomi e le modifiche. Con il tuo account Google, i dati vengono salvati nel cloud e ritornano automaticamente quando riaccedi da qualsiasi dispositivo.
+      </div>
+      <div id="syncStatus" style="margin-top:8px;font-size:13px;color:var(--text-light)"></div>
+      <div id="syncButtons" style="margin-top:8px"></div>
+    </div>
   </div>
 
 </div>
@@ -398,6 +425,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 
 <!-- INLINE EDIT POPUP -->
 <div id="inlineEditPopup" class="inline-edit-popup" style="display:none"></div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 
 <script>
 // ========================
@@ -432,6 +464,190 @@ const GRUPPO_COLORS = {
 const GIORNI_IT = ['Lun','Mar','Mer','Gio','Ven','Sab','Dom'];
 const GIORNI_FULL = ['Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato','Domenica'];
 const MESI_IT = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+
+// ========================
+// FIREBASE - LOGIN & SYNC
+// ========================
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBN3yNgVtgRug-pcjTFAK5PgxxzF2OasfM",
+  authDomain: "presenze-pre-post.firebaseapp.com",
+  projectId: "presenze-pre-post",
+  storageBucket: "presenze-pre-post.firebasestorage.app",
+  messagingSenderId: "291215184515",
+  appId: "1:291215184515:web:5930221368bc5a3d49c1b6"
+};
+
+let fbApp = null;
+let fbAuth = null;
+let fbDb = null;
+let currentUser = null;
+let syncEnabled = false;
+
+function initFirebase() {
+  try {
+    if (typeof firebase === 'undefined') { console.warn('Firebase SDK non caricato'); return; }
+    fbApp = firebase.initializeApp(FIREBASE_CONFIG);
+    fbAuth = fbApp.auth();
+    fbDb = fbApp.firestore();
+    
+    // Ascolta cambiamenti autenticazione
+    fbAuth.onAuthStateChanged(async (user) => {
+      currentUser = user;
+      updateLoginUI();
+      if (user) {
+        syncEnabled = true;
+        // Carica dati dal cloud (se più recenti)
+        await syncFromCloud();
+      } else {
+        syncEnabled = false;
+      }
+    });
+  } catch(e) {
+    console.error('Firebase init error:', e);
+  }
+}
+
+async function loginGoogle() {
+  try {
+    if (!fbAuth) { alert('Firebase non disponibile. Ricarica la pagina.'); return; }
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+    const result = await fbAuth.signInWithPopup(provider);
+    currentUser = result.user;
+    syncEnabled = true;
+    updateLoginUI();
+    
+    // Carica dati dal cloud
+    await syncFromCloud();
+  } catch(e) {
+    console.error('Login error:', e);
+    if (e.code === 'auth/popup-blocked') {
+      alert('Popup bloccato! Disabilita il blocco popup per questo sito e riprova.');
+    } else if (e.code === 'auth/unauthorized-domain') {
+      alert('Dominio non autorizzato. Contatta l\'amministratore.');
+    } else {
+      alert('Errore di login: ' + e.message);
+    }
+  }
+}
+
+async function logoutGoogle() {
+  try {
+    if (fbAuth) {
+      await fbAuth.signOut();
+    }
+    currentUser = null;
+    syncEnabled = false;
+    updateLoginUI();
+  } catch(e) {
+    console.error('Logout error:', e);
+  }
+}
+
+function updateLoginUI() {
+  const container = document.getElementById('headerLogin');
+  const syncStatus = document.getElementById('syncStatus');
+  const syncButtons = document.getElementById('syncButtons');
+  if (!container) return;
+  
+  if (currentUser) {
+    const displayName = currentUser.displayName || currentUser.email.split('@')[0];
+    const photoURL = currentUser.photoURL || '';
+    container.innerHTML = `
+      <div class="user-info">
+        <span class="sync-indicator" id="syncIndicator">☁️ Salvato</span>
+        <img class="user-avatar" src="${photoURL}" alt="" onerror="this.style.display='none'">
+        <span class="user-name">${displayName}</span>
+        <button class="btn-logout" onclick="logoutGoogle()">Esci</button>
+      </div>
+    `;
+    // Aggiorna sezione impostazioni
+    if (syncStatus) syncStatus.innerHTML = `✅ Connesso come <strong>${currentUser.email}</strong>`;
+    if (syncButtons) syncButtons.innerHTML = `<button class="btn-excel" style="background:var(--primary);padding:10px 20px;font-size:13px" onclick="syncFromCloud()">🔄 Forza sincronizzazione dal cloud</button>`;
+  } else {
+    container.innerHTML = `
+      <button class="btn-login" id="btnLogin" onclick="loginGoogle()">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G"> Accedi
+      </button>
+    `;
+    // Aggiorna sezione impostazioni
+    if (syncStatus) syncStatus.innerHTML = '❌ Non connesso — i dati sono salvati solo localmente nel browser';
+    if (syncButtons) syncButtons.innerHTML = `<button class="btn-excel" style="background:var(--success);padding:10px 20px;font-size:13px" onclick="loginGoogle()">🔐 Accedi con Google per sincronizzare</button>`;
+  }
+}
+
+// Salva dati su Firestore
+async function syncToCloud() {
+  if (!syncEnabled || !currentUser || !fbDb) return;
+  try {
+    const syncEl = document.getElementById('syncIndicator');
+    if (syncEl) { syncEl.textContent = '⏳ Salvataggio...'; syncEl.className = 'sync-indicator syncing'; }
+    
+    const dataToSave = JSON.parse(JSON.stringify(stato));
+    dataToSave._lastModified = Date.now();
+    
+    await fbDb.collection('turnazioni').doc(currentUser.uid).set({
+      data: dataToSave,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      userEmail: currentUser.email
+    }, { merge: true });
+    
+    if (syncEl) { syncEl.textContent = '☁️ Salvato'; syncEl.className = 'sync-indicator'; }
+  } catch(e) {
+    console.error('Sync to cloud error:', e);
+    const syncEl = document.getElementById('syncIndicator');
+    if (syncEl) { syncEl.textContent = '⚠️ Errore'; syncEl.className = 'sync-indicator'; }
+  }
+}
+
+// Carica dati da Firestore (solo se più recenti)
+async function syncFromCloud() {
+  if (!syncEnabled || !currentUser || !fbDb) return;
+  try {
+    const syncEl = document.getElementById('syncIndicator');
+    if (syncEl) { syncEl.textContent = '⏳ Caricamento...'; syncEl.className = 'sync-indicator syncing'; }
+    
+    const doc = await fbDb.collection('turnazioni').doc(currentUser.uid).get();
+    if (doc.exists) {
+      const cloudData = doc.data().data;
+      if (cloudData) {
+        const cloudModified = cloudData._lastModified || 0;
+        const localModified = stato._lastModified || 0;
+        
+        if (cloudModified > localModified) {
+          // I dati cloud sono più recenti, sovrascrivi locali
+          delete cloudData._lastModified;
+          stato = { ...stato, ...cloudData };
+          localStorage.setItem('turnazioni_stato_v5', JSON.stringify(stato));
+          
+          // Aggiorna UI
+          if (document.getElementById('oreTarget')) document.getElementById('oreTarget').value = stato.oreTarget;
+          if (document.getElementById('oreTurno')) document.getElementById('oreTurno').value = stato.oreTurno;
+          if (document.getElementById('giorniRiposo')) document.getElementById('giorniRiposo').value = stato.giorniRiposo;
+          if (document.getElementById('inizioRotazione')) document.getElementById('inizioRotazione').value = stato.inizioRotazione;
+          
+          generaAssegnazioni();
+          renderAll();
+        } else {
+          // I dati locali sono più recenti, carica sul cloud
+          await syncToCloud();
+        }
+      }
+    } else {
+      // Prima volta: carica dati locali sul cloud
+      await syncToCloud();
+    }
+    
+    if (syncEl) { syncEl.textContent = '☁️ Salvato'; syncEl.className = 'sync-indicator'; }
+  } catch(e) {
+    console.error('Sync from cloud error:', e);
+    const syncEl = document.getElementById('syncIndicator');
+    if (syncEl) { syncEl.textContent = '⚠️ Errore'; syncEl.className = 'sync-indicator'; }
+  }
+}
+
+// Inizializza Firebase quando la pagina è pronta
+initFirebase();
 
 // ========================
 // SCHEMA TURNAZIONE
@@ -571,7 +787,12 @@ function calcolaOre(entrata, uscita) {
 // ========================
 // SALVATAGGIO
 // ========================
-function salvaStato() { localStorage.setItem('turnazioni_stato_v5', JSON.stringify(stato)); }
+function salvaStato() { 
+  stato._lastModified = Date.now();
+  localStorage.setItem('turnazioni_stato_v5', JSON.stringify(stato)); 
+  // Sync sul cloud se loggato
+  syncToCloud();
+}
 
 function caricaStato() {
   const saved = localStorage.getItem('turnazioni_stato_v5');
